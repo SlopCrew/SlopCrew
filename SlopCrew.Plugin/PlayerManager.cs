@@ -12,10 +12,11 @@ using Vector3 = System.Numerics.Vector3;
 namespace SlopCrew.Plugin;
 
 public class PlayerManager : IDisposable {
-    public const float ShittyTickRate = 1f / 24f;
+    public const float ShittyTickRate = 1f / 15f;
 
     public int CurrentOutfit = 0;
     public bool IsRefreshQueued = false;
+    public bool IsPlayingAnimation = false;
 
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
@@ -34,10 +35,12 @@ public class PlayerManager : IDisposable {
     public void Reset() {
         this.CurrentOutfit = 0;
         this.IsRefreshQueued = false;
+        this.IsPlayingAnimation = false;
+
         this.Players.Values.ToList().ForEach(x => x.FuckingObliterate());
         this.Players.Clear();
-
         this.messageQueue.Clear();
+
         this.updateTick = 0;
         this.lastAnimation = null;
         this.lastPos = Vector3.Zero;
@@ -126,12 +129,14 @@ public class PlayerManager : IDisposable {
             case ClientboundPlayerAnimation playerAnimation: {
                 if (this.Players.TryGetValue(playerAnimation.Player, out var associatedPlayer)) {
                     if (associatedPlayer.ReptilePlayer is not null) {
+                        this.IsPlayingAnimation = true;
                         associatedPlayer.ReptilePlayer.PlayAnim(
                             playerAnimation.Animation,
                             playerAnimation.ForceOverwrite,
                             playerAnimation.Instant,
                             playerAnimation.AtTime
                         );
+                        this.IsPlayingAnimation = false;
                     }
                 }
                 break;
@@ -170,8 +175,13 @@ public class PlayerManager : IDisposable {
                                 }
 
                                 if (differentMoveStyle) {
-                                    reptilePlayer.SetCurrentMoveStyleEquipped((MoveStyle) player.MoveStyle);
+                                    var moveStyle = (MoveStyle) player.MoveStyle;
+                                    var equipped = moveStyle != MoveStyle.ON_FOOTlmao;
+                                    reptilePlayer.SetCurrentMoveStyleEquipped(moveStyle);
+                                    reptilePlayer.SwitchToEquippedMovestyle(equipped);
                                 }
+
+                                associatedPlayer.ResetPlayer(player);
                             } else {
                                 Plugin.Log.LogInfo("Ignoring associated player look update, no changes");
                             }

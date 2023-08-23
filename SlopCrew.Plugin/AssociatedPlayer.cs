@@ -24,10 +24,10 @@ public class AssociatedPlayer {
             Object.Destroy(this.ReptilePlayer);
     }
 
-    public void ResetReptilePlayer(Common.Player slopPlayer) {
+    public void ResetPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
-        this.FuckingObliterate();
-        this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
+        //this.FuckingObliterate();
+        //this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
     }
 
     public void SetPos(ClientboundPlayerPositionUpdate posUpdate) {

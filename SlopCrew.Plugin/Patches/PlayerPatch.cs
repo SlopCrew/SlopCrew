@@ -16,14 +16,20 @@ public class PlayerPatch {
         return associatedPlayer == null;
     }
 
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     [HarmonyPatch("PlayAnim")]
-    public static void PlayAnim(
+    public static bool PlayAnim(
         Player __instance, int newAnim, bool forceOverwrite = false, bool instant = false, float atTime = -1f
     ) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
             Plugin.PlayerManager.PlayAnimation(newAnim, forceOverwrite, instant, atTime);
+            return true;
+        } else if (Plugin.PlayerManager.GetAssociatedPlayer(__instance) is not null) {
+            // Only let the animation play if it's us
+            return Plugin.PlayerManager.IsPlayingAnimation;
         }
+
+        return true;
     }
 
     [HarmonyPostfix]
