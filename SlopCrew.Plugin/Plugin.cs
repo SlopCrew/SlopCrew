@@ -3,21 +3,20 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using SlopCrew.Common.Network;
 
 namespace SlopCrew.Plugin;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInProcess("Bomb Rush Cyberfunk.exe")]
 public class Plugin : BaseUnityPlugin {
-    public static ManualLogSource Log;
-    public static Harmony Harmony;
+    public static ManualLogSource Log = null!;
+    public static Harmony Harmony = null!;
 
-    public static NetworkConnection NetworkConnection;
-    public static PlayerManager PlayerManager;
+    public static NetworkConnection NetworkConnection = null!;
+    public static PlayerManager PlayerManager = null!;
 
-    public static ConfigEntry<string> ConfigAddress;
-    public static ConfigEntry<string> ConfigUsername;
+    public static ConfigEntry<string> ConfigAddress = null!;
+    public static ConfigEntry<string> ConfigUsername = null!;
 
 
     private void Awake() {
@@ -30,10 +29,6 @@ public class Plugin : BaseUnityPlugin {
         PlayerManager = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
-    }
-
-    private void Update() {
-        PlayerManager.Update();
     }
     
     private void OnDestroy() {

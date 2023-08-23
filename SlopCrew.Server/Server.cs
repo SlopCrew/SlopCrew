@@ -9,15 +9,20 @@ public class Server {
     public Dictionary<int, List<ServerConnection>> Players = new();
     public List<ServerConnection> Connections => this.Players.SelectMany(x => x.Value).ToList();
 
+    private int port;
     private WebSocketServer wsServer;
 
     public Server() {
-        this.wsServer = new WebSocketServer(42069);
+        var portStr = Environment.GetEnvironmentVariable("PORT");
+        this.port = portStr is null ? 42069 : int.Parse(portStr);
+
+        this.wsServer = new WebSocketServer(this.port);
         this.wsServer.AddWebSocketService<ServerConnection>("/");
     }
 
     public void Start() {
         this.wsServer.Start();
+        Console.WriteLine($"Listening on port {this.port} - press any key to close");
         Console.ReadKey();
         this.wsServer.Stop();
     }
@@ -60,7 +65,7 @@ public class Server {
             if (this.Players[player.Stage].Contains(conn)) {
                 this.Players[player.Stage].Remove(conn);
             }
-            
+
             this.BroadcastNewPlayers(player.Stage);
         }
     }

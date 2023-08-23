@@ -1,18 +1,13 @@
-﻿using System;
-using Reptile;
-using UnityEngine;
+﻿using Reptile;
 using DG.Tweening;
 using SlopCrew.Common.Network.Clientbound;
 using Object = UnityEngine.Object;
-using Player = SlopCrew.Common.Player;
 
 namespace SlopCrew.Plugin;
 
 public class AssociatedPlayer {
     public Common.Player SlopPlayer;
     public Reptile.Player ReptilePlayer;
-
-    private Vector3 tweenPos;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
@@ -54,9 +49,7 @@ public class AssociatedPlayer {
             );
 
             sequence.Append(posTween).Append(rotTween);
-            sequence.OnComplete(() => {
-                // lol
-            });
+            sequence.Play();
         }
     }
 }

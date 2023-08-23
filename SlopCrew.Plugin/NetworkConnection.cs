@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 using SlopCrew.Common.Network;
 using WebSocket = WebSocketSharp.WebSocket;
 
 namespace SlopCrew.Plugin;
 
 public class NetworkConnection {
+    public bool IsConnected => this.socket is {IsAlive: true, ReadyState: WebSocketSharp.WebSocketState.Open};
     public event Action<NetworkPacket>? OnMessageReceived;
 
     private WebSocket socket;
@@ -14,13 +16,26 @@ public class NetworkConnection {
 
         this.socket.OnMessage += (_, args) => {
             var packet = NetworkPacket.Read(args.RawData);
+            // TODO move message parsing to this class
             OnMessageReceived?.Invoke(packet);
+        };
+
+        this.socket.OnClose += (_, _) => {
+            Plugin.PlayerManager.Reset();
+            Plugin.Log.LogInfo("Disconnected - reconnecting in 5s...");
+            Task.Delay(5000).ContinueWith(_ => this.socket.Connect());
         };
 
         this.socket.Connect();
     }
 
     public void SendMessage(NetworkPacket packet) {
-        this.socket.Send(packet.Serialize());
+        if (this.IsConnected) {
+            // Run in a separate task to avoid blocking the main thread
+            Task.Run(() => {
+                var serialized = packet.Serialize();
+                this.socket.Send(serialized);
+            });
+        }
     }
 }

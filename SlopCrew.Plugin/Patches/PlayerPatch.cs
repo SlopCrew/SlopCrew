@@ -7,11 +7,12 @@ namespace SlopCrew.Plugin.Patches;
 
 [HarmonyPatch(typeof(Player))]
 public class PlayerPatch {
+    // Skip abilities on associated (networked) players
+    // Attaching to grind rails causes the player position and VFX to rubberband on position updates
     [HarmonyPrefix]
     [HarmonyPatch("ActivateAbility")]
     public static bool ActivateAbility(Player __instance, Ability a) {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
-        // skip abilities on associated players
         return associatedPlayer == null;
     }
 
@@ -51,6 +52,7 @@ public class PlayerPatch {
     [HarmonyPatch("SetOutfit")]
     public static void SetOutfit(Player __instance, int setOutfit) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
+            Plugin.PlayerManager.CurrentOutfit = setOutfit;
             Plugin.PlayerManager.IsRefreshQueued = true;
         }
     }
