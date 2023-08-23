@@ -25,7 +25,7 @@ public class Server {
     public void TrackConnection(ServerConnection conn) {
         var player = conn.Player!;
 
-        // remove from the old stage if crossing
+        // Remove from the old stage if crossing into a new one
         if (conn.LastStage != null && conn.LastStage != player.Stage) {
             this.Players[conn.LastStage.Value].Remove(conn);
             this.BroadcastNewPlayers(conn.LastStage.Value);
@@ -35,12 +35,13 @@ public class Server {
             this.Players[player.Stage] = new();
         }
 
+        // Since this can be called multiple times (multiple hellos in the same
+        // stage), be careful to not add it multiple times, or we'll have weird
+        // state issues with multiple reported players with the same ID
         if (!this.Players[player.Stage].Contains(conn)) {
             this.Players[player.Stage].Add(conn);
         }
-
-        var conns = this.Players[player.Stage].ToList();
-
+        
         this.BroadcastNewPlayers(player.Stage);
     }
 
@@ -58,19 +59,10 @@ public class Server {
         }
     }
 
-    public uint GetNextID(string name) {
-        // return the existing ID if we have one by name
-        var existing = this.Connections.FirstOrDefault(x => x.Player?.Name == name);
-        if (existing is {Player: not null}) {
-            return existing.Player.ID;
-        }
-
+    public uint GetNextID() {
         var ids = this.Connections.Select(x => x.Player!.ID).ToList();
         var id = 0u;
-        while (ids.Contains(id)) {
-            id++;
-        }
-
+        while (ids.Contains(id)) id++;
         return id;
     }
 }

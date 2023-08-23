@@ -160,7 +160,7 @@ public class PlayerManager : IDisposable {
                 if (this.Players.TryGetValue(playerPositionUpdate.Player, out var associatedPlayer)) {
                     associatedPlayer.SetPos(playerPositionUpdate);
                 }
-                
+
                 break;
             }
         }
@@ -180,8 +180,7 @@ public class PlayerManager : IDisposable {
 
         Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
             Player = new() {
-                //Name = Guid.NewGuid().ToString(),
-                Name = Environment.GetEnvironmentVariable("USERNAME")!,
+                Name = Plugin.ConfigUsername.Value,
                 ID = 1337,
 
                 Stage = (int) Core.Instance.BaseModule.CurrentStage,

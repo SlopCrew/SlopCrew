@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.Common.Network;
@@ -15,9 +16,15 @@ public class Plugin : BaseUnityPlugin {
     public static NetworkConnection NetworkConnection;
     public static PlayerManager PlayerManager;
 
+    public static ConfigEntry<string> ConfigAddress;
+    public static ConfigEntry<string> ConfigUsername;
+
+
     private void Awake() {
         Log = this.Logger;
+        
         this.SetupHarmony();
+        this.SetupConfig();
 
         NetworkConnection = new();
         PlayerManager = new();
@@ -25,6 +32,10 @@ public class Plugin : BaseUnityPlugin {
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }
 
+    private void Update() {
+        PlayerManager.Update();
+    }
+    
     private void OnDestroy() {
         PlayerManager.Dispose();
     }
@@ -41,7 +52,19 @@ public class Plugin : BaseUnityPlugin {
         }
     }
 
-    private void Update() {
-        PlayerManager.Update();
+    private void SetupConfig() {
+        ConfigAddress = this.Config.Bind(
+            "Server",
+            "Address",
+            "ws://127.0.0.1:42069/",
+            "Address of the server to connect to, in WebSocket format."
+        );
+
+        ConfigUsername = this.Config.Bind(
+            "General",
+            "Username",
+            "Big Slopper",
+            "Username to show to other players."
+        );
     }
 }

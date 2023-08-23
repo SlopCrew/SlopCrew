@@ -12,6 +12,10 @@ public class ServerConnection : WebSocketBehavior {
     public Player? Player;
     public int? LastStage = null;
 
+    protected override void OnOpen() {
+        Console.WriteLine("New connection from " + this.Context.UserEndPoint);
+    }
+
     protected override void OnMessage(MessageEventArgs e) {
         var server = Server.Instance;
 
@@ -19,10 +23,15 @@ public class ServerConnection : WebSocketBehavior {
         Console.WriteLine($"Received message from {this.DebugName()}: " + msg.DebugString());
 
         if (msg is ServerboundPlayerHello enter) {
-            enter.Player.ID = server.GetNextID(enter.Player.Name);
+            // Assign a unique ID on first hello
+            // Subsequent hellos keep the originally assigned ID
+            enter.Player.ID = this.Player?.ID ?? server.GetNextID();
             this.Player = enter.Player;
 
+            // Syncs player to other players
             server.TrackConnection(this);
+
+            // Set after we track connection because State:tm:
             this.LastStage = this.Player.Stage;
             return;
         }
