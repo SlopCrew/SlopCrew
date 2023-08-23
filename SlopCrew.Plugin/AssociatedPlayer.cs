@@ -1,6 +1,10 @@
 ﻿using Reptile;
 using DG.Tweening;
+using HarmonyLib;
 using SlopCrew.Common.Network.Clientbound;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Networking;
 using Object = UnityEngine.Object;
 
 namespace SlopCrew.Plugin;
@@ -12,6 +16,36 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
+        this.SpawnNameplate();
+    }
+
+    private void SpawnNameplate() {
+        var obj = new GameObject("SlopCrew_Nameplate");
+        var tmp = obj.AddComponent<TextMeshPro>();
+
+        // Yoink the font from somewhere else because I guess asset loading is impossible
+        var uiManager = Core.Instance.UIManager;
+        var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+        var font = gameplay.trickNameLabel.font;
+
+        tmp.text = this.SlopPlayer.Name;
+        tmp.alignment = TextAlignmentOptions.Midline;
+        tmp.font = font;
+        tmp.fontSize = 2.5f;
+
+        var bounds = this.ReptilePlayer.interactionCollider.bounds;
+        obj.transform.position = new Vector3(
+            bounds.center.x,
+            bounds.max.y + 0.125f,
+            bounds.center.z
+        );
+
+        // Rotate it to match the player's head
+        obj.transform.rotation = this.ReptilePlayer.tf.rotation;
+        // and flip it around
+        obj.transform.Rotate(0, 180, 0);
+
+        obj.transform.parent = this.ReptilePlayer.interactionCollider.transform;
     }
 
     public void FuckingObliterate() {

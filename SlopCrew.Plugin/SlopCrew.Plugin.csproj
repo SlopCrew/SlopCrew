@@ -45,6 +45,26 @@
             <HintPath>$(ManagedPath)/UnityEngine.PhysicsModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="Unity.TextMeshPro">
+            <HintPath>$(ManagedPath)/Unity.TextMeshPro.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>$(ManagedPath)/UnityEngine.UI.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule">
+            <HintPath>$(ManagedPath)/UnityEngine.UnityWebRequestModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule">
+            <HintPath>$(ManagedPath)/UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.AssetBundleModule">
+            <HintPath>$(ManagedPath)/UnityEngine.AssetBundleModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="DOTween">
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>
