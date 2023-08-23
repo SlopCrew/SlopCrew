@@ -21,12 +21,7 @@ public class PlayerPatch {
         Player __instance, int newAnim, bool forceOverwrite = false, bool instant = false, float atTime = -1f
     ) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
-            Plugin.NetworkConnection.SendMessage(new ServerboundAnimation {
-                Animation = newAnim,
-                ForceOverwrite = forceOverwrite,
-                Instant = instant,
-                AtTime = atTime
-            });
+            Plugin.PlayerManager.PlayAnimation(newAnim, forceOverwrite, instant, atTime);
         }
     }
 

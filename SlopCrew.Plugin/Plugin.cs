@@ -2,6 +2,7 @@
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using SlopCrew.Common.Network;
 
 namespace SlopCrew.Plugin;
 
@@ -20,6 +21,8 @@ public class Plugin : BaseUnityPlugin {
 
         NetworkConnection = new();
         PlayerManager = new();
+
+        //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }
 
     private void OnDestroy() {

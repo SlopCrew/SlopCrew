@@ -1,12 +1,27 @@
-﻿using System.Numerics;
+﻿using System.IO;
+using System.Numerics;
 
 namespace SlopCrew.Common.Network.Clientbound;
 
-public class ClientboundPlayerPositionUpdate : NetworkMessage {
-    public ClientboundPlayerPositionUpdate() { }
+public class ClientboundPlayerPositionUpdate : NetworkPacket {
+    public override NetworkMessageType MessageType => NetworkMessageType.ClientboundPlayerPositionUpdate;
 
-    public string Player;
+    public uint Player;
     public Vector3 Position;
     public Quaternion Rotation;
     public Vector3 Velocity;
+
+    public override void Read(BinaryReader br) {
+        this.Player = br.ReadUInt32();
+        this.Position = br.ReadVector3();
+        this.Rotation = br.ReadQuaternion();
+        this.Velocity = br.ReadVector3();
+    }
+
+    public override void Write(BinaryWriter bw) {
+        bw.Write(this.Player);
+        bw.Write(this.Position);
+        bw.Write(this.Rotation);
+        bw.Write(this.Velocity);
+    }
 }

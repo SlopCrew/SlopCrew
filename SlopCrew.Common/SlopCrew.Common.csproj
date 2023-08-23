@@ -4,8 +4,8 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
+   
     <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="7.0.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
 </Project>

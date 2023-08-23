@@ -1,7 +1,9 @@
-﻿using Reptile;
+﻿using System;
+using Reptile;
 using UnityEngine;
 using DG.Tweening;
 using SlopCrew.Common.Network.Clientbound;
+using Object = UnityEngine.Object;
 using Player = SlopCrew.Common.Player;
 
 namespace SlopCrew.Plugin;
@@ -34,7 +36,7 @@ public class AssociatedPlayer {
     }
 
     public void SetPos(ClientboundPlayerPositionUpdate posUpdate) {
-        if (this.ReptilePlayer is not null && this.ReptilePlayer.isActiveAndEnabled) {
+        if (this.ReptilePlayer is not null) {
             var sequence = DOTween.Sequence();
 
             var posTween = DOTween.To(
