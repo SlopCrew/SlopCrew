@@ -62,12 +62,11 @@ public class PlayerManager : IDisposable {
     public static Reptile.Player SpawnReptilePlayer(Common.Player slopPlayer) {
         var worldHandler = WorldHandler.instance;
 
-        // fucking Unity I swear to god I'm gonna kill your family
-        var targetTransform = new GameObject("UnityFuckingSucksLmao").transform;
+        // Why the hell is this the only way to get an empty transform
+        var targetTransform = new GameObject("UnitySucksLmao").transform;
         targetTransform.SetPositionAndRotation(slopPlayer.Position.ToMentalDeficiency(),
                                                slopPlayer.Rotation.ToMentalDeficiency());
 
-        Plugin.Log.LogInfo("Right before SetupAIPlayerAt");
         var player = worldHandler.SetupAIPlayerAt(
             targetTransform,
             (Characters) slopPlayer.Character,
@@ -77,7 +76,6 @@ public class PlayerManager : IDisposable {
         );
 
         var a = slopPlayer.Velocity.ToMentalDeficiency();
-        Plugin.Log.LogInfo("WHAT " + a);
         player.SetVelocity(a);
 
         return player;
