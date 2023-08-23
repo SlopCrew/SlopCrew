@@ -38,7 +38,6 @@ public class ServerConnection : WebSocketBehavior {
 
         if (this.Player is null) {
             Console.WriteLine($"Received message from {this.DebugName()} without a hello, ignoring");
-            // Sent message without a hello, ignore
             return;
         }
 
@@ -67,11 +66,8 @@ public class ServerConnection : WebSocketBehavior {
     }
 
     protected override void OnClose(CloseEventArgs e) {
-        // todo
-    }
-
-    protected override void OnError(ErrorEventArgs e) {
-        // todo
+        Console.WriteLine($"Connection closed from {this.DebugName()}: {e.Code} - {e.Reason}");
+        Server.Instance.UntrackConnection(this);
     }
 
     private byte[] Serialize(NetworkPacket msg) {

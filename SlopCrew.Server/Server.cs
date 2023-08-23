@@ -23,7 +23,11 @@ public class Server {
     }
 
     public void TrackConnection(ServerConnection conn) {
-        var player = conn.Player!;
+        var player = conn.Player;
+        if (player is null) {
+            Console.WriteLine($"TrackConnection but player is null? {conn.DebugName()}");
+            return;
+        }
 
         // Remove from the old stage if crossing into a new one
         if (conn.LastStage != null && conn.LastStage != player.Stage) {
@@ -41,8 +45,24 @@ public class Server {
         if (!this.Players[player.Stage].Contains(conn)) {
             this.Players[player.Stage].Add(conn);
         }
-        
+
         this.BroadcastNewPlayers(player.Stage);
+    }
+
+    public void UntrackConnection(ServerConnection conn) {
+        var player = conn.Player;
+
+        // Don't bother untracking someone we never tracked in the first place
+        if (player is null) return;
+
+        // Contains checks just in case we get into this state somehow
+        if (this.Players.ContainsKey(player.Stage)) {
+            if (this.Players[player.Stage].Contains(conn)) {
+                this.Players[player.Stage].Remove(conn);
+            }
+            
+            this.BroadcastNewPlayers(player.Stage);
+        }
     }
 
     private void BroadcastNewPlayers(int stage) {
