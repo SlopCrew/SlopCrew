@@ -176,7 +176,7 @@ public class PlayerManager : IDisposable {
 
                                 if (differentMoveStyle) {
                                     var moveStyle = (MoveStyle) player.MoveStyle;
-                                    var equipped = moveStyle != MoveStyle.ON_FOOTlmao;
+                                    var equipped = moveStyle != MoveStyle.ON_FOOT;
                                     reptilePlayer.SetCurrentMoveStyleEquipped(moveStyle);
                                     reptilePlayer.SwitchToEquippedMovestyle(equipped);
                                 }
