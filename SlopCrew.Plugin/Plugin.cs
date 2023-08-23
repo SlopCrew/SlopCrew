@@ -18,10 +18,9 @@ public class Plugin : BaseUnityPlugin {
     public static ConfigEntry<string> ConfigAddress = null!;
     public static ConfigEntry<string> ConfigUsername = null!;
 
-
     private void Awake() {
         Log = this.Logger;
-        
+
         this.SetupHarmony();
         this.SetupConfig();
 
@@ -30,7 +29,7 @@ public class Plugin : BaseUnityPlugin {
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }
-    
+
     private void OnDestroy() {
         PlayerManager.Dispose();
     }

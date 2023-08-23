@@ -21,9 +21,12 @@ public abstract class NetworkPacket : NetworkSerializable {
             NetworkMessageType.ClientboundPlayerAnimation => new ClientboundPlayerAnimation(),
             NetworkMessageType.ClientboundPlayerPositionUpdate => new ClientboundPlayerPositionUpdate(),
             NetworkMessageType.ClientboundPlayersUpdate => new ClientboundPlayersUpdate(),
+            NetworkMessageType.ClientboundPlayerVisualUpdate => new ClientboundPlayerVisualUpdate(),
+
             NetworkMessageType.ServerboundAnimation => new ServerboundAnimation(),
             NetworkMessageType.ServerboundPlayerHello => new ServerboundPlayerHello(),
             NetworkMessageType.ServerboundPositionUpdate => new ServerboundPositionUpdate(),
+            NetworkMessageType.ServerboundVisualUpdate => new ServerboundVisualUpdate(),
             _ => throw new Exception("dawg what")
         };
 

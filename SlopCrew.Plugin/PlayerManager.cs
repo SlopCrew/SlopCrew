@@ -15,8 +15,11 @@ public class PlayerManager : IDisposable {
     public const float ShittyTickRate = 1f / 15f;
 
     public int CurrentOutfit = 0;
-    public bool IsRefreshQueued = false;
+    public bool IsHelloRefreshQueued = false;
+    public bool IsVisualRefreshQueued = false;
+
     public bool IsPlayingAnimation = false;
+    public bool IsSettingVisual = false;
 
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
@@ -34,8 +37,10 @@ public class PlayerManager : IDisposable {
 
     public void Reset() {
         this.CurrentOutfit = 0;
-        this.IsRefreshQueued = false;
+        this.IsHelloRefreshQueued = false;
+        this.IsVisualRefreshQueued = false;
         this.IsPlayingAnimation = false;
+        this.IsSettingVisual = false;
 
         this.Players.Values.ToList().ForEach(x => x.FuckingObliterate());
         this.Players.Clear();
@@ -57,7 +62,7 @@ public class PlayerManager : IDisposable {
     }
 
     private void StageInit() {
-        this.IsRefreshQueued = true;
+        this.IsHelloRefreshQueued = true;
     }
 
     public static Reptile.Player SpawnReptilePlayer(Common.Player slopPlayer) {
@@ -86,6 +91,7 @@ public class PlayerManager : IDisposable {
     public void Update() {
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
+        var traverse = Traverse.Create(me);
 
         var dt = Time.deltaTime;
         this.updateTick += dt;
@@ -114,9 +120,40 @@ public class PlayerManager : IDisposable {
         }
 
         // FIXME lmao this sucks
-        if (this.IsRefreshQueued && Plugin.NetworkConnection.IsConnected) {
-            this.IsRefreshQueued = false;
-            this.RefreshPlayerHello(me);
+        if (Plugin.NetworkConnection.IsConnected)
+            if (this.IsHelloRefreshQueued) {
+                this.IsHelloRefreshQueued = false;
+
+                var character = traverse.Field<Characters>("character").Value;
+                var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
+
+                Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
+                    Player = new() {
+                        Name = Plugin.ConfigUsername.Value,
+                        ID = 1337, // filled in by the server; could be an int instead of uint but i'd have to change types everywhere
+
+                        Stage = (int) Core.Instance.BaseModule.CurrentStage,
+                        Character = (int) character,
+                        Outfit = this.CurrentOutfit,
+                        MoveStyle = (int) moveStyle,
+
+                        Position = me.transform.position.FromMentalDeficiency(),
+                        Rotation = me.transform.rotation.FromMentalDeficiency(),
+                        Velocity = me.motor.velocity.FromMentalDeficiency()
+                    }
+                });
+            }
+
+        if (this.IsVisualRefreshQueued) {
+            this.IsVisualRefreshQueued = false;
+
+            var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+
+            Plugin.NetworkConnection.SendMessage(new ServerboundVisualUpdate {
+                BoostpackEffect = (int) characterVisual.boostpackEffectMode,
+                FrictionEffect = (int) characterVisual.frictionEffectMode,
+                Spraycan = characterVisual.VFX.spraycan.activeSelf
+            });
         }
     }
 
@@ -208,31 +245,34 @@ public class PlayerManager : IDisposable {
                 if (this.Players.TryGetValue(playerPositionUpdate.Player, out var associatedPlayer)) {
                     associatedPlayer.SetPos(playerPositionUpdate);
                 }
+
+                break;
+            }
+
+            case ClientboundPlayerVisualUpdate playerVisualUpdate: {
+                if (this.Players.TryGetValue(playerVisualUpdate.Player, out var associatedPlayer)) {
+                    var reptilePlayer = associatedPlayer.ReptilePlayer;
+                    var traverse = Traverse.Create(reptilePlayer);
+                    var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+
+                    var boostpackEffect = (BoostpackEffectMode) playerVisualUpdate.BoostpackEffect;
+                    var frictionEffect = (FrictionEffectMode) playerVisualUpdate.FrictionEffect;
+                    var spraycan = playerVisualUpdate.Spraycan;
+
+                    characterVisual.hasEffects = true;
+                    characterVisual.hasBoostPack = true;
+
+                    // TODO scale
+                    this.IsSettingVisual = true;
+                    characterVisual.SetBoostpackEffect(boostpackEffect);
+                    characterVisual.SetFrictionEffect(frictionEffect);
+                    characterVisual.SetSpraycan(spraycan);
+                    this.IsSettingVisual = false;
+                }
+
                 break;
             }
         }
-    }
-
-    public void RefreshPlayerHello(Player me) {
-        var traverse = Traverse.Create(me);
-        var character = traverse.Field<Characters>("character").Value;
-        var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
-
-        Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
-            Player = new() {
-                Name = Plugin.ConfigUsername.Value,
-                ID = 1337, // filled in by the server; could be an int instead of uint but i'd have to change types everywhere
-
-                Stage = (int) Core.Instance.BaseModule.CurrentStage,
-                Character = (int) character,
-                Outfit = this.CurrentOutfit,
-                MoveStyle = (int) moveStyle,
-
-                Position = me.transform.position.FromMentalDeficiency(),
-                Rotation = me.transform.rotation.FromMentalDeficiency(),
-                Velocity = me.motor.velocity.FromMentalDeficiency()
-            }
-        });
     }
 
     public void PlayAnimation(int anim, bool forceOverwrite, bool instant, float atTime) {

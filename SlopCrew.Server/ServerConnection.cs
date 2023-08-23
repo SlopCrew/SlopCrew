@@ -62,6 +62,16 @@ public class ServerConnection : WebSocketBehavior {
                 });
                 break;
             }
+
+            case ServerboundVisualUpdate visualUpdate: {
+                this.BroadcastButMe(new ClientboundPlayerVisualUpdate {
+                    Player = this.Player!.ID,
+                    BoostpackEffect = visualUpdate.BoostpackEffect,
+                    FrictionEffect = visualUpdate.FrictionEffect,
+                    Spraycan = visualUpdate.Spraycan
+                });
+                break;
+            }
         }
     }
 

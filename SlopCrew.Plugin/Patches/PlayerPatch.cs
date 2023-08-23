@@ -42,7 +42,7 @@ public class PlayerPatch {
         GameObject specialSkateboard = null
     ) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
-            Plugin.PlayerManager.IsRefreshQueued = true;
+            Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }
     }
 
@@ -50,7 +50,7 @@ public class PlayerPatch {
     [HarmonyPatch("SetCharacter")]
     public static void SetCharacter(Player __instance, Characters setChar, int setOutfit = 0) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
-            Plugin.PlayerManager.IsRefreshQueued = true;
+            Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }
     }
 
@@ -59,7 +59,7 @@ public class PlayerPatch {
     public static void SetOutfit(Player __instance, int setOutfit) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
             Plugin.PlayerManager.CurrentOutfit = setOutfit;
-            Plugin.PlayerManager.IsRefreshQueued = true;
+            Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }
     }
 }
