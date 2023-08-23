@@ -41,6 +41,10 @@
             <HintPath>$(ManagedPath)/UnityEngine.AnimationModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="UnityEngine.PhysicsModule">
+            <HintPath>$(ManagedPath)/UnityEngine.PhysicsModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="DOTween">
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>

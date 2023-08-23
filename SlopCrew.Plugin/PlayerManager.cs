@@ -12,7 +12,7 @@ using Vector3 = System.Numerics.Vector3;
 namespace SlopCrew.Plugin;
 
 public class PlayerManager : IDisposable {
-    public const float ShittyTickRate = 1f / 15f;
+    public const float ShittyTickRate = 1f / 10f;
 
     public int CurrentOutfit = 0;
     public bool IsHelloRefreshQueued = false;

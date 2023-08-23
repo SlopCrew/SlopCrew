@@ -17,6 +17,14 @@ public class PlayerPatch {
     }
 
     [HarmonyPrefix]
+    [HarmonyPatch("CheckWallrun")]
+    private static bool CheckWallrun(Player __instance, Collision other) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+        return associatedPlayer == null;
+    }
+
+
+    [HarmonyPrefix]
     [HarmonyPatch("PlayAnim")]
     public static bool PlayAnim(
         Player __instance, int newAnim, bool forceOverwrite = false, bool instant = false, float atTime = -1f

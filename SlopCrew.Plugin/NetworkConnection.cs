@@ -31,11 +31,8 @@ public class NetworkConnection {
 
     public void SendMessage(NetworkPacket packet) {
         if (this.IsConnected) {
-            // Run in a separate task to avoid blocking the main thread
-            Task.Run(() => {
-                var serialized = packet.Serialize();
-                this.socket.Send(serialized);
-            });
+            var serialized = packet.Serialize();
+            this.socket.SendAsync(serialized, _ => { });
         }
     }
 }

@@ -9,6 +9,9 @@ namespace SlopCrew.Common.Network;
 public abstract class NetworkPacket : NetworkSerializable {
     public abstract NetworkMessageType MessageType { get; }
 
+    private static MemoryStream Stream = new();
+    private static BinaryWriter Writer = new(Stream);
+
     public static NetworkPacket Read(byte[] data) {
         //Console.WriteLine(DebugBytes("NetworkPacket.Read", data));
 
@@ -35,16 +38,15 @@ public abstract class NetworkPacket : NetworkSerializable {
     }
 
     public byte[] Serialize() {
-        using var ms = new MemoryStream();
-        using var bw = new BinaryWriter(ms);
+        Stream.SetLength(0);
+        Writer.Seek(0, SeekOrigin.Begin);
 
-        bw.Write((int) this.MessageType);
-        this.Write(bw);
+        Writer.Write((int) this.MessageType);
+        this.Write(Writer);
 
-        var bytes = ms.ToArray();
+        var bytes = Stream.ToArray();
         //Console.WriteLine(DebugBytes("NetworkPacket.Serialize", bytes));
-
-        return ms.ToArray();
+        return bytes;
     }
 
     public string DebugString() {
