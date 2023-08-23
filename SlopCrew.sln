@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Plugin", "SlopCrew.Plugin\SlopCrew.Plugin.csproj", "{C33DD7D1-D576-42DC-849A-A67937645689}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Common", "SlopCrew.Common\SlopCrew.Common.csproj", "{D7F7D923-BAF7-464E-A52F-E807F6BE5029}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Server", "SlopCrew.Server\SlopCrew.Server.csproj", "{94A3B924-480F-4459-9E21-77913D493360}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C33DD7D1-D576-42DC-849A-A67937645689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C33DD7D1-D576-42DC-849A-A67937645689}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C33DD7D1-D576-42DC-849A-A67937645689}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C33DD7D1-D576-42DC-849A-A67937645689}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94A3B924-480F-4459-9E21-77913D493360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94A3B924-480F-4459-9E21-77913D493360}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94A3B924-480F-4459-9E21-77913D493360}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94A3B924-480F-4459-9E21-77913D493360}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
