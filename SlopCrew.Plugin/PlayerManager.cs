@@ -7,6 +7,7 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Quaternion = System.Numerics.Quaternion;
 using Vector3 = System.Numerics.Vector3;
 
@@ -32,7 +33,8 @@ public class PlayerManager : IDisposable {
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
-        StageManager.OnStagePostInitialization += this.StageInit;
+        StageManager.OnStageInitialized += this.StageInit;
+        StageManager.OnStagePostInitialization += this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived += this.OnMessage;
     }
 
@@ -54,7 +56,8 @@ public class PlayerManager : IDisposable {
 
     public void Dispose() {
         Core.OnUpdate -= this.Update;
-        StageManager.OnStagePostInitialization -= this.StageInit;
+        StageManager.OnStageInitialized -= this.StageInit;
+        StageManager.OnStagePostInitialization -= this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived -= this.OnMessage;
     }
 
@@ -63,6 +66,10 @@ public class PlayerManager : IDisposable {
     }
 
     private void StageInit() {
+        this.Players.Clear();
+    }
+
+    private void StagePostInit() {
         this.IsHelloRefreshQueued = true;
     }
 
@@ -165,8 +172,7 @@ public class PlayerManager : IDisposable {
         switch (msg) {
             case ClientboundPlayerAnimation playerAnimation: {
                 if (this.Players.TryGetValue(playerAnimation.Player, out var associatedPlayer)) {
-                    if (associatedPlayer.ReptilePlayer is not null &&
-                        associatedPlayer.ReptilePlayer.isActiveAndEnabled) {
+                    if (associatedPlayer.ReptilePlayer is not null) {
                         this.IsPlayingAnimation = true;
                         associatedPlayer.ReptilePlayer.PlayAnim(
                             playerAnimation.Animation,
