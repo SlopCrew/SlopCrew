@@ -121,29 +121,28 @@ public class PlayerManager : IDisposable {
         }
 
         // FIXME lmao this sucks
-        if (Plugin.NetworkConnection.IsConnected)
-            if (this.IsHelloRefreshQueued) {
-                this.IsHelloRefreshQueued = false;
+        if (this.IsHelloRefreshQueued) {
+            this.IsHelloRefreshQueued = false;
 
-                var character = traverse.Field<Characters>("character").Value;
-                var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
+            var character = traverse.Field<Characters>("character").Value;
+            var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
 
-                Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
-                    Player = new() {
-                        Name = Plugin.ConfigUsername.Value,
-                        ID = 1337, // filled in by the server; could be an int instead of uint but i'd have to change types everywhere
+            Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
+                Player = new() {
+                    Name = Plugin.ConfigUsername.Value,
+                    ID = 1337, // filled in by the server; could be an int instead of uint but i'd have to change types everywhere
 
-                        Stage = (int) Core.Instance.BaseModule.CurrentStage,
-                        Character = (int) character,
-                        Outfit = this.CurrentOutfit,
-                        MoveStyle = (int) moveStyle,
+                    Stage = (int) Core.Instance.BaseModule.CurrentStage,
+                    Character = (int) character,
+                    Outfit = this.CurrentOutfit,
+                    MoveStyle = (int) moveStyle,
 
-                        Position = me.transform.position.FromMentalDeficiency(),
-                        Rotation = me.transform.rotation.FromMentalDeficiency(),
-                        Velocity = me.motor.velocity.FromMentalDeficiency()
-                    }
-                });
-            }
+                    Position = me.transform.position.FromMentalDeficiency(),
+                    Rotation = me.transform.rotation.FromMentalDeficiency(),
+                    Velocity = me.motor.velocity.FromMentalDeficiency()
+                }
+            });
+        }
 
         if (this.IsVisualRefreshQueued) {
             this.IsVisualRefreshQueued = false;
@@ -166,7 +165,8 @@ public class PlayerManager : IDisposable {
         switch (msg) {
             case ClientboundPlayerAnimation playerAnimation: {
                 if (this.Players.TryGetValue(playerAnimation.Player, out var associatedPlayer)) {
-                    if (associatedPlayer.ReptilePlayer is not null) {
+                    if (associatedPlayer.ReptilePlayer is not null &&
+                        associatedPlayer.ReptilePlayer.isActiveAndEnabled) {
                         this.IsPlayingAnimation = true;
                         associatedPlayer.ReptilePlayer.PlayAnim(
                             playerAnimation.Animation,

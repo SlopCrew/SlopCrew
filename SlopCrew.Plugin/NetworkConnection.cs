@@ -6,7 +6,6 @@ using WebSocket = WebSocketSharp.WebSocket;
 namespace SlopCrew.Plugin;
 
 public class NetworkConnection {
-    public bool IsConnected => this.socket is {IsAlive: true, ReadyState: WebSocketSharp.WebSocketState.Open};
     public event Action<NetworkPacket>? OnMessageReceived;
 
     private WebSocket socket;
@@ -30,9 +29,9 @@ public class NetworkConnection {
     }
 
     public void SendMessage(NetworkPacket packet) {
-        if (this.IsConnected) {
-            var serialized = packet.Serialize();
-            this.socket.SendAsync(serialized, _ => { });
-        }
+        //if (this.IsConnected) {
+        var serialized = packet.Serialize();
+        this.socket.Send(serialized);
+        //}
     }
 }
