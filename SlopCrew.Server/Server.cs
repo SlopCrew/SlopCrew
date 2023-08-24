@@ -1,10 +1,13 @@
-﻿using SlopCrew.Common.Network.Clientbound;
+﻿using Serilog;
+using Serilog.Core;
+using SlopCrew.Common.Network.Clientbound;
 using WebSocketSharp.Server;
 
 namespace SlopCrew.Server;
 
 public class Server {
     public static Server Instance = new();
+    public static Logger Logger = null!;
 
     public Dictionary<int, List<ServerConnection>> Players = new();
     public List<ServerConnection> Connections => this.Players.SelectMany(x => x.Value).ToList();
@@ -14,15 +17,21 @@ public class Server {
 
     public Server() {
         var portStr = Environment.GetEnvironmentVariable("PORT");
+        var debug = Environment.GetEnvironmentVariable("DEBUG") == "true";
         this.port = portStr is null ? 42069 : int.Parse(portStr);
 
         this.wsServer = new WebSocketServer(this.port);
         this.wsServer.AddWebSocketService<ServerConnection>("/");
+        
+        var logger = new LoggerConfiguration().WriteTo.Console();
+        if (debug) logger = logger.MinimumLevel.Verbose();
+        Logger = logger.CreateLogger();
+        Log.Logger = Logger;
     }
 
     public void Start() {
         this.wsServer.Start();
-        Console.WriteLine($"Listening on port {this.port} - press any key to close");
+        Log.Information("Listening on port {Port} - press any key to close", this.port);
         Console.ReadKey();
         this.wsServer.Stop();
     }
@@ -30,7 +39,7 @@ public class Server {
     public void TrackConnection(ServerConnection conn) {
         var player = conn.Player;
         if (player is null) {
-            Console.WriteLine($"TrackConnection but player is null? {conn.DebugName()}");
+            Log.Warning("TrackConnection but player is null? {Connection}", conn.DebugName());
             return;
         }
 

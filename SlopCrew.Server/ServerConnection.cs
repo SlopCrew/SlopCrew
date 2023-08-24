@@ -4,7 +4,6 @@ using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using WebSocketSharp;
 using WebSocketSharp.Server;
-using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 
 namespace SlopCrew.Server;
 
@@ -13,20 +12,27 @@ public class ServerConnection : WebSocketBehavior {
     public int? LastStage = null;
 
     protected override void OnOpen() {
-        Console.WriteLine("New connection from " + this.Context.UserEndPoint);
+        Serilog.Log.Information(
+            "New connection from {Connection} - now {Players} players",
+            this.Context.UserEndPoint,
+            Server.Instance.Connections.Count
+        );
     }
 
     protected override void OnMessage(MessageEventArgs e) {
         var server = Server.Instance;
 
         var msg = NetworkPacket.Read(e.RawData);
-        Console.WriteLine($"Received message from {this.DebugName()}: " + msg.DebugString());
+        Serilog.Log.Verbose("Received message from {DebugName}: {Message}", this.DebugName(), msg.DebugString());
 
         if (msg is ServerboundPlayerHello enter) {
             // Assign a unique ID on first hello
             // Subsequent hellos keep the originally assigned ID
             enter.Player.ID = this.Player?.ID ?? server.GetNextID();
             this.Player = enter.Player;
+
+            // Thanks
+            this.Player.Name = enter.Player.Name[..Math.Min(32, enter.Player.Name.Length)];
 
             // Syncs player to other players
             server.TrackConnection(this);
@@ -37,7 +43,7 @@ public class ServerConnection : WebSocketBehavior {
         }
 
         if (this.Player is null) {
-            Console.WriteLine($"Received message from {this.DebugName()} without a hello, ignoring");
+            Serilog.Log.Verbose("Received message from {DebugName} without a hello, ignoring", this.DebugName());
             return;
         }
 
@@ -76,7 +82,8 @@ public class ServerConnection : WebSocketBehavior {
     }
 
     protected override void OnClose(CloseEventArgs e) {
-        Console.WriteLine($"Connection closed from {this.DebugName()}: {e.Code} - {e.Reason}");
+        Serilog.Log.Information("Connection closed from {Connection}: {Code} - {Reason}", this.DebugName(), e.Code,
+                                e.Reason);
         Server.Instance.UntrackConnection(this);
     }
 
@@ -85,7 +92,7 @@ public class ServerConnection : WebSocketBehavior {
     }
 
     public void Send(NetworkPacket msg) {
-        Console.WriteLine($"Sending to {this.DebugName()}: " + msg.DebugString());
+        Serilog.Log.Verbose("Sending to {DebugName}: {Message}", this.DebugName(), msg.DebugString());
         this.Send(this.Serialize(msg));
     }
 

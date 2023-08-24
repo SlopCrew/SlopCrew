@@ -13,6 +13,12 @@ public class NetworkConnection {
     public NetworkConnection() {
         this.socket = new WebSocket(Plugin.ConfigAddress.Value);
 
+        this.socket.OnOpen += (_, _) => {
+            if (Plugin.PlayerManager is not null) {
+                Plugin.PlayerManager.IsHelloRefreshQueued = true;
+            }
+        };
+
         this.socket.OnMessage += (_, args) => {
             var packet = NetworkPacket.Read(args.RawData);
             // TODO move message parsing to this class
