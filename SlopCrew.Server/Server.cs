@@ -93,7 +93,8 @@ public class Server {
     }
 
     public uint GetNextID() {
-        var ids = this.Connections.Select(x => x.Player!.ID).ToList();
+        if (this.Connections is null) return 0;
+        var ids = this.Connections.Select(x => x?.Player?.ID).ToList();
         var id = 0u;
         while (ids.Contains(id)) id++;
         return id;
