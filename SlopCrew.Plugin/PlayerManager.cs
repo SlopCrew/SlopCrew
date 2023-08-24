@@ -19,6 +19,7 @@ public class PlayerManager : IDisposable {
     public int CurrentOutfit = 0;
     public bool IsHelloRefreshQueued = false;
     public bool IsVisualRefreshQueued = false;
+    public bool IsResetQueued = false;
 
     public bool IsPlayingAnimation = false;
     public bool IsSettingVisual = false;
@@ -42,6 +43,7 @@ public class PlayerManager : IDisposable {
         this.CurrentOutfit = 0;
         this.IsHelloRefreshQueued = false;
         this.IsVisualRefreshQueued = false;
+        this.IsResetQueued = false;
         this.IsPlayingAnimation = false;
         this.IsSettingVisual = false;
 
@@ -89,7 +91,7 @@ public class PlayerManager : IDisposable {
             outfit: slopPlayer.Outfit,
             moveStyleEquipped: (MoveStyle) slopPlayer.MoveStyle
         );
-        
+
         player.motor.gravity = 0;
 
         //var vel = slopPlayer.Velocity.ToMentalDeficiency();
@@ -99,6 +101,12 @@ public class PlayerManager : IDisposable {
     }
 
     public void Update() {
+        if (this.IsResetQueued) {
+            this.IsResetQueued = false;
+            this.Reset();
+            return;
+        }
+
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
         var traverse = Traverse.Create(me);
