@@ -83,7 +83,7 @@ public class PlayerManager : IDisposable {
         targetTransform.SetPositionAndRotation(slopPlayer.Position.ToMentalDeficiency(),
                                                slopPlayer.Rotation.ToMentalDeficiency());
 
-        Plugin.Log.LogInfo("Creating player for " + slopPlayer.Name + " at " + slopPlayer.Position);
+        //Plugin.Log.LogInfo("Creating player for " + slopPlayer.Name + " at " + slopPlayer.Position);
         var player = worldHandler.SetupAIPlayerAt(
             targetTransform,
             (Characters) slopPlayer.Character,
@@ -197,13 +197,9 @@ public class PlayerManager : IDisposable {
             }
 
             case ClientboundPlayersUpdate playersUpdate: {
-                Plugin.Log.LogInfo("ClientboundPlayersUpdate len: " + playersUpdate.Players.Count);
                 foreach (var player in playersUpdate.Players) {
-                    Plugin.Log.LogInfo("ClientboundPlayersUpdate player: " + player.Name + ", id: " + player.ID);
-
                     if (!this.Players.ContainsKey(player.ID)) {
                         // New player
-                        Plugin.Log.LogInfo("ClientboundPlayersUpdate Spawning AssociatedPlayer");
                         this.Players.Add(player.ID, new AssociatedPlayer(player));
                     } else {
                         // Player is in the list, let's see if they changed at all
@@ -218,7 +214,7 @@ public class PlayerManager : IDisposable {
                             var isDifferent = differentCharacter || differentOutfit || differentMoveStyle;
 
                             if (isDifferent) {
-                                Plugin.Log.LogInfo("Updating associated player look");
+                                //Plugin.Log.LogInfo("Updating associated player look");
 
                                 if (differentOutfit && !differentCharacter) {
                                     // Outfit-only requires a separate method
@@ -237,7 +233,7 @@ public class PlayerManager : IDisposable {
 
                                 associatedPlayer.ResetPlayer(player);
                             } else {
-                                Plugin.Log.LogInfo("Ignoring associated player look update, no changes");
+                                //Plugin.Log.LogInfo("Ignoring associated player look update, no changes");
                             }
                         }
                     }
@@ -248,7 +244,7 @@ public class PlayerManager : IDisposable {
                 foreach (var currentPlayer in currentPlayers) {
                     if (!newPlayers.Contains(currentPlayer)) {
                         // If we're not in the new one but in the old one, we left
-                        Plugin.Log.LogInfo("ClientboundPlayersUpdate Removing AssociatedPlayer " + currentPlayer);
+                        //Plugin.Log.LogInfo("ClientboundPlayersUpdate Removing AssociatedPlayer " + currentPlayer);
                         if (this.Players.TryGetValue(currentPlayer, out var associatedPlayer)) {
                             associatedPlayer.FuckingObliterate();
                             this.Players.Remove(currentPlayer);

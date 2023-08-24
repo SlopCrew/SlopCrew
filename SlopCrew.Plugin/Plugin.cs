@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using UnityEngine;
 
 namespace SlopCrew.Plugin;
 
@@ -20,6 +21,7 @@ public class Plugin : BaseUnityPlugin {
 
     private void Awake() {
         Log = this.Logger;
+        Application.runInBackground = true;
 
         this.SetupHarmony();
         this.SetupConfig();
