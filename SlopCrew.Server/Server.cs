@@ -28,9 +28,18 @@ public class Server {
     public void Start() {
         this.wsServer.Start();
         Log.Information("Listening on {Interface} - press any key to close", this.interfaceStr);
-        Console.ReadKey();
-        this.wsServer.Stop();
+    
+        if (Console.IsInputRedirected) {
+            // If running in a non-interactive environment (like Docker), just wait indefinitely
+            while (true) {
+                System.Threading.Thread.Sleep(10000);
+            }
+        } else {
+            Console.ReadKey();
+            this.wsServer.Stop();
+        }
     }
+
 
     public void TrackConnection(ServerConnection conn) {
         var player = conn.Player;
