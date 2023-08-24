@@ -12,15 +12,14 @@ public class Server {
     public Dictionary<int, List<ServerConnection>> Players = new();
     public List<ServerConnection> Connections => this.Players.SelectMany(x => x.Value).ToList();
 
-    private int port;
+    private string interfaceStr;
     private WebSocketServer wsServer;
 
     public Server() {
-        var portStr = Environment.GetEnvironmentVariable("PORT");
-        var debug = Environment.GetEnvironmentVariable("DEBUG") == "true";
-        this.port = portStr is null ? 42069 : int.Parse(portStr);
+        this.interfaceStr = Environment.GetEnvironmentVariable("SLOP_INTERFACE") ?? "ws://0.0.0.0:42069";
+        var debug = Environment.GetEnvironmentVariable("SLOP_DEBUG") == "true";
 
-        this.wsServer = new WebSocketServer(this.port);
+        this.wsServer = new WebSocketServer(this.interfaceStr);
         this.wsServer.AddWebSocketService<ServerConnection>("/");
         
         var logger = new LoggerConfiguration().WriteTo.Console();
@@ -31,7 +30,7 @@ public class Server {
 
     public void Start() {
         this.wsServer.Start();
-        Log.Information("Listening on port {Port} - press any key to close", this.port);
+        Log.Information("Listening on {Interface} - press any key to close", this.interfaceStr);
         Console.ReadKey();
         this.wsServer.Stop();
     }
