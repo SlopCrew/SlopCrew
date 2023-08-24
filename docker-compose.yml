@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  slopcrew-server:
+    image: slopcrew-server:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SLOP_INTERFACE: ws://0.0.0.0:42069/
+    ports:
+      - "42069:42069"
