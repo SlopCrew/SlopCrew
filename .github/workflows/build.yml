@@ -3,20 +3,20 @@
 name: Nightly builds
 
 jobs:
-    server:
-        name: Build server
-        runs-on: windows-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-dotnet@v3
-              with:
-                  dotnet-version: 7.0.x
-            - name: Install dependencies
-              run: dotnet restore
-            - name: Build
-              run: dotnet build SlopCrew.Server --configuration Release --no-restore
-            - name: Upload artifacts
-              uses: actions/upload-artifact@v3
-              with:
-                  name: server-windows
-                  path: ./SlopCrew.Server/bin/Release/net7.0
+  server:
+    name: Build server
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build SlopCrew.Server --configuration Release --no-restore
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: server-windows
+          path: ./SlopCrew.Server/bin/Release/net7.0
