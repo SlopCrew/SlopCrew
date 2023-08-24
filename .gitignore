@@ -3,4 +3,5 @@ obj/
 .idea/
 .vs/
 *.user
-
+thunderstore/BepInEx
+thunderstore/*.zip
