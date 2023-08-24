@@ -89,6 +89,8 @@ public class PlayerManager : IDisposable {
             outfit: slopPlayer.Outfit,
             moveStyleEquipped: (MoveStyle) slopPlayer.MoveStyle
         );
+        
+        player.motor.gravity = 0;
 
         //var vel = slopPlayer.Velocity.ToMentalDeficiency();
         //player.SetVelocity(vel);
@@ -121,7 +123,7 @@ public class PlayerManager : IDisposable {
             }
         }
 
-        if (this.messageQueue.Count > 0) {
+        while (this.messageQueue.Count > 0) {
             var msg = this.messageQueue[0];
             this.messageQueue.RemoveAt(0);
             this.OnMessageInternal(msg);

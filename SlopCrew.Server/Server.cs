@@ -10,12 +10,12 @@ public class Server {
     public static Logger Logger = null!;
 
     public Dictionary<int, List<ServerConnection>> Players = new();
+
     public List<ServerConnection> Connections => this.Players
                                                      .Values
-                                                     .Where(x => x != null)
                                                      .SelectMany(x => x)
                                                      .ToList();
-    
+
     private string interfaceStr;
     private WebSocketServer wsServer;
 
@@ -97,8 +97,7 @@ public class Server {
     }
 
     public uint GetNextID() {
-        if (this.Connections is null) return 0;
-        var ids = this.Connections.Select(x => x?.Player?.ID).ToList();
+        var ids = this.Connections.Select(x => x.Player?.ID).ToList();
         var id = 0u;
         while (ids.Contains(id)) id++;
         return id;
