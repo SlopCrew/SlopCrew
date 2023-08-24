@@ -9,9 +9,6 @@ namespace SlopCrew.Common.Network;
 public abstract class NetworkPacket : NetworkSerializable {
     public abstract NetworkMessageType MessageType { get; }
 
-    private static MemoryStream Stream = new();
-    private static BinaryWriter Writer = new(Stream);
-
     public static NetworkPacket Read(byte[] data) {
         //Console.WriteLine(DebugBytes("NetworkPacket.Read", data));
 
@@ -30,7 +27,7 @@ public abstract class NetworkPacket : NetworkSerializable {
             NetworkMessageType.ServerboundPlayerHello => new ServerboundPlayerHello(),
             NetworkMessageType.ServerboundPositionUpdate => new ServerboundPositionUpdate(),
             NetworkMessageType.ServerboundVisualUpdate => new ServerboundVisualUpdate(),
-            _ => throw new Exception("dawg what")
+            _ => throw new Exception("Failed to parse packet type " + packetType)
         };
 
         packet.Read(br);
@@ -38,13 +35,13 @@ public abstract class NetworkPacket : NetworkSerializable {
     }
 
     public byte[] Serialize() {
-        Stream.SetLength(0);
-        Writer.Seek(0, SeekOrigin.Begin);
+        using var ms = new MemoryStream();
+        using var bw = new BinaryWriter(ms);
+        
+        bw.Write((int) this.MessageType);
+        this.Write(bw);
 
-        Writer.Write((int) this.MessageType);
-        this.Write(Writer);
-
-        var bytes = Stream.ToArray();
+        var bytes = ms.ToArray();
         //Console.WriteLine(DebugBytes("NetworkPacket.Serialize", bytes));
         return bytes;
     }

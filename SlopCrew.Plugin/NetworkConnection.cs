@@ -18,7 +18,7 @@ public class NetworkConnection {
                 Plugin.PlayerManager.IsHelloRefreshQueued = true;
             }
         };
-
+        
         this.socket.OnMessage += (_, args) => {
             var packet = NetworkPacket.Read(args.RawData);
             // TODO move message parsing to this class

@@ -21,7 +21,7 @@ public class Server {
 
         this.wsServer = new WebSocketServer(this.interfaceStr);
         this.wsServer.AddWebSocketService<ServerConnection>("/");
-        
+
         var logger = new LoggerConfiguration().WriteTo.Console();
         if (debug) logger = logger.MinimumLevel.Verbose();
         Logger = logger.CreateLogger();

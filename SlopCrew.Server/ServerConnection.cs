@@ -98,8 +98,9 @@ public class ServerConnection : WebSocketBehavior {
 
     public void BroadcastButMe(NetworkPacket msg) {
         var otherSessions = this.Sessions.Sessions
-                                .Where(s => s.ID != this.ID)
                                 .Cast<ServerConnection>()
+                                .Where(s => s.ID != this.ID)
+                                .Where(s => s.Player?.Stage == this.Player?.Stage)
                                 .ToList();
 
         foreach (var session in otherSessions) {
