@@ -10,8 +10,12 @@ public class Server {
     public static Logger Logger = null!;
 
     public Dictionary<int, List<ServerConnection>> Players = new();
-    public List<ServerConnection> Connections => this.Players.SelectMany(x => x.Value).ToList();
-
+    public List<ServerConnection> Connections => this.Players
+                                                     .Values
+                                                     .Where(x => x != null)
+                                                     .SelectMany(x => x)
+                                                     .ToList();
+    
     private string interfaceStr;
     private WebSocketServer wsServer;
 
