@@ -9,13 +9,6 @@ public class Server {
     public static Server Instance = new();
     public static Logger Logger = null!;
 
-    public Dictionary<int, List<ServerConnection>> Players = new();
-
-    public List<ServerConnection> Connections => this.Players
-                                                     .Values
-                                                     .SelectMany(x => x)
-                                                     .ToList();
-
     private string interfaceStr;
     private WebSocketServer wsServer;
 
@@ -48,21 +41,10 @@ public class Server {
 
         // Remove from the old stage if crossing into a new one
         if (conn.LastStage != null && conn.LastStage != player.Stage) {
-            this.Players[conn.LastStage.Value].Remove(conn);
             this.BroadcastNewPlayers(conn.LastStage.Value);
         }
 
-        if (!this.Players.ContainsKey(player.Stage)) {
-            this.Players[player.Stage] = new();
-        }
-
-        // Since this can be called multiple times (multiple hellos in the same
-        // stage), be careful to not add it multiple times, or we'll have weird
-        // state issues with multiple reported players with the same ID
-        if (!this.Players[player.Stage].Contains(conn)) {
-            this.Players[player.Stage].Add(conn);
-        }
-
+        // ...and broadcast into the new one
         this.BroadcastNewPlayers(player.Stage);
     }
 
@@ -73,22 +55,21 @@ public class Server {
         if (player is null) return;
 
         // Contains checks just in case we get into this state somehow
-        if (this.Players.ContainsKey(player.Stage)) {
-            if (this.Players[player.Stage].Contains(conn)) {
-                this.Players[player.Stage].Remove(conn);
-            }
-
-            this.BroadcastNewPlayers(player.Stage);
-        }
+        this.BroadcastNewPlayers(player.Stage, conn);
     }
 
-    private void BroadcastNewPlayers(int stage) {
-        var connections = this.Players[stage].ToList();
+    private void BroadcastNewPlayers(int stage, ServerConnection? exclude = null) {
+        var connections = this.GetConnections()
+                              .Where(x => x.Player?.Stage == stage)
+                              .ToList();
 
         foreach (var connection in connections) {
-            var players = connections.Select(c => c.Player)
-                                     .Where(x => x?.ID != connection.Player?.ID)
-                                     .ToList();
+            var players = connections
+                          .Where(x =>
+                                     x.Player?.ID != connection.Player?.ID
+                                     && x.ID != exclude?.ID)
+                          .Select(c => c.Player)
+                          .ToList();
 
             connection.Send(new ClientboundPlayersUpdate {
                 Players = players!
@@ -97,9 +78,16 @@ public class Server {
     }
 
     public uint GetNextID() {
-        var ids = this.Connections.Select(x => x.Player?.ID).ToList();
+        var ids = this.GetConnections().Select(x => x.Player?.ID).ToList();
         var id = 0u;
         while (ids.Contains(id)) id++;
         return id;
+    }
+
+    public List<ServerConnection> GetConnections() {
+        var service = this.wsServer.WebSocketServices["/"];
+        return service.Sessions.Sessions
+                      .Cast<ServerConnection>()
+                      .ToList();
     }
 }

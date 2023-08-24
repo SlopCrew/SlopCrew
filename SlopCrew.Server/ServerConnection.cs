@@ -14,8 +14,8 @@ public class ServerConnection : WebSocketBehavior {
     protected override void OnOpen() {
         Serilog.Log.Information(
             "New connection from {Connection} - now {Players} players",
-            this.Context.UserEndPoint,
-            Server.Instance.Connections.Count
+            this.DebugName(),
+            Server.Instance.GetConnections().Count
         );
     }
 
@@ -109,8 +109,15 @@ public class ServerConnection : WebSocketBehavior {
     }
 
     public string DebugName() {
+        var userEndPoint = "???";
+        try {
+            userEndPoint = this.Context.UserEndPoint.ToString();
+        } catch (Exception) {
+            // ignored
+        }
+
         return this.Player != null
                    ? $"{this.Player.Name}({this.Player?.ID})"
-                   : $"<player null - {this.Context.UserEndPoint}>";
+                   : $"<player null - {userEndPoint}>";
     }
 }
