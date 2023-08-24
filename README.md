@@ -27,6 +27,8 @@ After starting the game, open a save file, and other players will automagically 
 
 ## Running your own server
 
-Binaries are available [on GitHub Actions](https://github.com/NotNite/SlopCrew/actions), which require a GitHub account to download. You can also build from source.
+Binaries are available [on GitHub Actions](https://github.com/NotNite/SlopCrew/actions/workflows/build.yml), which require a GitHub account to download. You can also build from source.
 
-Start the executable, optionally setting the `SLOP_INTERFACE` environment variable to change the port (by default `ws://0.0.0.0:42069`), and you're good to go. Port forwarding or reverse proxying is required.
+You will need .NET 7. Start the executable, optionally setting the `SLOP_INTERFACE` environment variable to change the port (by default `ws://0.0.0.0:42069`), and you're good to go. Port forwarding or reverse proxying is required.
+
+A Docker container is also available at `ghcr.io/notnite/slopcrew-server:latest`.
