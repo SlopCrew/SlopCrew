@@ -9,10 +9,10 @@
     <ItemGroup>
         <PackageReference Include="Serilog" Version="3.0.1" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-        <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11"/>
+        <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
+        <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj" />
     </ItemGroup>
 </Project>
