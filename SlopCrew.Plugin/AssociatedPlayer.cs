@@ -1,11 +1,7 @@
-﻿using System;
-using Reptile;
-using DG.Tweening;
-using HarmonyLib;
+﻿using Reptile;
 using SlopCrew.Common.Network.Clientbound;
-using TMPro;
+using SlopCrew.Plugin.UI;
 using UnityEngine;
-using UnityEngine.Networking;
 using Object = UnityEngine.Object;
 
 namespace SlopCrew.Plugin;
@@ -30,17 +26,9 @@ public class AssociatedPlayer {
 
     private void SpawnNameplate() {
         var obj = new GameObject("SlopCrew_Nameplate");
-        var tmp = obj.AddComponent<TextMeshPro>();
-
-        // Yoink the font from somewhere else because I guess asset loading is impossible
-        var uiManager = Core.Instance.UIManager;
-        var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
-        var font = gameplay.trickNameLabel.font;
-
+        var tmp = obj.AddComponent<BillboardNameplate>();
         tmp.text = this.SlopPlayer.Name;
-        tmp.alignment = TextAlignmentOptions.Midline;
-        tmp.font = font;
-        tmp.fontSize = 2.5f;
+        tmp.AssociatedPlayer = this;
 
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
         obj.transform.position = new Vector3(

@@ -20,6 +20,7 @@ public class Plugin : BaseUnityPlugin {
     public static ConfigEntry<string> ConfigUsername = null!;
     public static ConfigEntry<bool> ConfigShowConnectionInfo = null!;
     public static ConfigEntry<bool> ConfigShowPlayerNameplates = null!;
+    public static ConfigEntry<bool> ConfigBillboardNameplates = null!;
 
     public static bool IsConnected = false;
     public static int PlayerCount = 0;
@@ -80,6 +81,13 @@ public class Plugin : BaseUnityPlugin {
             "ShowPlayerNameplates",
             true,
             "Show players' names above their heads."
+        );
+        
+        ConfigBillboardNameplates = this.Config.Bind(
+            "General",
+            "BillboardNameplates",
+            true,
+            "Billboard nameplates (always face the camera)."
         );
     }
 }
