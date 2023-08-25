@@ -14,6 +14,7 @@ public class NetworkConnection {
         this.socket = new WebSocket(Plugin.ConfigAddress.Value);
 
         this.socket.OnOpen += (_, _) => {
+            Plugin.IsConnected = true;
             if (Plugin.PlayerManager is not null) {
                 Plugin.PlayerManager.IsHelloRefreshQueued = true;
             }
@@ -26,6 +27,7 @@ public class NetworkConnection {
         };
 
         this.socket.OnClose += (_, _) => {
+            Plugin.IsConnected = false;
             Plugin.PlayerManager.IsResetQueued = true;
             Plugin.Log.LogInfo("Disconnected - reconnecting in 5s...");
             Task.Delay(5000).ContinueWith(_ => this.socket.Connect());

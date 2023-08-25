@@ -172,6 +172,9 @@ public class PlayerManager : IDisposable {
                 Spraycan = characterVisual.VFX.spraycan.activeSelf
             });
         }
+
+        // + 1 here to count the person playing too, hackhackhack
+        Plugin.PlayerCount = this.Players.Count + 1;
     }
 
     private void OnMessage(NetworkSerializable msg) {

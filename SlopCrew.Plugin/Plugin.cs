@@ -18,6 +18,11 @@ public class Plugin : BaseUnityPlugin {
 
     public static ConfigEntry<string> ConfigAddress = null!;
     public static ConfigEntry<string> ConfigUsername = null!;
+    public static ConfigEntry<bool> ConfigShowConnectionInfo = null!;
+    public static ConfigEntry<bool> ConfigShowPlayerNameplates = null!;
+
+    public static bool IsConnected = false;
+    public static int PlayerCount = 0;
 
     private void Awake() {
         Log = this.Logger;
@@ -61,6 +66,20 @@ public class Plugin : BaseUnityPlugin {
             "Username",
             "Big Slopper",
             "Username to show to other players."
+        );
+
+        ConfigShowConnectionInfo = this.Config.Bind(
+            "General",
+            "ShowConnectionInfo",
+            true,
+            "Show current connection status and player count."
+        );
+
+        ConfigShowPlayerNameplates = this.Config.Bind(
+            "General",
+            "ShowPlayerNameplates",
+            true,
+            "Show players' names above their heads."
         );
     }
 }

@@ -23,7 +23,9 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
-        this.SpawnNameplate();
+        if (Plugin.ConfigShowPlayerNameplates.Value) {
+            this.SpawnNameplate();
+        }
     }
 
     private void SpawnNameplate() {
