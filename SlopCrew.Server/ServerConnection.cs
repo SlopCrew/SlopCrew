@@ -102,9 +102,10 @@ public class ServerConnection : WebSocketBehavior {
                                 .Where(s => s.ID != this.ID)
                                 .Where(s => s.Player?.Stage == this.Player?.Stage)
                                 .ToList();
+        var serialized = this.Serialize(msg);
 
         foreach (var session in otherSessions) {
-            session.Send(msg);
+            session.Send(serialized);
         }
     }
 
