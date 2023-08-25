@@ -21,6 +21,7 @@ public class Plugin : BaseUnityPlugin {
     public static ConfigEntry<bool> ConfigShowConnectionInfo = null!;
     public static ConfigEntry<bool> ConfigShowPlayerNameplates = null!;
     public static ConfigEntry<bool> ConfigBillboardNameplates = null!;
+    public static ConfigEntry<bool> ConfigShowPlayerPins = null!;
 
     public static bool IsConnected = false;
     public static int PlayerCount = 0;
@@ -88,6 +89,13 @@ public class Plugin : BaseUnityPlugin {
             "BillboardNameplates",
             true,
             "Billboard nameplates (always face the camera)."
+        );
+
+        ConfigShowPlayerPins = this.Config.Bind(
+            "General",
+            "ShowPlayerMapPins",
+            true,
+            "Show players on the phone map."
         );
     }
 }

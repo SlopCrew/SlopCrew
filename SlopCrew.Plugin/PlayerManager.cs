@@ -7,8 +7,6 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Quaternion = System.Numerics.Quaternion;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;

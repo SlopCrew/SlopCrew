@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Reptile;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Plugin.UI;
@@ -11,7 +10,7 @@ namespace SlopCrew.Plugin;
 public class AssociatedPlayer {
     public Common.Player SlopPlayer;
     public Reptile.Player ReptilePlayer;
-    public MapPin MapPin;
+    public MapPin? MapPin;
 
     public Vector3 startPos;
     public Vector3 targetPos;
@@ -26,14 +25,9 @@ public class AssociatedPlayer {
             this.SpawnNameplate();
         }
 
-        var mapController = Mapcontroller.Instance;
-        this.MapPin = Traverse.Create(mapController)
-                              .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
-                              .GetValue<MapPin>();
-
-        this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
-        this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
-        this.MapPin.OnPinEnable();
+        if (Plugin.ConfigShowPlayerPins.Value) {
+            this.SpawnMapPin();
+        }
     }
 
     private void SpawnNameplate() {
@@ -57,6 +51,34 @@ public class AssociatedPlayer {
         obj.transform.parent = this.ReptilePlayer.interactionCollider.transform;
     }
 
+    private void SpawnMapPin() {
+        var mapController = Mapcontroller.Instance;
+        this.MapPin = Traverse.Create(mapController)
+                              .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
+                              .GetValue<MapPin>();
+
+        this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
+        this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
+        this.MapPin.OnPinEnable();
+        
+        var pinInObj = this.MapPin.transform.Find("InViewVisualization").gameObject;
+
+        // Particles. Get rid of them.
+        var pinInPartObj = pinInObj.transform.Find("Particle System").gameObject;
+        Object.Destroy(pinInPartObj);
+
+        var pinOutObj = this.MapPin.transform.Find("OutOfViewVisualization").gameObject;
+        var pinOutPartS = pinOutObj.GetComponent<ParticleSystem>();
+        var pinOutPartR = pinOutObj.GetComponent<ParticleSystemRenderer>();
+        Object.Destroy(pinOutPartS);
+        Object.Destroy(pinOutPartR);
+        
+        // Color
+        var pinInMeshR = pinInObj.GetComponent<MeshRenderer>();
+        var pinInMat = pinInMeshR.material;
+        pinInMat.color = new Color(1f, 1f, 0.85f);
+    }
+
     public void FuckingObliterate() {
         WorldHandler.instance.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
 
@@ -66,7 +88,7 @@ public class AssociatedPlayer {
         if (this.ReptilePlayer is not null)
             Object.Destroy(this.ReptilePlayer);
 
-        if (this.MapPin.gameObject is not null)
+        if (this.MapPin?.gameObject is not null)
             Object.Destroy(this.MapPin.gameObject);
 
         if (this.MapPin is not null)
