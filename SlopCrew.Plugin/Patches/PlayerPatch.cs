@@ -84,7 +84,7 @@ public class PlayerPatch {
             associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
             associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
             
-            associatedPlayer.MapPin.SetLocation();
+            associatedPlayer.MapPin?.SetLocation();
         }
     }
 }
