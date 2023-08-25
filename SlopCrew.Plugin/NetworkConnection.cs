@@ -1,18 +1,30 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using SlopCrew.Common.Network;
 using WebSocket = WebSocketSharp.WebSocket;
 
 namespace SlopCrew.Plugin;
 
+
 public class NetworkConnection {
+    private enum SslProtocolsHack {
+        Tls = 192,
+        Tls11 = 768,
+        Tls12 = 3072
+    }
+
     public event Action<NetworkPacket>? OnMessageReceived;
 
     private WebSocket socket;
 
-    public NetworkConnection() {
-        this.socket = new WebSocket(Plugin.ConfigAddress.Value);
 
+    public NetworkConnection() {
+        var sslProtocolHack = (System.Security.Authentication.SslProtocols) (SslProtocolsHack.Tls12 | SslProtocolsHack.Tls11 | SslProtocolsHack.Tls);
+        this.socket = new WebSocket(Plugin.ConfigAddress.Value);
+        if (Plugin.ConfigAddress.Value.StartsWith("wss")) {
+            this.socket.SslConfiguration.EnabledSslProtocols = sslProtocolHack;
+        }
+        
         this.socket.OnOpen += (_, _) => {
             Plugin.IsConnected = true;
             if (Plugin.PlayerManager is not null) {
