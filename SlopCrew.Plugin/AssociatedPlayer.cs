@@ -1,4 +1,5 @@
-﻿using Reptile;
+﻿using System;
+using Reptile;
 using DG.Tweening;
 using HarmonyLib;
 using SlopCrew.Common.Network.Clientbound;
@@ -12,6 +13,12 @@ namespace SlopCrew.Plugin;
 public class AssociatedPlayer {
     public Common.Player SlopPlayer;
     public Reptile.Player ReptilePlayer;
+
+    public Vector3 startPos;
+    public Vector3 targetPos;
+    public Quaternion startRot;
+    public Quaternion targetRot;
+    public float timeElapsed;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
@@ -66,24 +73,11 @@ public class AssociatedPlayer {
 
     public void SetPos(ClientboundPlayerPositionUpdate posUpdate) {
         if (this.ReptilePlayer is not null) {
-            var sequence = DOTween.Sequence();
-
-            var posTween = DOTween.To(
-                () => this.ReptilePlayer.tf.position,
-                x => this.ReptilePlayer.tf.position = x,
-                posUpdate.Position.ToMentalDeficiency(),
-                PlayerManager.ShittyTickRate
-            );
-
-            var rotTween = DOTween.To(
-                () => this.ReptilePlayer.tf.rotation,
-                x => this.ReptilePlayer.tf.rotation = x,
-                posUpdate.Rotation.ToMentalDeficiency().eulerAngles,
-                PlayerManager.ShittyTickRate
-            );
-
-            sequence.Append(posTween).Append(rotTween);
-            sequence.Play();
+            this.startPos = this.ReptilePlayer.motor.BodyPosition();
+            this.targetPos = posUpdate.Position.ToMentalDeficiency();
+            this.startRot = this.ReptilePlayer.motor.rotation;
+            this.targetRot = posUpdate.Rotation.ToMentalDeficiency();
+            this.timeElapsed = 0f;
         }
     }
 }

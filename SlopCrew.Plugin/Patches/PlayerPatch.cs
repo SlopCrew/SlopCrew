@@ -70,4 +70,20 @@ public class PlayerPatch {
             Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("FixedUpdatePlayer")]
+    public static void FixedUpdatePlayer(Player __instance) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+
+        if (associatedPlayer is not null) {
+            associatedPlayer.timeElapsed += Time.deltaTime;
+            var lerpAmount = associatedPlayer.timeElapsed / PlayerManager.ShittyTickRate;
+            var newPos = Vector3.Lerp(associatedPlayer.startPos, associatedPlayer.targetPos, lerpAmount);
+            var newRot = Quaternion.Slerp(associatedPlayer.startRot, associatedPlayer.targetRot, lerpAmount);
+            
+            associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
+            associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
+        }
+    }
 }
