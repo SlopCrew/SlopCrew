@@ -68,6 +68,7 @@ public class PlayerManager : IDisposable {
     }
 
     private void StageInit() {
+        this.Players.Values.ToList().ForEach(x => x.FuckingObliterate());
         this.Players.Clear();
     }
 

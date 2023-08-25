@@ -82,7 +82,7 @@ public class Plugin : BaseUnityPlugin {
             true,
             "Show players' names above their heads."
         );
-        
+
         ConfigBillboardNameplates = this.Config.Bind(
             "General",
             "BillboardNameplates",

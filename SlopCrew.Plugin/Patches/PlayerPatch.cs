@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using Reptile;
-using SlopCrew.Common.Network.Serverbound;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.Patches;
@@ -84,6 +83,8 @@ public class PlayerPatch {
             
             associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
             associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
+            
+            associatedPlayer.MapPin.SetLocation();
         }
     }
 }
