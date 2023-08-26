@@ -80,11 +80,24 @@ public class PlayerPatch {
             var lerpAmount = associatedPlayer.timeElapsed / PlayerManager.ShittyTickRate;
             var newPos = Vector3.Lerp(associatedPlayer.startPos, associatedPlayer.targetPos, lerpAmount);
             var newRot = Quaternion.Slerp(associatedPlayer.startRot, associatedPlayer.targetRot, lerpAmount);
-            
+
             associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
             associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
-            
+
             associatedPlayer.MapPin?.SetLocation();
         }
+    }
+
+    // Quarterpipe fix
+    [HarmonyPrefix]
+    [HarmonyPatch("CheckVert")]
+    private static bool CheckVert(Player __instance, ref bool __result) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+        if (associatedPlayer is not null) {
+            __result = false;
+            return false;
+        }
+
+        return true;
     }
 }
