@@ -60,6 +60,9 @@ public class ServerConnection : WebSocketBehavior {
             }
 
             case ServerboundPositionUpdate positionUpdate: {
+                for(int i = 0; i < 3; i++)
+                    if(!float.IsFinite(positionUpdate.Position[i]) || !float.IsFinite(positionUpdate.Velocity[i])) // check to see if packet will crash clients
+                        break;
                 this.BroadcastButMe(new ClientboundPlayerPositionUpdate {
                     Player = this.Player!.ID,
                     Position = positionUpdate.Position,
