@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using UnityEngine;
+using Player = Reptile.Player;
 
 namespace SlopCrew.Plugin.Patches;
 
@@ -77,7 +79,7 @@ public class PlayerPatch {
 
         if (associatedPlayer is not null) {
             associatedPlayer.timeElapsed += Time.deltaTime;
-            var lerpAmount = associatedPlayer.timeElapsed / PlayerManager.ShittyTickRate;
+            var lerpAmount = associatedPlayer.timeElapsed / Constants.TickRate;
             var newPos = Vector3.Lerp(associatedPlayer.startPos, associatedPlayer.targetPos, lerpAmount);
             var newRot = Quaternion.Slerp(associatedPlayer.startRot, associatedPlayer.targetRot, lerpAmount);
 

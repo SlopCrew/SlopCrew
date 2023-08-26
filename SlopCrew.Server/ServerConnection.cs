@@ -11,6 +11,10 @@ public class ServerConnection : WebSocketBehavior {
     public Player? Player;
     public int? LastStage = null;
 
+    public ClientboundPlayerAnimation? QueuedAnimation;
+    public ClientboundPlayerPositionUpdate? QueuedPositionUpdate;
+    public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
+
     protected override void OnOpen() {
         Serilog.Log.Information(
             "New connection from {Connection} - now {Players} players",
@@ -49,36 +53,39 @@ public class ServerConnection : WebSocketBehavior {
 
         switch (msg) {
             case ServerboundAnimation animation: {
-                this.BroadcastButMe(new ClientboundPlayerAnimation {
+                this.QueuedAnimation = new ClientboundPlayerAnimation {
                     Player = this.Player!.ID,
                     Animation = animation.Animation,
                     ForceOverwrite = animation.ForceOverwrite,
                     Instant = animation.Instant,
                     AtTime = animation.AtTime
-                });
+                };
                 break;
             }
 
             case ServerboundPositionUpdate positionUpdate: {
-                for(int i = 0; i < 3; i++)
-                    if(!float.IsFinite(positionUpdate.Position[i]) || !float.IsFinite(positionUpdate.Velocity[i])) // check to see if packet will crash clients
-                        break;
-                this.BroadcastButMe(new ClientboundPlayerPositionUpdate {
+                for (var i = 0; i < 3; i++) {
+                    // check to see if packet will crash clients
+                    if (!float.IsFinite(positionUpdate.Position[i])
+                        || !float.IsFinite(positionUpdate.Velocity[i])) break;
+                }
+
+                this.QueuedPositionUpdate = new ClientboundPlayerPositionUpdate {
                     Player = this.Player!.ID,
                     Position = positionUpdate.Position,
                     Rotation = positionUpdate.Rotation,
                     Velocity = positionUpdate.Velocity
-                });
+                };
                 break;
             }
 
             case ServerboundVisualUpdate visualUpdate: {
-                this.BroadcastButMe(new ClientboundPlayerVisualUpdate {
+                this.QueuedVisualUpdate = new ClientboundPlayerVisualUpdate {
                     Player = this.Player!.ID,
                     BoostpackEffect = visualUpdate.BoostpackEffect,
                     FrictionEffect = visualUpdate.FrictionEffect,
                     Spraycan = visualUpdate.Spraycan
-                });
+                };
                 break;
             }
         }
@@ -123,5 +130,22 @@ public class ServerConnection : WebSocketBehavior {
         return this.Player != null
                    ? $"{this.Player.Name}({this.Player?.ID})"
                    : $"<player null - {userEndPoint}>";
+    }
+
+    public void RunTick() {
+        if (this.QueuedAnimation is not null) {
+            this.BroadcastButMe(this.QueuedAnimation);
+            this.QueuedAnimation = null;
+        }
+
+        if (this.QueuedPositionUpdate is not null) {
+            this.BroadcastButMe(this.QueuedPositionUpdate);
+            this.QueuedPositionUpdate = null;
+        }
+
+        if (this.QueuedVisualUpdate is not null) {
+            this.BroadcastButMe(this.QueuedVisualUpdate);
+            this.QueuedVisualUpdate = null;
+        }
     }
 }

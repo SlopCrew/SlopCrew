@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
@@ -12,8 +13,6 @@ using Vector3 = System.Numerics.Vector3;
 namespace SlopCrew.Plugin;
 
 public class PlayerManager : IDisposable {
-    public const float ShittyTickRate = 1f / 10f;
-
     public int CurrentOutfit = 0;
     public bool IsHelloRefreshQueued = false;
     public bool IsVisualRefreshQueued = false;
@@ -112,7 +111,7 @@ public class PlayerManager : IDisposable {
         var dt = Time.deltaTime;
         this.updateTick += dt;
 
-        if (this.updateTick > ShittyTickRate) {
+        if (this.updateTick > Constants.TickRate) {
             this.updateTick = 0;
 
             var deltaMove = me.transform.position.FromMentalDeficiency() - this.lastPos;

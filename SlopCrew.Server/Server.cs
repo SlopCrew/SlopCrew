@@ -6,8 +6,9 @@ using WebSocketSharp.Server;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Authentication;
 using System.IO;
-namespace SlopCrew.Server;
+using Constants = SlopCrew.Common.Constants;
 
+namespace SlopCrew.Server;
 
 public class Server {
     public static Server Instance = new();
@@ -35,7 +36,7 @@ public class Server {
             this.wsServer.SslConfiguration.ClientCertificateRequired = false;
             this.wsServer.SslConfiguration.CheckCertificateRevocation = false;
         }
-        
+
         this.wsServer.AddWebSocketService<ServerConnection>("/");
 
         var logger = new LoggerConfiguration().WriteTo.Console();
@@ -50,15 +51,22 @@ public class Server {
             Log.Information("Starting with SSL");
             Log.Information("Listening on {Interface} - press any key to close", this.interfaceStr);
         } else {
-            Log.Information("Starting without SSL, make sure your cert.pfx is in the cert dir and interface starts with wss");
             Log.Information("Listening on {Interface} - press any key to close", this.interfaceStr);
         }
-        
-    
+
+        // ReSharper disable once FunctionNeverReturns
+        new Thread(() => {
+            const int tickRate = (int) (Constants.TickRate * 1000);
+            while (true) {
+                Thread.Sleep(tickRate);
+                this.RunTick();
+            }
+        }).Start();
+
         if (Console.IsInputRedirected) {
             // If running in a non-interactive environment (like Docker), just wait indefinitely
             while (true) {
-                System.Threading.Thread.Sleep(10000);
+                Thread.Sleep(10000);
             }
         } else {
             Console.ReadKey();
@@ -66,6 +74,11 @@ public class Server {
         }
     }
 
+    private void RunTick() {
+        foreach (var connection in this.GetConnections()) {
+            connection.RunTick();
+        }
+    }
 
     public void TrackConnection(ServerConnection conn) {
         var player = conn.Player;
