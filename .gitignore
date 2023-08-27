@@ -3,6 +3,7 @@ obj/
 .idea/
 .vs/
 *.user
+thunderstore/README.md
 thunderstore/BepInEx
 thunderstore/*.zip
 cert/
