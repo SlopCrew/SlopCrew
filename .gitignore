@@ -1,9 +1,18 @@
+# Build artifacts
 bin/
 obj/
+
+# IDE settings
 .idea/
 .vs/
+.vscode/
 *.user
-thunderstore/README.md
+
+# Build deployments
+thunderstore/*.md
 thunderstore/BepInEx
 thunderstore/*.zip
+out/
+
+# Server setup
 cert/
