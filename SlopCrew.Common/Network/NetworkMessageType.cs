@@ -1,10 +1,11 @@
-﻿namespace SlopCrew.Common.Network;
+namespace SlopCrew.Common.Network;
 
 public enum NetworkMessageType {
     ClientboundPlayerAnimation,
     ClientboundPlayerPositionUpdate,
     ClientboundPlayersUpdate,
     ClientboundPlayerVisualUpdate,
+    ClientboundSync,
 
     ServerboundAnimation,
     ServerboundPlayerHello,
