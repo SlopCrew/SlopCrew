@@ -6,9 +6,13 @@
 
 ---
 
+[Discord](https://discord.gg/a2nVaZGGNz) - [Thunderstore](https://thunderstore.io/c/bomb-rush-cyberfunk/p/NotNet/SlopCrew/)
+
 It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends.
 
 **WARNING:** This is a highly unstable mod with several bugs and crashes. I'm working on it as I can, but please don't expect things to be *too* stable.
+
+**See the [INSTALL.md](https://github.com/NotNite/SlopCrew/blob/main/INSTALL.md) file for setting up the mod, or making your own servers.**
 
 ## Supported features
 
@@ -24,11 +28,3 @@ Slop Crew can sync:
 After install, Slop Crew will make a config file you can edit. The default server is hosted by me ([NotNet](https://n2.pm/)) in the eastern US.
 
 After starting the game, open a save file, and other players will automagically appear in front of you. Have fun!
-
-## Running your own server
-
-Binaries are available [on GitHub Actions](https://github.com/NotNite/SlopCrew/actions/workflows/build.yml), which require a GitHub account to download. You can also build from source.
-
-You will need .NET 7. Start the executable, optionally setting the `SLOP_INTERFACE` environment variable to change the port (by default `ws://0.0.0.0:42069`), and you're good to go. Port forwarding or reverse proxying is required.
-
-A Docker container is also available at `ghcr.io/notnite/slopcrew-server:latest`.
