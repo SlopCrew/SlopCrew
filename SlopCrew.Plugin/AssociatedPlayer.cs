@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common.Network.Clientbound;
@@ -39,7 +40,7 @@ public class AssociatedPlayer {
     private void SpawnNameplate() {
         var obj = new GameObject("SlopCrew_Nameplate");
         var tmp = obj.AddComponent<BillboardNameplate>();
-        tmp.text = this.SlopPlayer.Name;
+        tmp.text = this.SanitizeNameplate(this.SlopPlayer.Name);
         tmp.AssociatedPlayer = this;
 
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
@@ -54,6 +55,11 @@ public class AssociatedPlayer {
         // and flip it around
         obj.transform.Rotate(0, 180, 0);
         obj.transform.parent = this.ReptilePlayer.interactionCollider.transform;
+    }
+
+    private string SanitizeNameplate(string original) {
+        var regex = new Regex("<size.*?>");
+        return regex.Replace(original, "");
     }
 
     private void SpawnMapPin() {
@@ -106,12 +112,12 @@ public class AssociatedPlayer {
         //this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
     }
 
-    public void SetPos(ClientboundPlayerPositionUpdate posUpdate) {
+    public void SetPos(SlopCrew.Common.Transform tf) {
         if (this.ReptilePlayer is not null) {
             this.StartPos = this.ReptilePlayer.motor.BodyPosition();
-            this.TargetPos = posUpdate.Position.ToMentalDeficiency();
+            this.TargetPos = tf.Position.ToMentalDeficiency();
             this.StartRot = this.ReptilePlayer.motor.rotation;
-            this.TargetRot = posUpdate.Rotation.ToMentalDeficiency();
+            this.TargetRot = tf.Rotation.ToMentalDeficiency();
             this.TimeElapsed = 0f;
         }
     }

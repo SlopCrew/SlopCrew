@@ -65,6 +65,25 @@ public class Server {
         if (CurrentTick % 50 == 0) {
             SendSyncToAllConnections(CurrentTick);
         }
+
+        // Broadcast batched position updates - this is Jank:tm:
+        var updates = new Dictionary<uint, Transform>();
+        foreach (var connection in this.GetConnections()) {
+            if (connection.QueuedPositionUpdate is not null) {
+                updates.Add(connection.Player!.ID, connection.QueuedPositionUpdate);
+                connection.QueuedPositionUpdate = null;
+            }
+        }
+
+        if (updates.Count > 0) {
+            var serialized = new ClientboundPlayerPositionUpdate {
+                Positions = updates
+            }.Serialize();
+
+            foreach (var connection in this.GetConnections()) {
+                this.Module.SendToContext(connection.Context, serialized);
+            }
+        }
     }
 
     private void SendSyncToAllConnections(uint tick) {

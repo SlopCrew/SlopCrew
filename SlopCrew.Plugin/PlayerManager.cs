@@ -296,8 +296,10 @@ public class PlayerManager : IDisposable {
     }
 
     private void HandlePlayerPositionUpdate(ClientboundPlayerPositionUpdate playerPositionUpdate) {
-        if (this.Players.TryGetValue(playerPositionUpdate.Player, out var associatedPlayer)) {
-            associatedPlayer.SetPos(playerPositionUpdate);
+        foreach (var kvp in playerPositionUpdate.Positions) {
+            if (this.Players.TryGetValue(kvp.Key, out var associatedPlayer)) {
+                associatedPlayer.SetPos(kvp.Value);
+            }
         }
     }
 

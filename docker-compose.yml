@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      SLOP_INTERFACE: ws://0.0.0.0:42069/
+      #SLOP_INTERFACE: "http://+:42069";
     ports:
       - "42069:42069"
     volumes:

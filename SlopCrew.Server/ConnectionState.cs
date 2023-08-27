@@ -15,7 +15,7 @@ public class ConnectionState {
     public int? LastStage = null;
 
     public ClientboundPlayerAnimation? QueuedAnimation;
-    public ClientboundPlayerPositionUpdate? QueuedPositionUpdate;
+    public Transform? QueuedPositionUpdate;
     public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
 
     public IWebSocketContext Context;
@@ -88,12 +88,10 @@ public class ConnectionState {
         this.Player.Rotation = positionUpdate.Rotation;
         this.Player.Velocity = positionUpdate.Velocity;
 
-        this.QueuedPositionUpdate = new ClientboundPlayerPositionUpdate {
-            Player = this.Player.ID,
+        this.QueuedPositionUpdate = new Transform {
             Position = positionUpdate.Position,
             Rotation = positionUpdate.Rotation,
-            Velocity = positionUpdate.Velocity,
-            Tick = Server.CurrentTick
+            Velocity = positionUpdate.Velocity
         };
     }
 
@@ -127,11 +125,6 @@ public class ConnectionState {
         if (this.QueuedAnimation is not null) {
             module.BroadcastInStage(this.Context, this.QueuedAnimation);
             this.QueuedAnimation = null;
-        }
-
-        if (this.QueuedPositionUpdate is not null) {
-            module.BroadcastInStage(this.Context, this.QueuedPositionUpdate);
-            this.QueuedPositionUpdate = null;
         }
 
         if (this.QueuedVisualUpdate is not null) {

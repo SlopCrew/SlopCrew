@@ -1,30 +1,29 @@
+using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
 
 namespace SlopCrew.Common.Network.Clientbound;
 
 public class ClientboundPlayerPositionUpdate : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ClientboundPlayerPositionUpdate;
 
-    public uint Player;
-    public Vector3 Position;
-    public Quaternion Rotation;
-    public Vector3 Velocity;
-    public uint Tick;
+    public Dictionary<uint, Transform> Positions;
 
     public override void Read(BinaryReader br) {
-        this.Player = br.ReadUInt32();
-        this.Position = br.ReadVector3();
-        this.Rotation = br.ReadQuaternion();
-        this.Velocity = br.ReadVector3();
-        this.Tick = br.ReadUInt32();
+        var len = br.ReadInt32();
+        this.Positions = new Dictionary<uint, Transform>(len);
+        for (var i = 0; i < len; i++) {
+            var player = br.ReadUInt32();
+            var position = new Transform();
+            position.Read(br);
+            this.Positions.Add(player, position);
+        }
     }
 
     public override void Write(BinaryWriter bw) {
-        bw.Write(this.Player);
-        bw.Write(this.Position);
-        bw.Write(this.Rotation);
-        bw.Write(this.Velocity);
-        bw.Write(this.Tick);
+        bw.Write(this.Positions.Count);
+        foreach (var kvp in this.Positions) {
+            bw.Write(kvp.Key);
+            kvp.Value.Write(bw);
+        }
     }
 }
