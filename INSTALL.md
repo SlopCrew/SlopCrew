@@ -18,7 +18,7 @@
 - Download Slop Crew [from GitHub](https://github.com/NotNite/SlopCrew/releases).
 - Navigate to your `Bomb Rush Cyberfunk\BepInEx\plugins` directory. Extract Slop Crew in there. As long as the SlopCrew DLL files are *somewhere* in that `BepInEx\plugins` directory, the mod will load.
 - Start the game, and close it once more. This will generate the config file.
-- Edit the config file to change your name and settings; navigate to your `Bomb Rush Cyberfunk\BepInEx\config` directory and open `SlopCrew.Plugin.cfg` with any text editor.
+- Optional, but suggested: navigate to your `Bomb Rush Cyberfunk\BepInEx\config` directory and open `SlopCrew.Plugin.cfg` with any text editor to change settings (like your name).
 
 ## Steam Deck/Linux
 
