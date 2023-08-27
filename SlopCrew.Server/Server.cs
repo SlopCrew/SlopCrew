@@ -13,7 +13,6 @@ public class Server {
     public static uint CurrentTick;
 
     private string interfaceStr;
-    private string certificatePath;
     private bool debug;
 
     public WebServer WebServer;
@@ -21,18 +20,25 @@ public class Server {
 
     public Server() {
         this.interfaceStr = Environment.GetEnvironmentVariable("SLOP_INTERFACE") ?? "http://+:42069";
-        this.certificatePath = Environment.GetEnvironmentVariable("SLOP_CERTIFICATEPATH") ?? "./cert/cert.pfx";
+        var certificatePath = Environment.GetEnvironmentVariable("SLOP_CERTIFICATE_PATH") ?? "./cert/cert.pfx";
+        var certificatePass = Environment.GetEnvironmentVariable("SLOP_CERTIFICATE_PASS") ?? null;
 
         var debugStr = Environment.GetEnvironmentVariable("SLOP_DEBUG")?.Trim().ToLower();
         this.debug = int.TryParse(debugStr, out var debugInt) ? debugInt != 0 : debugStr == "true";
+
+
+        var logger = new LoggerConfiguration().WriteTo.Console();
+        if (this.debug) logger = logger.MinimumLevel.Verbose();
+        Logger = logger.CreateLogger();
+        Log.Logger = Logger;
 
         this.Module = new SlopWebSocketModule();
         this.WebServer = new WebServer(o => {
             if (interfaceStr.StartsWith("https:")) {
                 if (File.Exists(certificatePath)) {
-                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath));
+                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, certificatePass));
                 } else {
-                    Log.Error("Certificate {Path} does not exist, falling back to HTTP");
+                    Log.Error("Certificate {Path} does not exist, falling back to HTTP", certificatePath);
                     interfaceStr.Replace("https:", "http:");
                 }
             }
@@ -40,11 +46,6 @@ public class Server {
             o.WithMode(HttpListenerMode.EmbedIO);
             
         }).WithModule(this.Module);
-
-        var logger = new LoggerConfiguration().WriteTo.Console();
-        if (this.debug) logger = logger.MinimumLevel.Verbose();
-        Logger = logger.CreateLogger();
-        Log.Logger = Logger;
     }
 
     public void Start() {
