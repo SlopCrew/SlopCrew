@@ -1,7 +1,11 @@
-﻿using HarmonyLib;
+using System;
+using System.Runtime.CompilerServices;
+using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Network.Clientbound;
 using UnityEngine;
+using Logger = UnityEngine.Logger;
 using Player = Reptile.Player;
 
 namespace SlopCrew.Plugin.Patches;
@@ -23,7 +27,6 @@ public class PlayerPatch {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
         return associatedPlayer == null;
     }
-
 
     [HarmonyPrefix]
     [HarmonyPatch("PlayAnim")]
@@ -79,12 +82,35 @@ public class PlayerPatch {
 
         if (associatedPlayer is not null) {
             associatedPlayer.timeElapsed += Time.deltaTime;
-            var lerpAmount = associatedPlayer.timeElapsed / Constants.TickRate;
-            var newPos = Vector3.Lerp(associatedPlayer.startPos, associatedPlayer.targetPos, lerpAmount);
-            var newRot = Quaternion.Slerp(associatedPlayer.startRot, associatedPlayer.targetRot, lerpAmount);
+            Vector3 CurrentPosition = associatedPlayer.ReptilePlayer.motor.BodyPosition();
 
-            associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
-            associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
+            while (associatedPlayer.positionUpdates.Count > 0) {
+                var positionUpdate = associatedPlayer.positionUpdates.Dequeue();  // Peek at the next update without removing it
+
+                if (PlayerManager.ServerTick < positionUpdate.Tick) {
+                    // Not ready to process this update yet
+                    break;
+                }
+
+                // Process the update
+                associatedPlayer.prevPosition = associatedPlayer.targetPosition;
+                associatedPlayer.targetPosition = positionUpdate;
+
+                associatedPlayer.timeElapsed = 0f;
+                associatedPlayer.timeToTarget = (associatedPlayer.targetPosition.Tick - associatedPlayer.prevPosition.Tick) *
+                               Constants.TickRate;
+
+                //associatedPlayer.positionUpdates.Dequeue();  // Remove the processed update
+            }
+
+            if (associatedPlayer.timeToTarget == 0f) {
+                associatedPlayer.lerpAmount = 1f; // Instantly set to target if there's no time difference.
+            } else {
+                associatedPlayer.lerpAmount = associatedPlayer.timeElapsed / associatedPlayer.timeToTarget;
+            }
+
+            associatedPlayer.InterpolatePosition();
+            associatedPlayer.InterpolateRotation();
 
             associatedPlayer.MapPin?.SetLocation();
         }

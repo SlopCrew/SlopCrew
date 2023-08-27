@@ -1,8 +1,10 @@
-﻿using HarmonyLib;
+using System.Collections.Generic;
+using HarmonyLib;
 using Reptile;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Plugin.UI;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using Object = UnityEngine.Object;
 
 namespace SlopCrew.Plugin;
@@ -12,11 +14,12 @@ public class AssociatedPlayer {
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
-    public Vector3 startPos;
-    public Vector3 targetPos;
-    public Quaternion startRot;
-    public Quaternion targetRot;
+    public Queue<ClientboundPlayerPositionUpdate> positionUpdates = new Queue<ClientboundPlayerPositionUpdate>();
+    public ClientboundPlayerPositionUpdate targetPosition = new ClientboundPlayerPositionUpdate();
+    public ClientboundPlayerPositionUpdate prevPosition = new ClientboundPlayerPositionUpdate();
     public float timeElapsed;
+    public float lerpAmount;
+    public float timeToTarget;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
@@ -103,11 +106,29 @@ public class AssociatedPlayer {
 
     public void SetPos(ClientboundPlayerPositionUpdate posUpdate) {
         if (this.ReptilePlayer is not null) {
-            this.startPos = this.ReptilePlayer.motor.BodyPosition();
-            this.targetPos = posUpdate.Position.ToMentalDeficiency();
-            this.startRot = this.ReptilePlayer.motor.rotation;
-            this.targetRot = posUpdate.Rotation.ToMentalDeficiency();
-            this.timeElapsed = 0f;
+            this.positionUpdates.Enqueue(posUpdate);
+        }
+    }
+
+    public void InterpolatePosition() {
+        var current = this.ReptilePlayer.motor.BodyPosition();
+        var target = this.targetPosition.Position.ToMentalDeficiency();
+
+        if (this.timeToTarget > 5) {
+            this.ReptilePlayer.motor.RigidbodyMove(target);
+        } else if (target != current) {
+            var newPos = Vector3.LerpUnclamped(current, target, lerpAmount);
+            this.ReptilePlayer.motor.RigidbodyMove(newPos);
+        }
+    }
+
+    public void InterpolateRotation() {
+        var current = this.ReptilePlayer.motor.rotation;
+        var target = this.targetPosition.Rotation.ToMentalDeficiency();
+
+        if (target != current) {
+            var newRot = Quaternion.Slerp(current, target, this.lerpAmount);
+            this.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
         }
     }
 }
