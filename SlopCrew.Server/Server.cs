@@ -13,6 +13,7 @@ public class Server {
     public static uint CurrentTick;
 
     private string interfaceStr;
+    private string certificatePath;
     private bool debug;
 
     public WebServer WebServer;
@@ -20,15 +21,24 @@ public class Server {
 
     public Server() {
         this.interfaceStr = Environment.GetEnvironmentVariable("SLOP_INTERFACE") ?? "http://+:42069";
+        this.certificatePath = Environment.GetEnvironmentVariable("SLOP_CERTIFICATEPATH") ?? "./cert/cert.pfx";
 
         var debugStr = Environment.GetEnvironmentVariable("SLOP_DEBUG")?.Trim().ToLower();
         this.debug = int.TryParse(debugStr, out var debugInt) ? debugInt != 0 : debugStr == "true";
 
         this.Module = new SlopWebSocketModule();
         this.WebServer = new WebServer(o => {
+            if (interfaceStr.StartsWith("https:")) {
+                if (File.Exists(certificatePath)) {
+                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath));
+                } else {
+                    Log.Error("Certificate {Path} does not exist, falling back to HTTP");
+                    interfaceStr.Replace("https:", "http:");
+                }
+            }
             o.WithUrlPrefix(this.interfaceStr);
             o.WithMode(HttpListenerMode.EmbedIO);
-            // TODO: SSL support again (sorry :/)
+            
         }).WithModule(this.Module);
 
         var logger = new LoggerConfiguration().WriteTo.Console();

@@ -2,11 +2,8 @@ using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
-using System.Numerics;
 using EmbedIO.WebSockets;
 using Serilog;
-using WebSocketSharp;
-using WebSocketSharp.Server;
 
 namespace SlopCrew.Server;
 
@@ -103,13 +100,6 @@ public class ConnectionState {
             Spraycan = visualUpdate.Spraycan
         };
     }
-
-    protected void OnClose(CloseEventArgs e) {
-        Log.Information("Connection closed from {Connection}: {Code} - {Reason}", this.DebugName(), e.Code,
-                        e.Reason);
-        Server.Instance.UntrackConnection(this);
-    }
-
 
     public string DebugName() {
         var endpoint = this.Context.RemoteEndPoint.ToString();
