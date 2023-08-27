@@ -1,7 +1,11 @@
-﻿using HarmonyLib;
+using System;
+using System.Runtime.CompilerServices;
+using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Network.Clientbound;
 using UnityEngine;
+using Logger = UnityEngine.Logger;
 using Player = Reptile.Player;
 
 namespace SlopCrew.Plugin.Patches;
@@ -23,7 +27,6 @@ public class PlayerPatch {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
         return associatedPlayer == null;
     }
-
 
     [HarmonyPrefix]
     [HarmonyPatch("PlayAnim")]

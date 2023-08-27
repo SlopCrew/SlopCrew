@@ -1,5 +1,6 @@
 using Serilog;
 using Serilog.Core;
+using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using System.Net.Security;
 using WebSocketSharp.Server;
@@ -13,6 +14,7 @@ namespace SlopCrew.Server;
 public class Server {
     public static Server Instance = new();
     public static Logger Logger = null!;
+    public static uint CurrentTick;
 
     private string interfaceStr;
     private string certPath;
@@ -44,7 +46,6 @@ public class Server {
         Logger = logger.CreateLogger();
         Log.Logger = Logger;
     }
-
     public void Start() {
         this.wsServer.Start();
         if (File.Exists(this.certPath) && this.interfaceStr.StartsWith("wss")) {
@@ -75,8 +76,28 @@ public class Server {
     }
 
     private void RunTick() {
+        // Go through each connection and run their respective ticks.
         foreach (var connection in this.GetConnections()) {
             connection.RunTick();
+        }
+
+        // Increment the global tick counter.
+        CurrentTick++;
+
+        // Send the sync message every 50 ticks.
+        if (CurrentTick % 50 == 0) {
+            Console.WriteLine("SENDING SYNC " + CurrentTick);
+            SendSyncToAllConnections(CurrentTick);
+        }
+    }
+
+    private void SendSyncToAllConnections(uint tick) {
+        var syncMessage = new ClientBoundSync() {
+            ServerTickActual = tick
+        };
+
+        foreach (var connection in this.GetConnections()) {
+            connection.Send(syncMessage);
         }
     }
 
@@ -108,20 +129,29 @@ public class Server {
 
     private void BroadcastNewPlayers(int stage, ServerConnection? exclude = null) {
         var connections = this.GetConnections()
-                              .Where(x => x.Player?.Stage == stage)
-                              .ToList();
+                            .Where(x => x.Player?.Stage == stage)
+                            .ToList();
 
-        foreach (var connection in connections) {
-            var players = connections
-                          .Where(x =>
-                                     x.Player?.ID != connection.Player?.ID
-                                     && x.ID != exclude?.ID)
-                          .Select(c => c.Player)
-                          .ToList();
+        // Precalculate this outside the loop and filter out null players
+        var allPlayersInStage = connections.Select(c => c.Player)
+                                .Where(p => p != null)
+                                .Cast<Player>()
+                                .ToList();
 
-            connection.Send(new ClientboundPlayersUpdate {
-                Players = players!
-            });
+        foreach (var connection in connections) 
+        {
+            if (connection != exclude)
+            {
+                // This will be a list of all players except for the current one
+                var playersToSend = allPlayersInStage
+                                    .Where(p => p.ID != connection.Player?.ID)
+                                    .ToList();
+
+                connection.Send(new ClientboundPlayersUpdate 
+                {
+                    Players = playersToSend
+                });
+            }
         }
     }
 

@@ -1,7 +1,8 @@
-﻿using SlopCrew.Common;
+using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using System.Numerics;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
@@ -25,24 +26,12 @@ public class ServerConnection : WebSocketBehavior {
 
     protected override void OnMessage(MessageEventArgs e) {
         var server = Server.Instance;
-
         var msg = NetworkPacket.Read(e.RawData);
+
         Serilog.Log.Verbose("Received message from {DebugName}: {Message}", this.DebugName(), msg.DebugString());
 
         if (msg is ServerboundPlayerHello enter) {
-            // Assign a unique ID on first hello
-            // Subsequent hellos keep the originally assigned ID
-            enter.Player.ID = this.Player?.ID ?? server.GetNextID();
-            this.Player = enter.Player;
-
-            // Thanks
-            this.Player.Name = enter.Player.Name[..Math.Min(32, enter.Player.Name.Length)];
-
-            // Syncs player to other players
-            server.TrackConnection(this);
-
-            // Set after we track connection because State:tm:
-            this.LastStage = this.Player.Stage;
+            HandleHello(enter, server);
             return;
         }
 
@@ -52,43 +41,69 @@ public class ServerConnection : WebSocketBehavior {
         }
 
         switch (msg) {
-            case ServerboundAnimation animation: {
-                this.QueuedAnimation = new ClientboundPlayerAnimation {
-                    Player = this.Player!.ID,
-                    Animation = animation.Animation,
-                    ForceOverwrite = animation.ForceOverwrite,
-                    Instant = animation.Instant,
-                    AtTime = animation.AtTime
-                };
+            case ServerboundAnimation animation:
+                HandleAnimation(animation);
                 break;
-            }
 
-            case ServerboundPositionUpdate positionUpdate: {
-                for (var i = 0; i < 3; i++) {
-                    // check to see if packet will crash clients
-                    if (!float.IsFinite(positionUpdate.Position[i])
-                        || !float.IsFinite(positionUpdate.Velocity[i])) break;
-                }
-
-                this.QueuedPositionUpdate = new ClientboundPlayerPositionUpdate {
-                    Player = this.Player!.ID,
-                    Position = positionUpdate.Position,
-                    Rotation = positionUpdate.Rotation,
-                    Velocity = positionUpdate.Velocity
-                };
+            case ServerboundPositionUpdate positionUpdate:
+                HandlePositionUpdate(positionUpdate);
                 break;
-            }
 
-            case ServerboundVisualUpdate visualUpdate: {
-                this.QueuedVisualUpdate = new ClientboundPlayerVisualUpdate {
-                    Player = this.Player!.ID,
-                    BoostpackEffect = visualUpdate.BoostpackEffect,
-                    FrictionEffect = visualUpdate.FrictionEffect,
-                    Spraycan = visualUpdate.Spraycan
-                };
+            case ServerboundVisualUpdate visualUpdate:
+                HandleVisualUpdate(visualUpdate);
                 break;
-            }
         }
+    }
+
+    private void HandleHello(ServerboundPlayerHello enter, Server server) {
+        // Assign a unique ID on first hello
+        // Subsequent hellos keep the originally assigned ID
+        enter.Player.ID = this.Player?.ID ?? server.GetNextID();
+        this.Player = enter.Player;
+
+        // Thanks
+        this.Player.Name = enter.Player.Name[..Math.Min(32, enter.Player.Name.Length)];
+
+        // Syncs player to other players
+        server.TrackConnection(this);
+
+        // Set after we track connection because State:tm:
+        this.LastStage = this.Player.Stage;
+    }
+
+    private void HandleAnimation(ServerboundAnimation animation) {
+        this.QueuedAnimation = new ClientboundPlayerAnimation {
+            Player = this.Player!.ID,
+            Animation = animation.Animation,
+            ForceOverwrite = animation.ForceOverwrite,
+            Instant = animation.Instant,
+            AtTime = animation.AtTime
+        };
+    }
+
+    private void HandlePositionUpdate(ServerboundPositionUpdate positionUpdate) {
+        for (var i = 0; i < 3; i++) {
+            // check to see if packet will crash clients
+            if (!float.IsFinite(positionUpdate.Position[i])
+                || !float.IsFinite(positionUpdate.Velocity[i])) break;
+        }
+
+        this.QueuedPositionUpdate = new ClientboundPlayerPositionUpdate {
+            Player = this.Player!.ID,
+            Position = positionUpdate.Position,
+            Rotation = positionUpdate.Rotation,
+            Velocity = positionUpdate.Velocity,
+            Tick = Server.CurrentTick
+        };
+    }
+
+    private void HandleVisualUpdate(ServerboundVisualUpdate visualUpdate) {
+        this.QueuedVisualUpdate = new ClientboundPlayerVisualUpdate {
+            Player = this.Player!.ID,
+            BoostpackEffect = visualUpdate.BoostpackEffect,
+            FrictionEffect = visualUpdate.FrictionEffect,
+            Spraycan = visualUpdate.Spraycan
+        };
     }
 
     protected override void OnClose(CloseEventArgs e) {
@@ -118,7 +133,6 @@ public class ServerConnection : WebSocketBehavior {
             session.Send(serialized);
         }
     }
-
     public string DebugName() {
         var userEndPoint = "???";
         try {

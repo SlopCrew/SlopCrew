@@ -1,8 +1,10 @@
-﻿using HarmonyLib;
+using System.Collections.Generic;
+using HarmonyLib;
 using Reptile;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Plugin.UI;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using Object = UnityEngine.Object;
 
 namespace SlopCrew.Plugin;
@@ -47,7 +49,6 @@ public class AssociatedPlayer {
         obj.transform.rotation = this.ReptilePlayer.tf.rotation;
         // and flip it around
         obj.transform.Rotate(0, 180, 0);
-
         obj.transform.parent = this.ReptilePlayer.interactionCollider.transform;
     }
 
