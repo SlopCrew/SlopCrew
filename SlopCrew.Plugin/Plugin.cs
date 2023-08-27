@@ -60,7 +60,7 @@ public class Plugin : BaseUnityPlugin {
         ConfigAddress = this.Config.Bind(
             "Server",
             "Address",
-            "ws://lmaobox.n2.pm:1337/",
+            "wss://slop.n2.pm/",
             "Address of the server to connect to, in WebSocket format."
         );
 
