@@ -4,7 +4,7 @@
 
 - Install [r2modman](https://thunderstore.io/c/bomb-rush-cyberfunk/p/ebkr/r2modman/).
 - Start r2modman and select `Bomb Rush Cyberfunk` from the game list.
-  - If it doesn't appear, update r2modman (either in the settings or by rerunning the installer)
+  - If it doesn't appear, update r2modman (either in the settings or by rerunning the installer).
 - Go to the `Online` tab on the left and download Slop Crew.
   - If it opens a window prompting to install dependencies, click `Install with Dependencies`.
 - Start the game with the `Start Modded` button in the top left, and close the game again. This will generate your config file.
