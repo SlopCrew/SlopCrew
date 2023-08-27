@@ -81,10 +81,10 @@ public class PlayerPatch {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
 
         if (associatedPlayer is not null) {
-            associatedPlayer.timeElapsed += Time.deltaTime;
-            var lerpAmount = associatedPlayer.timeElapsed / Constants.TickRate;
-            var newPos = Vector3.Lerp(associatedPlayer.startPos, associatedPlayer.targetPos, lerpAmount);
-            var newRot = Quaternion.Slerp(associatedPlayer.startRot, associatedPlayer.targetRot, lerpAmount);
+            associatedPlayer.TimeElapsed += Time.deltaTime;
+            var lerpAmount = associatedPlayer.TimeElapsed / Constants.TickRate;
+            var newPos = Vector3.Lerp(associatedPlayer.StartPos, associatedPlayer.TargetPos, lerpAmount);
+            var newRot = Quaternion.Slerp(associatedPlayer.StartRot, associatedPlayer.TargetRot, lerpAmount);
 
             associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
             associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);

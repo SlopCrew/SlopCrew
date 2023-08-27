@@ -3,12 +3,14 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using System.Numerics;
+using EmbedIO.WebSockets;
+using Serilog;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
 namespace SlopCrew.Server;
 
-public class ServerConnection : WebSocketBehavior {
+public class ConnectionState {
     public Player? Player;
     public int? LastStage = null;
 
@@ -16,27 +18,21 @@ public class ServerConnection : WebSocketBehavior {
     public ClientboundPlayerPositionUpdate? QueuedPositionUpdate;
     public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
 
-    protected override void OnOpen() {
-        Serilog.Log.Information(
-            "New connection from {Connection} - now {Players} players",
-            this.DebugName(),
-            Server.Instance.GetConnections().Count
-        );
+    public IWebSocketContext Context;
+
+    public ConnectionState(IWebSocketContext context) {
+        this.Context = context;
     }
 
-    protected override void OnMessage(MessageEventArgs e) {
+    public void HandlePacket(NetworkPacket msg) {
         var server = Server.Instance;
-        var msg = NetworkPacket.Read(e.RawData);
-
-        Serilog.Log.Verbose("Received message from {DebugName}: {Message}", this.DebugName(), msg.DebugString());
-
         if (msg is ServerboundPlayerHello enter) {
             HandleHello(enter, server);
             return;
         }
 
         if (this.Player is null) {
-            Serilog.Log.Verbose("Received message from {DebugName} without a hello, ignoring", this.DebugName());
+            Log.Verbose("Received message from {DebugName} without a hello, ignoring", this.DebugName());
             return;
         }
 
@@ -88,8 +84,12 @@ public class ServerConnection : WebSocketBehavior {
                 || !float.IsFinite(positionUpdate.Velocity[i])) break;
         }
 
+        this.Player!.Position = positionUpdate.Position;
+        this.Player.Rotation = positionUpdate.Rotation;
+        this.Player.Velocity = positionUpdate.Velocity;
+
         this.QueuedPositionUpdate = new ClientboundPlayerPositionUpdate {
-            Player = this.Player!.ID,
+            Player = this.Player.ID,
             Position = positionUpdate.Position,
             Rotation = positionUpdate.Rotation,
             Velocity = positionUpdate.Velocity,
@@ -106,59 +106,36 @@ public class ServerConnection : WebSocketBehavior {
         };
     }
 
-    protected override void OnClose(CloseEventArgs e) {
-        Serilog.Log.Information("Connection closed from {Connection}: {Code} - {Reason}", this.DebugName(), e.Code,
-                                e.Reason);
+    protected void OnClose(CloseEventArgs e) {
+        Log.Information("Connection closed from {Connection}: {Code} - {Reason}", this.DebugName(), e.Code,
+                        e.Reason);
         Server.Instance.UntrackConnection(this);
     }
 
-    private byte[] Serialize(NetworkPacket msg) {
-        return msg.Serialize();
-    }
 
-    public void Send(NetworkPacket msg) {
-        Serilog.Log.Verbose("Sending to {DebugName}: {Message}", this.DebugName(), msg.DebugString());
-        this.Send(this.Serialize(msg));
-    }
-
-    public void BroadcastButMe(NetworkPacket msg) {
-        var otherSessions = this.Sessions.Sessions
-                                .Cast<ServerConnection>()
-                                .Where(s => s.ID != this.ID)
-                                .Where(s => s.Player?.Stage == this.Player?.Stage)
-                                .ToList();
-        var serialized = this.Serialize(msg);
-
-        foreach (var session in otherSessions) {
-            session.Send(serialized);
-        }
-    }
     public string DebugName() {
-        var userEndPoint = "???";
-        try {
-            userEndPoint = this.Context.UserEndPoint.ToString();
-        } catch (Exception) {
-            // ignored
-        }
+        var endpoint = this.Context.RemoteEndPoint.ToString();
 
         return this.Player != null
                    ? $"{this.Player.Name}({this.Player?.ID})"
-                   : $"<player null - {userEndPoint}>";
+                   : $"<player null - {endpoint}>";
     }
 
     public void RunTick() {
+        var module = Server.Instance.Module;
+
         if (this.QueuedAnimation is not null) {
-            this.BroadcastButMe(this.QueuedAnimation);
+            module.BroadcastInStage(this.Context, this.QueuedAnimation);
             this.QueuedAnimation = null;
         }
 
         if (this.QueuedPositionUpdate is not null) {
-            this.BroadcastButMe(this.QueuedPositionUpdate);
+            module.BroadcastInStage(this.Context, this.QueuedPositionUpdate);
             this.QueuedPositionUpdate = null;
         }
 
         if (this.QueuedVisualUpdate is not null) {
-            this.BroadcastButMe(this.QueuedVisualUpdate);
+            module.BroadcastInStage(this.Context, this.QueuedVisualUpdate);
             this.QueuedVisualUpdate = null;
         }
     }

@@ -30,7 +30,6 @@ public class PlayerManager : IDisposable {
     private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
-   
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -108,7 +107,7 @@ public class PlayerManager : IDisposable {
         return player;
     }
 
-    public void Update() {      
+    public void Update() {
         if (this.IsResetQueued) {
             this.IsResetQueued = false;
             this.Reset();
@@ -118,13 +117,13 @@ public class PlayerManager : IDisposable {
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
         var traverse = Traverse.Create(me);
-        
+
         var dt = Time.deltaTime;
         this.updateTick += dt;
 
         if (this.updateTick <= Constants.TickRate) return;
 
-        this.updateTick = 0;       
+        this.updateTick = 0;
 
         HandlePositionUpdate(me);
 
@@ -183,6 +182,7 @@ public class PlayerManager : IDisposable {
             }
         });
     }
+
     private void HandleVisualRefresh(Reptile.Player me, Traverse traverse) {
         if (!this.IsVisualRefreshQueued) return;
 
@@ -197,7 +197,7 @@ public class PlayerManager : IDisposable {
     }
 
     private void UpdatePlayerCount() {
-        Plugin.PlayerCount = this.Players.Count + 1;  // +1 to include the current player
+        Plugin.PlayerCount = this.Players.Count + 1; // +1 to include the current player
     }
 
     private void OnMessage(NetworkSerializable msg) {
@@ -222,14 +222,15 @@ public class PlayerManager : IDisposable {
                 HandlePlayerVisualUpdate(playerVisualUpdate);
                 break;
 
-            case ClientBoundSync serverTickUpdate:
+            case ClientboundSync serverTickUpdate:
                 HandleServerTickUpdate(serverTickUpdate);
                 break;
         }
     }
 
     private void HandlePlayerAnimation(ClientboundPlayerAnimation playerAnimation) {
-        if (this.Players.TryGetValue(playerAnimation.Player, out var associatedPlayer) && associatedPlayer.ReptilePlayer is not null) {
+        if (this.Players.TryGetValue(playerAnimation.Player, out var associatedPlayer) &&
+            associatedPlayer.ReptilePlayer is not null) {
             this.IsPlayingAnimation = true;
             associatedPlayer.ReptilePlayer.PlayAnim(
                 playerAnimation.Animation,
@@ -243,7 +244,7 @@ public class PlayerManager : IDisposable {
 
     private void HandlePlayersUpdate(ClientboundPlayersUpdate playersUpdate) {
         var newPlayerIds = new HashSet<uint>(playersUpdate.Players.Select(p => p.ID));
-        
+
         foreach (var player in playersUpdate.Players) {
             if (!this.Players.TryGetValue(player.ID, out var associatedPlayer)) {
                 // New player
@@ -252,9 +253,10 @@ public class PlayerManager : IDisposable {
                 UpdateAssociatedPlayerIfDifferent(associatedPlayer, player);
             }
         }
-             
+
         foreach (var currentPlayerId in this.Players.Keys.ToList()) {
-            if (!newPlayerIds.Contains(currentPlayerId) && this.Players.TryGetValue(currentPlayerId, out var associatedPlayer)) {
+            if (!newPlayerIds.Contains(currentPlayerId) &&
+                this.Players.TryGetValue(currentPlayerId, out var associatedPlayer)) {
                 associatedPlayer.FuckingObliterate();
                 this.Players.Remove(currentPlayerId);
             }
@@ -290,8 +292,6 @@ public class PlayerManager : IDisposable {
             }
 
             associatedPlayer.ResetPlayer(player);
-        } else {
-            //Plugin.Log.LogInfo("Ignoring associated player look update, no changes");
         }
     }
 
@@ -323,11 +323,8 @@ public class PlayerManager : IDisposable {
         }
     }
 
-    private void HandleServerTickUpdate(ClientBoundSync serverTickUpdate) {
-        var prevTick = ServerTick;
+    private void HandleServerTickUpdate(ClientboundSync serverTickUpdate) {
         ServerTick = serverTickUpdate.ServerTickActual;
-
-        Plugin.Log.LogInfo("SYNCING TICK " + prevTick + " -> " + ServerTick);
     }
 
 

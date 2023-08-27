@@ -3,8 +3,8 @@ using static SlopCrew.Common.Network.NetworkMessageType;
 
 namespace SlopCrew.Common.Network.Clientbound; 
 
-public class ClientBoundSync : NetworkPacket {
-    public override NetworkMessageType MessageType => ClientboundSync;
+public class ClientboundSync : NetworkPacket {
+    public override NetworkMessageType MessageType => NetworkMessageType.ClientboundSync;
     
     public uint ServerTickActual;
 

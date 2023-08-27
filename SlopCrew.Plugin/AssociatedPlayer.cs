@@ -14,15 +14,19 @@ public class AssociatedPlayer {
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
-    public Vector3 startPos;
-    public Vector3 targetPos;
-    public Quaternion startRot;
-    public Quaternion targetRot;
-    public float timeElapsed;
+    public Vector3 StartPos;
+    public Vector3 TargetPos;
+    public Quaternion StartRot;
+    public Quaternion TargetRot;
+    public float TimeElapsed;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
+
+        this.StartPos = slopPlayer.Position.ToMentalDeficiency();
+        this.TargetPos = slopPlayer.Position.ToMentalDeficiency();
+
         if (Plugin.ConfigShowPlayerNameplates.Value) {
             this.SpawnNameplate();
         }
@@ -61,7 +65,7 @@ public class AssociatedPlayer {
         this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
         this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
         this.MapPin.OnPinEnable();
-        
+
         var pinInObj = this.MapPin.transform.Find("InViewVisualization").gameObject;
 
         // Particles. Get rid of them.
@@ -73,7 +77,7 @@ public class AssociatedPlayer {
         var pinOutPartR = pinOutObj.GetComponent<ParticleSystemRenderer>();
         Object.Destroy(pinOutPartS);
         Object.Destroy(pinOutPartR);
-        
+
         // Color
         var pinInMeshR = pinInObj.GetComponent<MeshRenderer>();
         var pinInMat = pinInMeshR.material;
@@ -104,11 +108,11 @@ public class AssociatedPlayer {
 
     public void SetPos(ClientboundPlayerPositionUpdate posUpdate) {
         if (this.ReptilePlayer is not null) {
-            this.startPos = this.ReptilePlayer.motor.BodyPosition();
-            this.targetPos = posUpdate.Position.ToMentalDeficiency();
-            this.startRot = this.ReptilePlayer.motor.rotation;
-            this.targetRot = posUpdate.Rotation.ToMentalDeficiency();
-            this.timeElapsed = 0f;
+            this.StartPos = this.ReptilePlayer.motor.BodyPosition();
+            this.TargetPos = posUpdate.Position.ToMentalDeficiency();
+            this.StartRot = this.ReptilePlayer.motor.rotation;
+            this.TargetRot = posUpdate.Rotation.ToMentalDeficiency();
+            this.TimeElapsed = 0f;
         }
     }
 }

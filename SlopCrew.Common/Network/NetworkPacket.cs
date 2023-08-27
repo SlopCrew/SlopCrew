@@ -19,7 +19,7 @@ public abstract class NetworkPacket : NetworkSerializable {
         { NetworkMessageType.ClientboundPlayerPositionUpdate, () => new ClientboundPlayerPositionUpdate() },
         { NetworkMessageType.ClientboundPlayersUpdate, () => new ClientboundPlayersUpdate() },
         { NetworkMessageType.ClientboundPlayerVisualUpdate, () => new ClientboundPlayerVisualUpdate() },
-        { NetworkMessageType.ClientboundSync, () => new ClientBoundSync() },
+        { NetworkMessageType.ClientboundSync, () => new ClientboundSync() },
         { NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation() },
         { NetworkMessageType.ServerboundPlayerHello, () => new ServerboundPlayerHello() },
         { NetworkMessageType.ServerboundPositionUpdate, () => new ServerboundPositionUpdate() },
