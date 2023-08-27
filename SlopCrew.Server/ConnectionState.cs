@@ -3,6 +3,8 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
 using EmbedIO.WebSockets;
 using Serilog;
 using WebSocketSharp;
@@ -59,6 +61,11 @@ public class ConnectionState {
 
         // Thanks
         this.Player.Name = enter.Player.Name[..Math.Min(32, enter.Player.Name.Length)];
+
+        var hash = SHA256.Create();
+        var hashBytes = hash.ComputeHash(Encoding.UTF8.GetBytes(enter.SecretCode));
+        var hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        this.Player.IsDeveloper = Constants.SecretCodes.Contains(hashString);
 
         // Syncs player to other players
         server.TrackConnection(this);

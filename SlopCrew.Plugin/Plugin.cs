@@ -22,6 +22,7 @@ public class Plugin : BaseUnityPlugin {
     public static ConfigEntry<bool> ConfigShowPlayerNameplates = null!;
     public static ConfigEntry<bool> ConfigBillboardNameplates = null!;
     public static ConfigEntry<bool> ConfigShowPlayerPins = null!;
+    public static ConfigEntry<string> ConfigSecretCode = null!;
 
     public static bool IsConnected = false;
     public static int PlayerCount = 0;
@@ -96,6 +97,13 @@ public class Plugin : BaseUnityPlugin {
             "ShowPlayerMapPins",
             true,
             "Show players on the phone map."
+        );
+
+        ConfigSecretCode = this.Config.Bind(
+            "Server",
+            "SecretCode",
+            "",
+            "Don't worry about it."
         );
     }
 }

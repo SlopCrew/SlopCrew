@@ -1,5 +1,11 @@
-﻿namespace SlopCrew.Common;
+﻿using System.Collections.Generic;
+
+namespace SlopCrew.Common;
 
 public class Constants {
     public const float TickRate = 1f / 10f;
+
+    public static List<string> SecretCodes = new() {
+        "8d2bb802bdb88399fc22e0445a83b410d8f23f9befc9a361aa68b48487acedb6" // NotNite
+    };
 }

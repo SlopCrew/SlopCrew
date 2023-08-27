@@ -27,10 +27,15 @@ public class SlopWebSocketModule : WebSocketModule {
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
-        var state = this.Connections[context];
-        var msg = NetworkPacket.Read(buffer);
-        Log.Verbose("Received message from {DebugName}: {Message}", state.DebugName(), msg.DebugString());
-        state.HandlePacket(msg);
+        try {
+            var state = this.Connections[context];
+            var msg = NetworkPacket.Read(buffer);
+            Log.Verbose("Received message from {DebugName}: {Message}", state.DebugName(), msg.DebugString());
+            state.HandlePacket(msg);
+        } catch (Exception e) {
+            Log.Error(e, "Error while handling message");
+        }
+
         return Task.CompletedTask;
     }
 

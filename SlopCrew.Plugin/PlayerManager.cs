@@ -178,8 +178,12 @@ public class PlayerManager : IDisposable {
 
                 Position = me.transform.position.FromMentalDeficiency(),
                 Rotation = me.transform.rotation.FromMentalDeficiency(),
-                Velocity = me.motor.velocity.FromMentalDeficiency()
-            }
+                Velocity = me.motor.velocity.FromMentalDeficiency(),
+                
+                IsDeveloper = false
+            },
+            
+            SecretCode = Plugin.ConfigSecretCode.Value
         });
     }
 

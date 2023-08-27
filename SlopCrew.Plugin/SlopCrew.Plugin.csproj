@@ -69,6 +69,10 @@
             <HintPath>$(ManagedPath)/UnityEngine.ParticleSystemModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="UnityEngine.ImageConversionModule">
+            <HintPath>$(ManagedPath)/UnityEngine.ImageConversionModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="DOTween">
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>

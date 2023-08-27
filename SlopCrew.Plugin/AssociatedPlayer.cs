@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using Reptile;
-using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Plugin.UI;
+using TMPro;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace SlopCrew.Plugin;
@@ -38,23 +38,60 @@ public class AssociatedPlayer {
     }
 
     private void SpawnNameplate() {
-        var obj = new GameObject("SlopCrew_Nameplate");
-        var tmp = obj.AddComponent<BillboardNameplate>();
-        tmp.text = this.SanitizeNameplate(this.SlopPlayer.Name);
-        tmp.AssociatedPlayer = this;
+        var container = new GameObject("SlopCrew_NameplateContainer");
 
+        // Setup the nameplate itself
+        var nameplate = new GameObject("SlopCrew_Nameplate");
+        var tmp = nameplate.AddComponent<TextMeshPro>();
+        tmp.text = this.SanitizeNameplate(this.SlopPlayer.Name);
+
+        // Yoink the font from somewhere else because I guess asset loading is impossible
+        var uiManager = Core.Instance.UIManager;
+        var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+        tmp.font = gameplay.trickNameLabel.font;
+
+        tmp.alignment = TextAlignmentOptions.Midline;
+        tmp.fontSize = 2.5f;
+
+        nameplate.transform.parent = container.transform;
+
+        if (this.SlopPlayer.IsDeveloper) {
+            var heat = gameplay.wanted1;
+            var icon = heat.GetComponent<Image>();
+
+            var devIcon = new GameObject("SlopCrew_DevIcon"); 
+            devIcon.name = "SlopCrew_DevIcon";
+            devIcon.SetActive(true);
+            
+            var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = icon.sprite;
+
+            // center it
+            var localPosition = devIcon.transform.localPosition;
+            localPosition -= new Vector3(0, localPosition.y / 2, 0);
+            devIcon.transform.localPosition = localPosition;
+            
+            devIcon.transform.parent = container.transform;
+            devIcon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            devIcon.transform.position += new Vector3(0, 0.25f, 0);
+            devIcon.AddComponent<UISpinny>();
+        }
+
+        // Configure the container's position
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
-        obj.transform.position = new Vector3(
+        container.transform.position = new Vector3(
             bounds.center.x,
             bounds.max.y + 0.125f,
             bounds.center.z
         );
 
         // Rotate it to match the player's head
-        obj.transform.rotation = this.ReptilePlayer.tf.rotation;
+        container.transform.rotation = this.ReptilePlayer.tf.rotation;
         // and flip it around
-        obj.transform.Rotate(0, 180, 0);
-        obj.transform.parent = this.ReptilePlayer.interactionCollider.transform;
+        container.transform.Rotate(0, 180, 0);
+
+        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
+        container.AddComponent<UINameplate>();
     }
 
     private string SanitizeNameplate(string original) {

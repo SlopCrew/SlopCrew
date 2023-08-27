@@ -17,6 +17,8 @@ public class Player : NetworkSerializable {
     public Quaternion Rotation;
     public Vector3 Velocity;
 
+    public bool IsDeveloper;
+
     public override void Read(BinaryReader br) {
         this.Name = br.ReadString();
         this.ID = br.ReadUInt32();
@@ -29,6 +31,8 @@ public class Player : NetworkSerializable {
         this.Position = br.ReadVector3();
         this.Rotation = br.ReadQuaternion();
         this.Velocity = br.ReadVector3();
+        
+        this.IsDeveloper = br.ReadBoolean();
     }
 
     public override void Write(BinaryWriter bw) {
@@ -43,5 +47,7 @@ public class Player : NetworkSerializable {
         bw.Write(this.Position);
         bw.Write(this.Rotation);
         bw.Write(this.Velocity);
+        
+        bw.Write(this.IsDeveloper);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using static SlopCrew.Common.Network.NetworkMessageType;
 
 namespace SlopCrew.Common.Network.Clientbound; 
 
