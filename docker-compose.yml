@@ -6,8 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      #SLOP_INTERFACE: "http://+:42069";
+    #environment:
+    #  SLOP_INTERFACE: "http://+:42069";
     ports:
       - "42069:42069"
     volumes:
