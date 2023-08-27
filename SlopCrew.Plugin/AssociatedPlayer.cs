@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using HarmonyLib;
@@ -7,6 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using Transform = SlopCrew.Common.Transform;
 
 namespace SlopCrew.Plugin;
 
@@ -15,18 +17,22 @@ public class AssociatedPlayer {
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
-    public Vector3 StartPos;
-    public Vector3 TargetPos;
-    public Quaternion StartRot;
-    public Quaternion TargetRot;
+    public Queue<Transform> TransformUpdates = new Queue<Transform>();
+    public Transform TargetTransform;
+    public Transform PrevTarget;
+    public Vector3 FromPosition;
+    public Quaternion FromRotation;
     public float TimeElapsed;
+    public float TimeToTarget;
+    public float LerpAmount;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
 
-        this.StartPos = slopPlayer.Position.ToMentalDeficiency();
-        this.TargetPos = slopPlayer.Position.ToMentalDeficiency();
+        // NEED TO REDO THIS
+        //this.StartPos = slopPlayer.Position.ToMentalDeficiency();
+        //this.TargetPos = slopPlayer.Position.ToMentalDeficiency();
 
         if (Plugin.ConfigShowPlayerNameplates.Value) {
             this.SpawnNameplate();
@@ -151,11 +157,38 @@ public class AssociatedPlayer {
 
     public void SetPos(SlopCrew.Common.Transform tf) {
         if (this.ReptilePlayer is not null) {
-            this.StartPos = this.ReptilePlayer.motor.BodyPosition();
-            this.TargetPos = tf.Position.ToMentalDeficiency();
-            this.StartRot = this.ReptilePlayer.motor.rotation;
-            this.TargetRot = tf.Rotation.ToMentalDeficiency();
-            this.TimeElapsed = 0f;
+            this.TransformUpdates.Enqueue(tf);
         }
+    }
+    
+    public void InterpolatePosition() {
+        var target = this.TargetTransform.Position.ToMentalDeficiency();
+        var newPos = Vector3.zero;
+
+        if (this.TargetTransform.Stopped) {
+            // If player is stopped just lerp to the target position
+            newPos = Vector3.Lerp(this.FromPosition, target, this.LerpAmount);
+        } else if ((target - this.FromPosition).magnitude > 10f) {
+            // Teleport them to the target position if they happen to get too far away
+            this.ReptilePlayer.motor.RigidbodyMove(target);
+        } else {
+            // Interpolate to the target position
+            newPos = Vector3.LerpUnclamped(this.FromPosition, target, this.LerpAmount);
+        }
+        
+        this.ReptilePlayer.motor.RigidbodyMove(newPos);
+    }
+
+    public void InterpolateRotation() {
+        var target = this.TargetTransform.Rotation.ToMentalDeficiency();
+        Quaternion newRot;
+        
+        if (this.TargetTransform.Stopped) {
+            newRot = Quaternion.Lerp(this.FromRotation, target, this.LerpAmount);
+        } else {
+            newRot = Quaternion.SlerpUnclamped(this.FromRotation, target, this.LerpAmount);
+        }
+        
+        this.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
     }
 }

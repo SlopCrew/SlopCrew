@@ -30,6 +30,7 @@ public class PlayerManager : IDisposable {
     private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
+    private static bool stopAnnounced = false;
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -142,13 +143,24 @@ public class PlayerManager : IDisposable {
         var moved = Math.Abs(deltaMove.Length()) > 0.125;
 
         if (moved) {
+            stopAnnounced = false;
             this.lastPos = position.FromMentalDeficiency();
 
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
                 Position = position.FromMentalDeficiency(),
                 Rotation = me.transform.rotation.FromMentalDeficiency(),
-                Velocity = me.motor.velocity.FromMentalDeficiency()
+                Velocity = me.motor.velocity.FromMentalDeficiency(),
+                Stopped = false
             });
+        } else if (!stopAnnounced) {
+            stopAnnounced = true;
+            
+            Plugin.NetworkConnection.SendMessage((new ServerboundPositionUpdate {
+                Position = position.FromMentalDeficiency(),
+                Rotation = me.motor.rotation.FromMentalDeficiency(),
+                Velocity = Vector3.Zero,
+                Stopped = true
+            }));
         }
     }
 
