@@ -1,4 +1,4 @@
-name: Build and Push Docker Image to GHCR
+name: Build and push Docker image
 
 on:
     push:
@@ -7,8 +7,8 @@ on:
 
 jobs:
     docker:
+        name: Build and push Docker image
         runs-on: ubuntu-latest
-
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
@@ -23,7 +23,7 @@ jobs:
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Build and push Docker image to GHCR
+            - name: Build and push Docker image
               uses: docker/build-push-action@v2
               with:
                   context: .

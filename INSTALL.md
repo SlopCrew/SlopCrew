@@ -38,7 +38,7 @@ The server listens on all interfaces on port 42069 by default - this can be chan
 
 ### Windows
 
-- Download the server binaries [from GitHub Actions](https://github.com/NotNite/SlopCrew/actions/workflows/build.yml?query=branch%3Amain+event%3Apush).
+- Download the server binaries [from GitHub Actions](https://github.com/NotNite/SlopCrew/actions/workflows/server-build.yml?query=branch%3Amain+event%3Apush).
   - Select the first entry, scroll down, and select `server-windows` from the Artifacts section.
   - You will need a GitHub account to download these artifacts.
 - Download the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-7.0.10-windows-x64-installer).
