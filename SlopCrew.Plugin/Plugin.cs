@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using SlopCrew.API;
 using UnityEngine;
 
 namespace SlopCrew.Plugin;
@@ -15,7 +16,8 @@ public class Plugin : BaseUnityPlugin {
 
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
-
+    public static SlopCrewAPI API = null!;
+    
     public static ConfigEntry<string> ConfigAddress = null!;
     public static ConfigEntry<string> ConfigUsername = null!;
     public static ConfigEntry<bool> ConfigShowConnectionInfo = null!;
@@ -26,7 +28,7 @@ public class Plugin : BaseUnityPlugin {
 
     public static bool IsConnected = false;
     public static int PlayerCount = 0;
-
+    
     private void Awake() {
         Log = this.Logger;
         Application.runInBackground = true;
@@ -36,6 +38,9 @@ public class Plugin : BaseUnityPlugin {
 
         NetworkConnection = new();
         PlayerManager = new();
+
+        API = new();
+        APIManager.RegisterAPI(API);
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }
