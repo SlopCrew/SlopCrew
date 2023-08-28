@@ -35,16 +35,15 @@ public class SlopWebSocketModule : WebSocketModule {
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
-        ConnectionState state;
         lock (this.Connections) {
-            state = this.Connections[context];
-        }
+            if (!this.Connections.TryGetValue(context, out var state)) return Task.CompletedTask;
 
-        try {
-            var msg = NetworkPacket.Read(buffer);
-            state.HandlePacket(msg);
-        } catch (Exception e) {
-            Log.Error(e, "Error while handling message");
+            try {
+                var msg = NetworkPacket.Read(buffer);
+                state.HandlePacket(msg);
+            } catch (Exception e) {
+                Log.Error(e, "Error while handling message");
+            }
         }
 
         return Task.CompletedTask;
@@ -62,18 +61,15 @@ public class SlopWebSocketModule : WebSocketModule {
         IWebSocketContext context,
         NetworkPacket msg
     ) {
-        lock (this.Connections) {
-            if (!this.Connections.TryGetValue(context, out var state)) return;
+        if (!this.Connections.TryGetValue(context, out var state)) return;
+        var otherSessions = this.Connections.ToList()
+                                .Where(s => s.Key.Id != context.Id)
+                                .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
+                                .ToList();
 
-            var otherSessions = this.Connections
-                                    .Where(s => s.Key.Id != context.Id)
-                                    .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
-                                    .ToList();
-
-            var serialized = msg.Serialize();
-            foreach (var session in otherSessions) {
-                this.SendAsync(session.Key, serialized);
-            }
+        var serialized = msg.Serialize();
+        foreach (var session in otherSessions) {
+            this.SendAsync(session.Key, serialized);
         }
     }
 

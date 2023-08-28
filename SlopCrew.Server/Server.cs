@@ -69,7 +69,9 @@ public class Server {
                 Thread.Sleep(tickRate);
 
                 try {
-                    this.RunTick();
+                    lock (this.Module.Connections) {
+                        this.RunTick();
+                    }
                 } catch (Exception e) {
                     Log.Error(e, "Error while running tick");
                 }
