@@ -34,7 +34,6 @@ public class SlopWebSocketModule : WebSocketModule {
         try {
             var state = this.Connections[context];
             var msg = NetworkPacket.Read(buffer);
-            Log.Verbose("Received message from {DebugName}: {Message}", state.DebugName(), msg.DebugString());
             state.HandlePacket(msg);
         } catch (Exception e) {
             Log.Error(e, "Error while handling message");
@@ -44,8 +43,6 @@ public class SlopWebSocketModule : WebSocketModule {
     }
 
     public void SendToContext(IWebSocketContext context, NetworkPacket msg) {
-        var state = this.Connections[context];
-        Log.Verbose("Sending to {DebugName}: {Message}", state.DebugName(), msg.DebugString());
         this.SendAsync(context, msg.Serialize());
     }
 
