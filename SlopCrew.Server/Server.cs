@@ -37,9 +37,7 @@ public class Server {
         this.WebServer = new WebServer(o => {
             if (interfaceStr.StartsWith("https:")) {
                 if (File.Exists(certificatePath)) {
-                    o.WithCertificate(
-                        new System.Security.Cryptography.X509Certificates.X509Certificate2(
-                            certificatePath, certificatePass));
+                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, certificatePass));
                 } else {
                     Log.Error("Certificate {Path} does not exist, falling back to HTTP", certificatePath);
                     interfaceStr.Replace("https:", "http:");
@@ -91,6 +89,8 @@ public class Server {
         if (updates.Count > 0) {
             var serialized = new ClientboundPlayerPositionUpdate {
                 Positions = updates
+                Positions = updates,
+                Tick = CurrentTick
             }.Serialize();
 
             foreach (var connection in this.GetConnections()) {
@@ -169,8 +169,6 @@ public class Server {
     }
 
     public List<ConnectionState> GetConnections() {
-        var connections = this.Module.Connections;
-
-        return connections.Values.ToList();
+        return this.Module.Connections.Values.ToList();
     }
 }

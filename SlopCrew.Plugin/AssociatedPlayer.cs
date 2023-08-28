@@ -18,8 +18,8 @@ public class AssociatedPlayer {
     public MapPin? MapPin;
 
     public Queue<Transform> TransformUpdates = new Queue<Transform>();
-    public Transform TargetTransform;
-    public Transform PrevTarget;
+    public Transform TargetTransform = new Transform();
+    public Transform PrevTarget = new Transform();
     public Vector3 FromPosition;
     public Quaternion FromRotation;
     public float TimeElapsed;
@@ -33,6 +33,7 @@ public class AssociatedPlayer {
         // NEED TO REDO THIS
         //this.StartPos = slopPlayer.Position.ToMentalDeficiency();
         //this.TargetPos = slopPlayer.Position.ToMentalDeficiency();
+        this.FromPosition = slopPlayer.Position.ToMentalDeficiency();
 
         if (Plugin.ConfigShowPlayerNameplates.Value) {
             this.SpawnNameplate();
@@ -155,8 +156,9 @@ public class AssociatedPlayer {
         //this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
     }
 
-    public void SetPos(SlopCrew.Common.Transform tf) {
+    public void SetPos(SlopCrew.Common.Transform tf, uint currentTick) {
         if (this.ReptilePlayer is not null) {
+            tf.Tick = currentTick;
             this.TransformUpdates.Enqueue(tf);
         }
     }
@@ -175,7 +177,8 @@ public class AssociatedPlayer {
             // Interpolate to the target position
             newPos = Vector3.LerpUnclamped(this.FromPosition, target, this.LerpAmount);
         }
-        
+
+        //Plugin.Log.LogInfo("MOVING: FROM: " + this.FromPosition + " TO: " + target + " BY: " + this.LerpAmount);
         this.ReptilePlayer.motor.RigidbodyMove(newPos);
     }
 

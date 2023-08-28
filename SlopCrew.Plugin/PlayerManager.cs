@@ -314,7 +314,7 @@ public class PlayerManager : IDisposable {
     private void HandlePlayerPositionUpdate(ClientboundPlayerPositionUpdate playerPositionUpdate) {
         foreach (var kvp in playerPositionUpdate.Positions) {
             if (this.Players.TryGetValue(kvp.Key, out var associatedPlayer)) {
-                associatedPlayer.SetPos(kvp.Value);
+                associatedPlayer.SetPos(kvp.Value, playerPositionUpdate.Tick);
             }
         }
     }
