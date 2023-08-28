@@ -58,7 +58,12 @@ public class Server {
             const int tickRate = (int) (Constants.TickRate * 1000);
             while (true) {
                 Thread.Sleep(tickRate);
-                this.RunTick();
+
+                try {
+                    this.RunTick();
+                } catch (Exception e) {
+                    Log.Error(e, "Error while running tick");
+                }
             }
         }).Start();
 
