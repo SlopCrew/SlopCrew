@@ -13,6 +13,6 @@ public class VersionUIHandlerPatch {
         var verText = obj.text;
         
         obj.alignment = TextAlignmentOptions.BottomLeft;
-        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION}\n" + verText;
+        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - {Plugin.ConfigUsername.Value}\n" + verText;
     }
 }
