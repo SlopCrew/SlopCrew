@@ -11,6 +11,7 @@ public class SlopWebSocketModule : WebSocketModule {
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
         this.Connections.Add(context, new ConnectionState(context));
+        Log.Information("Now at {ConnectionCount} connections", this.Connections.Count);
         return Task.CompletedTask;
     }
 
@@ -21,6 +22,7 @@ public class SlopWebSocketModule : WebSocketModule {
 
         this.Connections.Remove(context);
 
+        Log.Information("Now at {ConnectionCount} connections", this.Connections.Count;
         return Task.CompletedTask;
     }
 
