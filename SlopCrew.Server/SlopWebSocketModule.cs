@@ -1,16 +1,17 @@
-﻿using EmbedIO.WebSockets;
+﻿using System.Collections.Concurrent;
+using EmbedIO.WebSockets;
 using Serilog;
 using SlopCrew.Common.Network;
 
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
+    public ConcurrentDictionary<IWebSocketContext, ConnectionState> Connections = new();
 
     public SlopWebSocketModule() : base("/", false) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
-        this.Connections.Add(context, new ConnectionState(context));
+        this.Connections.TryAdd(context, new ConnectionState(context));
         Log.Information("Now at {ConnectionCount} connections", this.Connections.Count);
         return Task.CompletedTask;
     }
@@ -20,7 +21,7 @@ public class SlopWebSocketModule : WebSocketModule {
             Server.Instance.UntrackConnection(state);
         }
 
-        this.Connections.Remove(context);
+        this.Connections.TryRemove(context, out _);
 
         Log.Information("Now at {ConnectionCount} connections", this.Connections.Count);
         return Task.CompletedTask;
@@ -56,6 +57,7 @@ public class SlopWebSocketModule : WebSocketModule {
         NetworkPacket msg
     ) {
         if (!this.Connections.TryGetValue(context, out var state)) return;
+
         var otherSessions = this.Connections
                                 .Where(s => s.Key.Id != context.Id)
                                 .Where(s => s.Value.Player?.Stage == state.Player?.Stage)

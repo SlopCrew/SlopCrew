@@ -3,6 +3,7 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
+using EmbedIO.WebSockets;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -36,7 +37,9 @@ public class Server {
         this.WebServer = new WebServer(o => {
             if (interfaceStr.StartsWith("https:")) {
                 if (File.Exists(certificatePath)) {
-                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, certificatePass));
+                    o.WithCertificate(
+                        new System.Security.Cryptography.X509Certificates.X509Certificate2(
+                            certificatePath, certificatePass));
                 } else {
                     Log.Error("Certificate {Path} does not exist, falling back to HTTP", certificatePath);
                     interfaceStr.Replace("https:", "http:");
@@ -44,7 +47,6 @@ public class Server {
             }
             o.WithUrlPrefix(this.interfaceStr);
             o.WithMode(HttpListenerMode.EmbedIO);
-            
         }).WithModule(this.Module);
     }
 
@@ -167,6 +169,8 @@ public class Server {
     }
 
     public List<ConnectionState> GetConnections() {
-        return this.Module.Connections.Values.ToList();
+        var connections = this.Module.Connections;
+
+        return connections.Values.ToList();
     }
 }
