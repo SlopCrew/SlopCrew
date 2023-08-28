@@ -72,8 +72,11 @@ public class ConnectionState {
     }
 
     private string FilterPlayerName(string name) {
-        var noProfanity = new ProfanityFilter.ProfanityFilter().CensorString(name, ' ');
-        return noProfanity[..Math.Min(32, noProfanity.Length)];
+        if (new ProfanityFilter.ProfanityFilter().ContainsProfanity(name.ToLower())) {
+            return "Big Slopper"; // lol owned
+        }
+
+        return name[..Math.Min(32, name.Length)];
     }
 
     private void HandleAnimation(ServerboundAnimation animation) {
