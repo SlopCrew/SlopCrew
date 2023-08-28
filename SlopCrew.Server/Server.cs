@@ -3,7 +3,6 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
-using EmbedIO.WebSockets;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -88,7 +87,6 @@ public class Server {
 
         if (updates.Count > 0) {
             var serialized = new ClientboundPlayerPositionUpdate {
-                Positions = updates
                 Positions = updates,
                 Tick = CurrentTick
             }.Serialize();

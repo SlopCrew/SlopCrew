@@ -95,7 +95,8 @@ public class ConnectionState {
         this.QueuedPositionUpdate = new Transform {
             Position = positionUpdate.Position,
             Rotation = positionUpdate.Rotation,
-            Velocity = positionUpdate.Velocity
+            Velocity = positionUpdate.Velocity,
+            Stopped = positionUpdate.Stopped
         };
     }
 
