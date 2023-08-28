@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using EmbedIO.WebSockets;
+﻿using EmbedIO.WebSockets;
 using Graphite;
 using Serilog;
 using SlopCrew.Common.Network;
@@ -7,23 +6,28 @@ using SlopCrew.Common.Network;
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public ConcurrentDictionary<IWebSocketContext, ConnectionState> Connections = new();
+    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
 
     public SlopWebSocketModule() : base("/", false) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
-        this.Connections[context] = new ConnectionState(context);
-        this.UpdateConnectionCount();
+        lock (this.Connections) {
+            this.Connections[context] = new ConnectionState(context);
+            this.UpdateConnectionCount();
+        }
+
         return Task.CompletedTask;
     }
 
     protected override Task OnClientDisconnectedAsync(IWebSocketContext context) {
-        if (this.Connections.TryGetValue(context, out var state)) {
-            Server.Instance.UntrackConnection(state);
-        }
+        lock (this.Connections) {
+            if (this.Connections.TryGetValue(context, out var state)) {
+                Server.Instance.UntrackConnection(state);
+            }
 
-        this.Connections.TryRemove(context, out _);
-        this.UpdateConnectionCount();
+            this.Connections.Remove(context);
+            this.UpdateConnectionCount();
+        }
 
         return Task.CompletedTask;
     }
@@ -31,8 +35,12 @@ public class SlopWebSocketModule : WebSocketModule {
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
+        ConnectionState state;
+        lock (this.Connections) {
+            state = this.Connections[context];
+        }
+
         try {
-            var state = this.Connections[context];
             var msg = NetworkPacket.Read(buffer);
             state.HandlePacket(msg);
         } catch (Exception e) {
@@ -54,16 +62,18 @@ public class SlopWebSocketModule : WebSocketModule {
         IWebSocketContext context,
         NetworkPacket msg
     ) {
-        if (!this.Connections.TryGetValue(context, out var state)) return;
+        lock (this.Connections) {
+            if (!this.Connections.TryGetValue(context, out var state)) return;
 
-        var otherSessions = this.Connections
-                                .Where(s => s.Key.Id != context.Id)
-                                .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
-                                .ToList();
+            var otherSessions = this.Connections
+                                    .Where(s => s.Key.Id != context.Id)
+                                    .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
+                                    .ToList();
 
-        var serialized = msg.Serialize();
-        foreach (var session in otherSessions) {
-            this.SendAsync(session.Key, serialized);
+            var serialized = msg.Serialize();
+            foreach (var session in otherSessions) {
+                this.SendAsync(session.Key, serialized);
+            }
         }
     }
 

@@ -186,7 +186,6 @@ public class Server {
 
     public List<ConnectionState> GetConnections() {
         var connections = this.Module.Connections;
-
         return connections.Values.ToList();
     }
 }
