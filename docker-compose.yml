@@ -1,14 +1,48 @@
 version: '3.8'
 
+networks:
+  slopcrew-network:
+    driver: bridge
+
 services:
   slopcrew-server:
     image: slopcrew-server:local
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
-    #environment:
-    #  SLOP_INTERFACE: "http://+:42069";
+    environment:
+      SLOP_INTERFACE: "http://+:42069"
+      SLOP_GRAPHITE: "graphite"
+      SLOP_GRAPHITE_PORT: 2003
     ports:
       - "42069:42069"
     volumes:
       - ./cert:/cert:ro
+    networks:
+      - slopcrew-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - "3000:3000"
+    networks:
+      - slopcrew-network
+    volumes:
+      - ./metrics/grafana/grafana:/var/lib/grafana
+
+  graphite:
+    image: graphiteapp/graphite-statsd
+    container_name: graphite
+    restart: unless-stopped
+    ports:
+      - "2003-2004:2003-2004"
+      - "2023-2024:2023-2024"
+      - "8125:8125/udp"
+      - "8126:8126"
+    networks:
+      - slopcrew-network
+    volumes:
+      - ./metrics/graphite/storage:/opt/graphite/storage

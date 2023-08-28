@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using EmbedIO.WebSockets;
+using Graphite;
 using Serilog;
 using SlopCrew.Common.Network;
 
@@ -11,8 +12,8 @@ public class SlopWebSocketModule : WebSocketModule {
     public SlopWebSocketModule() : base("/", false) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
-        this.Connections.TryAdd(context, new ConnectionState(context));
-        Log.Information("Now at {ConnectionCount} connections", this.Connections.Count);
+        this.Connections[context] = new ConnectionState(context);
+        this.UpdateConnectionCount();
         return Task.CompletedTask;
     }
 
@@ -22,8 +23,8 @@ public class SlopWebSocketModule : WebSocketModule {
         }
 
         this.Connections.TryRemove(context, out _);
+        this.UpdateConnectionCount();
 
-        Log.Information("Now at {ConnectionCount} connections", this.Connections.Count);
         return Task.CompletedTask;
     }
 
@@ -67,5 +68,11 @@ public class SlopWebSocketModule : WebSocketModule {
         foreach (var session in otherSessions) {
             this.SendAsync(session.Key, serialized);
         }
+    }
+
+    private void UpdateConnectionCount() {
+        var count = this.Connections.Count;
+        Log.Information("Now at {ConnectionCount} connections", count);
+        Server.Instance.Graphite?.Send("connections", count);
     }
 }

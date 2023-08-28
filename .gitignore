@@ -16,3 +16,5 @@ out/
 
 # Server setup
 cert/
+metrics/grafana/
+metrics/graphite/
