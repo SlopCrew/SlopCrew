@@ -35,12 +35,12 @@ public class Plugin : BaseUnityPlugin {
 
         this.SetupHarmony();
         this.SetupConfig();
+        
+        API = new();
+        APIManager.RegisterAPI(API);
 
         NetworkConnection = new();
         PlayerManager = new();
-
-        API = new();
-        APIManager.RegisterAPI(API);
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }
