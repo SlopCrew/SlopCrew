@@ -81,6 +81,7 @@
 
 
     <ItemGroup>
+        <ProjectReference Include="..\SlopCrew.API\SlopCrew.API.csproj" />
         <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
     </ItemGroup>
 

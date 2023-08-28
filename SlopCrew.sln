@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Common", "SlopCrew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Server", "SlopCrew.Server\SlopCrew.Server.csproj", "{94A3B924-480F-4459-9E21-77913D493360}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.API", "SlopCrew.API\SlopCrew.API.csproj", "{9F225D8D-252F-4E86-8A69-66213CB0684C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{94A3B924-480F-4459-9E21-77913D493360}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94A3B924-480F-4459-9E21-77913D493360}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94A3B924-480F-4459-9E21-77913D493360}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
