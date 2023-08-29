@@ -87,8 +87,7 @@ public class Server {
 
         if (updates.Count > 0) {
             var serialized = new ClientboundPlayerPositionUpdate {
-                Positions = updates,
-                Tick = CurrentTick
+                Positions = updates
             }.Serialize();
 
             foreach (var connection in this.GetConnections()) {

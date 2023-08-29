@@ -7,8 +7,6 @@ public class ClientboundPlayerPositionUpdate : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ClientboundPlayerPositionUpdate;
 
     public Dictionary<uint, Transform> Positions;
-    public uint Tick;
-    public bool Stopped;
 
     public override void Read(BinaryReader br) {
         var len = br.ReadInt32();
@@ -19,8 +17,6 @@ public class ClientboundPlayerPositionUpdate : NetworkPacket {
             position.Read(br);
             this.Positions.Add(player, position);
         }
-        this.Tick = br.ReadUInt32();
-        this.Stopped = br.ReadBoolean();
     }
 
     public override void Write(BinaryWriter bw) {
@@ -29,7 +25,5 @@ public class ClientboundPlayerPositionUpdate : NetworkPacket {
             bw.Write(kvp.Key);
             kvp.Value.Write(bw);
         }
-        bw.Write(this.Tick);
-        bw.Write(this.Stopped);
     }
 }

@@ -96,7 +96,9 @@ public class ConnectionState {
             Position = positionUpdate.Position,
             Rotation = positionUpdate.Rotation,
             Velocity = positionUpdate.Velocity,
-            Stopped = positionUpdate.Stopped
+            Stopped = positionUpdate.Stopped,
+            Latency = positionUpdate.Latency,
+            Tick = Server.CurrentTick
         };
     }
 
