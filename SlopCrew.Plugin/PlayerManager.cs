@@ -248,6 +248,8 @@ public class PlayerManager : IDisposable {
 
     private void UpdatePlayerCount() {
         Plugin.PlayerCount = this.Players.Count + 1; // +1 to include the current player
+        
+        Plugin.API.UpdatePlayerCount(Plugin.PlayerCount);
     }
 
     private void OnMessage(NetworkSerializable msg) {

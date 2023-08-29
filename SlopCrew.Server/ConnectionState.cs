@@ -57,7 +57,7 @@ public class ConnectionState {
         this.Player = enter.Player;
 
         // Thanks
-        this.Player.Name = enter.Player.Name[..Math.Min(32, enter.Player.Name.Length)];
+        this.Player.Name = this.FilterPlayerName(this.Player.Name);
 
         var hash = SHA256.Create();
         var hashBytes = hash.ComputeHash(Encoding.UTF8.GetBytes(enter.SecretCode));
@@ -69,6 +69,14 @@ public class ConnectionState {
 
         // Set after we track connection because State:tm:
         this.LastStage = this.Player.Stage;
+    }
+
+    private string FilterPlayerName(string name) {
+        if (new ProfanityFilter.ProfanityFilter().ContainsProfanity(name.ToLower())) {
+            return "Big Slopper"; // lol owned
+        }
+
+        return name[..Math.Min(32, name.Length)];
     }
 
     private void HandleAnimation(ServerboundAnimation animation) {

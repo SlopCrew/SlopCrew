@@ -3,6 +3,8 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
+using EmbedIO.WebSockets;
+using Graphite;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -17,6 +19,7 @@ public class Server {
 
     public WebServer WebServer;
     public SlopWebSocketModule Module;
+    public GraphiteTcpClient? Graphite;
 
     public Server() {
         this.interfaceStr = Environment.GetEnvironmentVariable("SLOP_INTERFACE") ?? "http://+:42069";
@@ -26,6 +29,12 @@ public class Server {
         var debugStr = Environment.GetEnvironmentVariable("SLOP_DEBUG")?.Trim().ToLower();
         this.debug = int.TryParse(debugStr, out var debugInt) ? debugInt != 0 : debugStr == "true";
 
+        var graphiteStr = Environment.GetEnvironmentVariable("SLOP_GRAPHITE")?.Trim().ToLower();
+        if (graphiteStr != null) {
+            var graphitePortStr = Environment.GetEnvironmentVariable("SLOP_GRAPHITE_PORT")?.Trim().ToLower();
+            var graphitePort = int.TryParse(graphitePortStr, out var graphitePortInt) ? graphitePortInt : 2003;
+            this.Graphite = new GraphiteTcpClient(graphiteStr, graphitePort, "slop");
+        }
 
         var logger = new LoggerConfiguration().WriteTo.Console();
         if (this.debug) logger = logger.MinimumLevel.Verbose();
@@ -39,9 +48,10 @@ public class Server {
                     o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, certificatePass));
                 } else {
                     Log.Error("Certificate {Path} does not exist, falling back to HTTP", certificatePath);
-                    interfaceStr.Replace("https:", "http:");
+                    interfaceStr = interfaceStr.Replace("https:", "http:");
                 }
             }
+
             o.WithUrlPrefix(this.interfaceStr);
             o.WithMode(HttpListenerMode.EmbedIO);
         }).WithModule(this.Module);
@@ -55,7 +65,14 @@ public class Server {
             const int tickRate = (int) (Constants.TickRate * 1000);
             while (true) {
                 Thread.Sleep(tickRate);
-                this.RunTick();
+
+                try {
+                    lock (this.Module.Connections) {
+                        this.RunTick();
+                    }
+                } catch (Exception e) {
+                    Log.Error(e, "Error while running tick");
+                }
             }
         }).Start();
 
@@ -143,6 +160,8 @@ public class Server {
                                            .Where(p => p != null)
                                            .Cast<Player>()
                                            .ToList();
+
+        this.Graphite?.Send($"population.{stage}", allPlayersInStage.Count);
 
         foreach (var connection in connections) {
             if (connection != exclude) {

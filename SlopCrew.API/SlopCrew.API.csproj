@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Version>1.1.0</Version>
+        <AssemblyName>SlopCrew.API</AssemblyName>
+        <Product>SlopCrew</Product>
+        <Authors>NotNite</Authors>
+        
+        <TargetFramework>net462</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+</Project>

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using System.Text;
@@ -27,8 +26,6 @@ public abstract class NetworkPacket : NetworkSerializable {
     };
 
     public static NetworkPacket Read(byte[] data) {
-        //Console.WriteLine(DebugBytes("NetworkPacket.Read", data));
-
         using var ms = new MemoryStream(data);
         using var br = new BinaryReader(ms);
 
@@ -59,11 +56,7 @@ public abstract class NetworkPacket : NetworkSerializable {
 
         return ms.ToArray();
     }
-
-    public string DebugString() {
-        return JsonConvert.SerializeObject(this);
-    }
-
+    
     public static string DebugBytes(string place, byte[] bytes) {
         var hex = BitConverter.ToString(bytes).Replace("-", " ");
         return $"[{place}] {hex}";
