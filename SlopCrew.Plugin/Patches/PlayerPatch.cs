@@ -128,4 +128,12 @@ public class PlayerPatch {
 
         return true;
     }
+
+    // Don't let AssociatedPlayers interact with world triggers
+    [HarmonyPrefix]
+    [HarmonyPatch("OnTriggerStay")]
+    public static bool OnTriggerStay(Player __instance, Collider other) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+        return associatedPlayer == null;
+    }
 }
