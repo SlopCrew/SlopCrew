@@ -34,9 +34,8 @@ public class Plugin : BaseUnityPlugin {
     public static ConfigEntry<bool> ConfigUIBillboardNameplates = null!;
     public static ConfigEntry<bool> ConfigUIShowPlayerPins = null!;
     
-    // Cutscenes
-    public static ConfigEntry<bool> ConfigCutsceneDisablePolice = null!;
-    public static ConfigEntry<bool> ConfigCutsceneDisableBikeGate = null!;
+    // Fixes
+    public static ConfigEntry<bool> ConfigFixBikeGate = null!;
     
     // END ===== CONFIG VALUES ===== END \\
     
@@ -122,18 +121,11 @@ public class Plugin : BaseUnityPlugin {
             "Show players on the phone map."
         );
 
-        ConfigCutsceneDisablePolice = this.Config.Bind(
-            "General",
-            "DisablePoliceCutscene",
+        ConfigFixBikeGate = this.Config.Bind(
+            "Fixes",
+            "FixBikeGate",
             true,
-            "Disable cutscenes when the heat level changes."
-        );
-
-        ConfigCutsceneDisableBikeGate = this.Config.Bind(
-            "General",
-            "DisableBikeGateCutscene",
-            true,
-            "Disable the bike gate opening cutscene."
+            "Fix other players being able to start bike gate cutscenes."
         );
     }
 }
