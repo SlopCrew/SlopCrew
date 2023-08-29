@@ -10,6 +10,8 @@
 - Start the game with the `Start Modded` button in the top left, and close the game again. This will generate your config file.
 - Optional, but suggested: Click the `Config Editor` tab on the left side and select the Slop Crew configuration file to change settings (like your name).
 
+To update Slop Crew, open r2modman, select Slop Crew in the Installed tab, and click Update.
+
 ## GOG/Manual installs
 
 - Download [BepInEx 5](https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip).
@@ -17,8 +19,11 @@
 - Start the game and close it. This will generate additional BepInEx directories.
 - Download Slop Crew [from GitHub](https://github.com/NotNite/SlopCrew/releases).
 - Navigate to your `Bomb Rush Cyberfunk\BepInEx\plugins` directory. Extract Slop Crew in there. As long as the Slop Crew DLL files are *somewhere* in that `BepInEx\plugins` directory, the mod will load.
+  - While it is not required, for ease of updating, it is suggested to create a folder for the plugin files.
 - Start the game, and close it once more. This will generate the config file.
 - Optional, but suggested: navigate to your `Bomb Rush Cyberfunk\BepInEx\config` directory and open `SlopCrew.Plugin.cfg` with any text editor to change settings (like your name).
+
+To update Slop Crew, delete all existing Slop Crew files in the `BepInEx\plugins` folder, and download & extract the new version from GitHub.
 
 ## Steam Deck/Linux
 
@@ -39,8 +44,8 @@ The server listens on all interfaces on port 42069 by default - this can be chan
 ### Windows
 
 - Download the server binaries [from GitHub Actions](https://github.com/NotNite/SlopCrew/actions/workflows/server-build.yml?query=branch%3Amain+event%3Apush).
-  - Select the first entry, scroll down, and select `server-windows` from the Artifacts section.
-  - You will need a GitHub account to download these artifacts.
+  - Select the entry with the same version number as the installed Slop Crew plugin. It is highly suggested (and sometimes required) to use the same version as the plugin.
+  - After selecting the entry, scroll down to the bottom, and select `server-windows` from the Artifacts section. You will need a GitHub account to download these artifacts.
 - Download the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-7.0.10-windows-x64-installer).
 - Start the executable by double clicking it.
 
@@ -54,7 +59,7 @@ $ cd SlopCrew
 $ dotnet run SlopCrew.Server --configuration Release
 ```
 
-Docker users can also use the `Dockerfile`/`docker-compose.yml`, or make their own using the image at `ghcr.io/notnite/slopcrew-server:latest`.
+Docker users can also use the `Dockerfile`/`docker-compose.yml`, or make their own using the image at `ghcr.io/notnite/slopcrew-server`.
 
 ## Stuff for developers
 

@@ -4,6 +4,8 @@ on:
     push:
         branches:
             - main
+        tags:
+            - "*"
 
 jobs:
     docker:
@@ -23,9 +25,13 @@ jobs:
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
+            # Use 'latest' for the main branch, otherwise use the tag name
+            - name: Set image tag
+              run: echo "IMAGE_TAG=$(if [ ${{ github.ref }} = 'refs/heads/main' ]; then echo 'latest'; else echo ${{ github.ref }} | sed -e 's/refs\/tags\///g'; fi)" >> $GITHUB_ENV
+
             - name: Build and push Docker image
               uses: docker/build-push-action@v2
               with:
                   context: .
                   push: true
-                  tags: ghcr.io/${{ env.REPO_OWNER }}/slopcrew-server:latest
+                  tags: ghcr.io/${{ env.REPO_OWNER }}/slopcrew-server:${{ env.IMAGE_TAG }}
