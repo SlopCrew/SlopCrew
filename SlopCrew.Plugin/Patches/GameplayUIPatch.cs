@@ -9,7 +9,7 @@ public class GameplayUIPatch {
     [HarmonyPostfix]
     [HarmonyPatch("Init")]
     public static void Init(GameplayUI __instance) {
-        if (Plugin.ConfigShowConnectionInfo.Value) {
+        if (Plugin.ConfigUIShowConnectionInfo.Value) {
             __instance.gameplayScreen.gameObject.AddComponent<UIConnectionStatus>();
         }
     }

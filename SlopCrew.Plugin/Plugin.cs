@@ -17,17 +17,28 @@ public class Plugin : BaseUnityPlugin {
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
-    
-    public static ConfigEntry<string> ConfigAddress = null!;
-    public static ConfigEntry<string> ConfigUsername = null!;
-    public static ConfigEntry<bool> ConfigShowConnectionInfo = null!;
-    public static ConfigEntry<bool> ConfigShowPlayerNameplates = null!;
-    public static ConfigEntry<bool> ConfigBillboardNameplates = null!;
-    public static ConfigEntry<bool> ConfigShowPlayerPins = null!;
-    public static ConfigEntry<string> ConfigSecretCode = null!;
 
     public static bool IsConnected = false;
     public static int PlayerCount = 0;
+    
+    // START ===== CONFIG VALUES ===== START \\
+    
+    // General
+    public static ConfigEntry<string> ConfigAddress = null!;
+    public static ConfigEntry<string> ConfigUsername = null!;
+    public static ConfigEntry<string> ConfigSecretCode = null!;
+    
+    // UI
+    public static ConfigEntry<bool> ConfigUIShowConnectionInfo = null!;
+    public static ConfigEntry<bool> ConfigUIShowPlayerNameplates = null!;
+    public static ConfigEntry<bool> ConfigUIBillboardNameplates = null!;
+    public static ConfigEntry<bool> ConfigUIShowPlayerPins = null!;
+    
+    // Cutscenes
+    public static ConfigEntry<bool> ConfigCutsceneDisablePolice = null!;
+    public static ConfigEntry<bool> ConfigCutsceneDisableBikeGate = null!;
+    
+    // END ===== CONFIG VALUES ===== END \\
     
     private void Awake() {
         Log = this.Logger;
@@ -75,40 +86,54 @@ public class Plugin : BaseUnityPlugin {
             "Big Slopper",
             "Username to show to other players."
         );
+        
+        ConfigSecretCode = this.Config.Bind(
+            "Server",
+            "SecretCode",
+            "",
+            "Don't worry about it."
+        );
 
-        ConfigShowConnectionInfo = this.Config.Bind(
+        ConfigUIShowConnectionInfo = this.Config.Bind(
             "General",
             "ShowConnectionInfo",
             true,
             "Show current connection status and player count."
         );
 
-        ConfigShowPlayerNameplates = this.Config.Bind(
+        ConfigUIShowPlayerNameplates = this.Config.Bind(
             "General",
             "ShowPlayerNameplates",
             true,
             "Show players' names above their heads."
         );
 
-        ConfigBillboardNameplates = this.Config.Bind(
+        ConfigUIBillboardNameplates = this.Config.Bind(
             "General",
             "BillboardNameplates",
             true,
             "Billboard nameplates (always face the camera)."
         );
 
-        ConfigShowPlayerPins = this.Config.Bind(
+        ConfigUIShowPlayerPins = this.Config.Bind(
             "General",
             "ShowPlayerMapPins",
             true,
             "Show players on the phone map."
         );
 
-        ConfigSecretCode = this.Config.Bind(
-            "Server",
-            "SecretCode",
-            "",
-            "Don't worry about it."
+        ConfigCutsceneDisablePolice = this.Config.Bind(
+            "General",
+            "DisablePoliceCutscene",
+            true,
+            "Disable cutscenes when the heat level changes."
+        );
+
+        ConfigCutsceneDisableBikeGate = this.Config.Bind(
+            "General",
+            "DisableBikeGateCutscene",
+            true,
+            "Disable the bike gate opening cutscene."
         );
     }
 }

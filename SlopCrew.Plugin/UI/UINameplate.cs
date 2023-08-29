@@ -5,7 +5,7 @@ namespace SlopCrew.Plugin.UI;
 
 public class UINameplate : MonoBehaviour {
     private void Update() {
-        if (Plugin.ConfigBillboardNameplates.Value) {
+        if (Plugin.ConfigUIBillboardNameplates.Value) {
             var camera = WorldHandler.instance.CurrentCamera;
             if (camera is null) return;
 
