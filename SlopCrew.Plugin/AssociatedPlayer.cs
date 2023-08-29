@@ -45,11 +45,11 @@ public class AssociatedPlayer {
         this.PrevTarget = startTransform;
         newPos = startTransform.Position.ToMentalDeficiency();
 
-        if (Plugin.ConfigUIShowPlayerNameplates.Value) {
+        if (Plugin.SlopConfig.ShowPlayerNameplates.Value) {
             this.SpawnNameplate();
         }
 
-        if (Plugin.ConfigUIShowPlayerPins.Value) {
+        if (Plugin.SlopConfig.ShowPlayerMapPins.Value) {
             this.SpawnMapPin();
         }
     }

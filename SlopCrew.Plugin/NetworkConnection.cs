@@ -24,9 +24,9 @@ public class NetworkConnection {
                                                            | SslProtocolsHack.Tls11
                                                            | SslProtocolsHack.Tls);
 
-        this.socket = new WebSocket(Plugin.ConfigAddress.Value);
-
-        if (Plugin.ConfigAddress.Value.StartsWith("wss")) {
+        var addr = Plugin.SlopConfig.Address.Value;
+        this.socket = new WebSocket(addr);
+        if (addr.StartsWith("wss")) {
             this.socket.SslConfiguration.EnabledSslProtocols = sslProtocolHack;
         }
 

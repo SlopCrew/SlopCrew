@@ -18,7 +18,9 @@ public class VersionUIHandlerPatch {
         var hex = ColorUtility.ToHtmlStringRGB(origColor);
 
         obj.alignment = TextAlignmentOptions.BottomLeft;
-        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - {PlayerNameFilter.DoFilter(Plugin.ConfigUsername.Value)}\n"
+
+        var username = PlayerNameFilter.DoFilter(Plugin.SlopConfig.Username.Value);
+        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - {username}\n"
                    + $"<color=#{hex}>" + verText;
     }
 }

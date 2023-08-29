@@ -50,30 +50,30 @@ public class PlayerManager : IDisposable {
         }).Start();
 
         new Thread(() => {
-            Queue<long> roundtripTimes = new Queue<long>();
+            var roundtripTimes = new Queue<long>();
+            var host = new Uri(Plugin.SlopConfig.Address.Value).Host;
+
             while (true) {
                 Thread.Sleep(1000);
-                System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
-                PingOptions options = new PingOptions();
+                var ping = new System.Net.NetworkInformation.Ping();
+                var options = new PingOptions {
+                    DontFragment = true
+                };
 
-                options.DontFragment = true;
+                var data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // Why??
+                var buffer = Encoding.ASCII.GetBytes(data);
+                var timeout = 12000;
 
-                string host = new Uri(Plugin.ConfigAddress.Value).Host;
-                string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // Why??
-                byte[] buffer = Encoding.ASCII.GetBytes(data);
-                int timeout = 12000;
+                var reply = ping.Send(host, timeout, buffer, options);
 
-                PingReply reply = ping.Send(host, timeout, buffer, options);
-
-                if (reply.Status == IPStatus.Success) {
+                if (reply?.Status == IPStatus.Success) {
                     roundtripTimes.Enqueue(reply.RoundtripTime);
-                } else {
-                    Plugin.Log.LogInfo("BYE BYE PING :(");
                 }
 
                 while (roundtripTimes.Count > 3) {
                     roundtripTimes.Dequeue();
                 }
+
                 ServerLatency = (long) roundtripTimes.Average(); // hopefully keep a nice running average
             }
         }).Start();
@@ -220,7 +220,7 @@ public class PlayerManager : IDisposable {
 
         Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
             Player = new() {
-                Name = Plugin.ConfigUsername.Value,
+                Name = Plugin.SlopConfig.Username.Value,
                 ID = 1337, // filled in by the server; could be an int instead of uint but i'd have to change types everywhere
 
                 Stage = (int) Core.Instance.BaseModule.CurrentStage,
@@ -240,7 +240,7 @@ public class PlayerManager : IDisposable {
                 IsDeveloper = false
             },
 
-            SecretCode = Plugin.ConfigSecretCode.Value
+            SecretCode = Plugin.SlopConfig.SecretCode.Value
         });
     }
 

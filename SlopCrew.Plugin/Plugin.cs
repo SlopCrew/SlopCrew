@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
@@ -13,6 +12,7 @@ namespace SlopCrew.Plugin;
 public class Plugin : BaseUnityPlugin {
     public static ManualLogSource Log = null!;
     public static Harmony Harmony = null!;
+    public static SlopConfigFile SlopConfig = null!;
 
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
@@ -23,28 +23,15 @@ public class Plugin : BaseUnityPlugin {
 
     // START ===== CONFIG VALUES ===== START \\
 
-    // General
-    public static ConfigEntry<string> ConfigAddress = null!;
-    public static ConfigEntry<string> ConfigUsername = null!;
-    public static ConfigEntry<string> ConfigSecretCode = null!;
-
-    // UI
-    public static ConfigEntry<bool> ConfigUIShowConnectionInfo = null!;
-    public static ConfigEntry<bool> ConfigUIShowPlayerNameplates = null!;
-    public static ConfigEntry<bool> ConfigUIBillboardNameplates = null!;
-    public static ConfigEntry<bool> ConfigUIShowPlayerPins = null!;
-
-    // Fixes
-    public static ConfigEntry<bool> ConfigFixBikeGate = null!;
 
     // END ===== CONFIG VALUES ===== END \\
 
     private void Awake() {
         Log = this.Logger;
+        SlopConfig = new(this.Config);
         Application.runInBackground = true;
 
         this.SetupHarmony();
-        this.SetupConfig();
 
         API = new();
         APIManager.RegisterAPI(API);
@@ -69,63 +56,5 @@ public class Plugin : BaseUnityPlugin {
         foreach (var patch in patches) {
             Harmony.PatchAll(patch);
         }
-    }
-
-    private void SetupConfig() {
-        ConfigAddress = this.Config.Bind(
-            "Server",
-            "Address",
-            "wss://slop.n2.pm/",
-            "Address of the server to connect to, in WebSocket format."
-        );
-
-        ConfigUsername = this.Config.Bind(
-            "General",
-            "Username",
-            "Big Slopper",
-            "Username to show to other players."
-        );
-
-        ConfigSecretCode = this.Config.Bind(
-            "Server",
-            "SecretCode",
-            "",
-            "Don't worry about it."
-        );
-
-        ConfigUIShowConnectionInfo = this.Config.Bind(
-            "General",
-            "ShowConnectionInfo",
-            true,
-            "Show current connection status and player count."
-        );
-
-        ConfigUIShowPlayerNameplates = this.Config.Bind(
-            "General",
-            "ShowPlayerNameplates",
-            true,
-            "Show players' names above their heads."
-        );
-
-        ConfigUIBillboardNameplates = this.Config.Bind(
-            "General",
-            "BillboardNameplates",
-            true,
-            "Billboard nameplates (always face the camera)."
-        );
-
-        ConfigUIShowPlayerPins = this.Config.Bind(
-            "General",
-            "ShowPlayerMapPins",
-            true,
-            "Show players on the phone map."
-        );
-
-        ConfigFixBikeGate = this.Config.Bind(
-            "Fixes",
-            "FixBikeGate",
-            true,
-            "Fix other players being able to start bike gate cutscenes."
-        );
     }
 }
