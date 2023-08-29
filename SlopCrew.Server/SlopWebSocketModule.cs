@@ -28,7 +28,7 @@ public class SlopWebSocketModule : WebSocketModule {
             this.Connections.Remove(context);
             this.UpdateConnectionCount();
         }
-
+    
         return Task.CompletedTask;
     }
 

@@ -18,7 +18,7 @@ public class AssociatedPlayer {
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
-    public Queue<Transform> TransformUpdates = new Queue<Transform>();
+    public Queue<Transform> TransformUpdates = new();
     public Transform TargetTransform;
     public Transform PrevTarget;
     public Vector3 FromPosition;
@@ -33,13 +33,13 @@ public class AssociatedPlayer {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
 
-        Transform startTransform = new Transform() {
-            Position = slopPlayer.Position,
-            Rotation = slopPlayer.Rotation,
-            Velocity = slopPlayer.Velocity,
-            Latency = 0,
+        var startTransform = new Transform {
+            Position = slopPlayer.Transform.Position,
+            Rotation = slopPlayer.Transform.Rotation,
+            Velocity = slopPlayer.Transform.Velocity,
             Stopped = true,
-            Tick = 0
+            Tick = 0,
+            Latency = 0
         };
 
         this.TargetTransform = startTransform;
@@ -77,10 +77,10 @@ public class AssociatedPlayer {
             var heat = gameplay.wanted1;
             var icon = heat.GetComponent<Image>();
 
-            var devIcon = new GameObject("SlopCrew_DevIcon"); 
+            var devIcon = new GameObject("SlopCrew_DevIcon");
             devIcon.name = "SlopCrew_DevIcon";
             devIcon.SetActive(true);
-            
+
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = icon.sprite;
 
@@ -88,7 +88,7 @@ public class AssociatedPlayer {
             var localPosition = devIcon.transform.localPosition;
             localPosition -= new Vector3(0, localPosition.y / 2, 0);
             devIcon.transform.localPosition = localPosition;
-            
+
             devIcon.transform.parent = container.transform;
             devIcon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             devIcon.transform.position += new Vector3(0, 0.25f, 0);
@@ -172,7 +172,7 @@ public class AssociatedPlayer {
             this.TransformUpdates.Enqueue(tf);
         }
     }
-    
+
     public void InterpolatePosition() {
         var target = this.TargetTransform.Position.ToMentalDeficiency();
 
@@ -193,13 +193,13 @@ public class AssociatedPlayer {
     public void InterpolateRotation() {
         var target = this.TargetTransform.Rotation.ToMentalDeficiency();
         Quaternion newRot;
-        
+
         if (this.TargetTransform.Stopped) {
             newRot = Quaternion.Lerp(this.FromRotation, target, this.LerpAmount);
         } else {
             newRot = Quaternion.SlerpUnclamped(this.FromRotation, target, this.LerpAmount);
         }
-        
+
         this.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
     }
 }

@@ -120,8 +120,8 @@ public class PlayerManager : IDisposable {
 
         // Why the hell is this the only way to get an empty transform
         var targetTransform = new GameObject("UnitySucksLmao").transform;
-        targetTransform.SetPositionAndRotation(slopPlayer.Position.ToMentalDeficiency(),
-                                               slopPlayer.Rotation.ToMentalDeficiency());
+        targetTransform.SetPositionAndRotation(slopPlayer.Transform.Position.ToMentalDeficiency(),
+                                               slopPlayer.Transform.Rotation.ToMentalDeficiency());
 
         //Plugin.Log.LogInfo("Creating player for " + slopPlayer.Name + " at " + slopPlayer.Position);
         var player = worldHandler.SetupAIPlayerAt(
@@ -179,21 +179,27 @@ public class PlayerManager : IDisposable {
             this.lastPos = position.FromMentalDeficiency();
 
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
-                Position = position.FromMentalDeficiency(),
-                Rotation = me.transform.rotation.FromMentalDeficiency(),
-                Velocity = me.motor.velocity.FromMentalDeficiency(),
-                Stopped = false,
-                Latency = ServerLatency
+                Transform = new Common.Transform {
+                    Position = position.FromMentalDeficiency(),
+                    Rotation = me.transform.rotation.FromMentalDeficiency(),
+                    Velocity = me.motor.velocity.FromMentalDeficiency(),
+                    Stopped = false,
+                    Tick = ServerTick,
+                    Latency = ServerLatency
+                }
             });
         } else if (!stopAnnounced) {
             stopAnnounced = true;
-            
+
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
-                Position = position.FromMentalDeficiency(),
-                Rotation = me.motor.rotation.FromMentalDeficiency(),
-                Velocity = Vector3.Zero,
-                Stopped = true,
-                Latency = ServerLatency
+                Transform = new Common.Transform {
+                    Position = position.FromMentalDeficiency(),
+                    Rotation = me.motor.rotation.FromMentalDeficiency(),
+                    Velocity = Vector3.Zero,
+                    Stopped = true,
+                    Tick = ServerTick,
+                    Latency = ServerLatency
+                }
             });
         }
     }
@@ -222,13 +228,18 @@ public class PlayerManager : IDisposable {
                 Outfit = this.CurrentOutfit,
                 MoveStyle = (int) moveStyle,
 
-                Position = me.transform.position.FromMentalDeficiency(),
-                Rotation = me.transform.rotation.FromMentalDeficiency(),
-                Velocity = me.motor.velocity.FromMentalDeficiency(),
-                
+                Transform = new Common.Transform {
+                    Position = me.transform.position.FromMentalDeficiency(),
+                    Rotation = me.transform.rotation.FromMentalDeficiency(),
+                    Velocity = me.motor.velocity.FromMentalDeficiency(),
+                    Stopped = false,
+                    Tick = ServerTick,
+                    Latency = ServerLatency
+                },
+
                 IsDeveloper = false
             },
-            
+
             SecretCode = Plugin.ConfigSecretCode.Value
         });
     }
@@ -248,7 +259,7 @@ public class PlayerManager : IDisposable {
 
     private void UpdatePlayerCount() {
         Plugin.PlayerCount = this.Players.Count + 1; // +1 to include the current player
-        
+
         Plugin.API.UpdatePlayerCount(Plugin.PlayerCount);
     }
 
