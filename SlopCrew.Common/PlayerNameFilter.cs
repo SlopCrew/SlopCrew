@@ -12,7 +12,9 @@ public static class PlayerNameFilter {
     // These people's names get caught in the profanity filter - let's let them through
     private static List<String> BasedNames = new() {
         "gangbangeronline",
-        "<color=#00ff37>DICK <color=#f4fff2>GRIPPA"
+        "<color=#00ff37>DICK <color=#f4fff2>GRIPPA",
+        "undies",
+        "[JKS]<#FF0>K1LL<#000>B1LL"
     };
     
     // Regex out some tags
