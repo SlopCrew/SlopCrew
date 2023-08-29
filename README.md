@@ -1,12 +1,19 @@
 # Slop Crew
 
-"multiplayer mod for [skateboard video game](https://store.steampowered.com/app/1353230/Bomb_Rush_Cyberfunk/)"
+<h3 align="center">
+  <a href="https://discord.gg/a2nVaZGGNz">Discord</a>
+  - <a href="https://thunderstore.io/c/bomb-rush-cyberfunk/p/NotNet/SlopCrew/">Thunderstore</a>
+  - <a href="https://github.com/NotNite/SlopCrew">GitHub</a>
+</h3>
+
+<p align="center">
+  "multiplayer mod for <a href="https://store.steampowered.com/app/1353230/Bomb_Rush_Cyberfunk/">skateboard video game</a>"
+</p>
 
 ![Several players in a Slop Crew server](https://namazu.photos/i/a7rb2n7s.png)
 
 ---
 
-[Discord](https://discord.gg/a2nVaZGGNz) - [Thunderstore](https://thunderstore.io/c/bomb-rush-cyberfunk/p/NotNet/SlopCrew/) - [GitHub](https://github.com/NotNite/SlopCrew)
 
 It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends.
 
