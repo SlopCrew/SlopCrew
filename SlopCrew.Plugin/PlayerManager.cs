@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Text;
 using System.Threading;
 using HarmonyLib;
 using Reptile;
@@ -27,6 +29,7 @@ public class PlayerManager : IDisposable {
 
     private Queue<NetworkSerializable> messageQueue = new();
     public static uint ServerTick = 0;
+    public static long ServerLatency = 0;
     private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
@@ -43,6 +46,35 @@ public class PlayerManager : IDisposable {
             while (true) {
                 Thread.Sleep(tickRate);
                 ServerTick++;
+            }
+        }).Start();
+
+        new Thread(() => {
+            Queue<long> roundtripTimes = new Queue<long>();
+            while (true) {
+                Thread.Sleep(1000);
+                System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
+                PingOptions options = new PingOptions();
+
+                options.DontFragment = true;
+
+                string host = new Uri(Plugin.ConfigAddress.Value).Host;
+                string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // Why??
+                byte[] buffer = Encoding.ASCII.GetBytes(data);
+                int timeout = 12000;
+
+                PingReply reply = ping.Send(host, timeout, buffer, options);
+
+                if (reply.Status == IPStatus.Success) {
+                    roundtripTimes.Enqueue(reply.RoundtripTime);
+                } else {
+                    Plugin.Log.LogInfo("BYE BYE PING :(");
+                }
+
+                while (roundtripTimes.Count > 3) {
+                    roundtripTimes.Dequeue();
+                }
+                ServerLatency = (long) roundtripTimes.Average(); // hopefully keep a nice running average
             }
         }).Start();
     }
@@ -150,17 +182,19 @@ public class PlayerManager : IDisposable {
                 Position = position.FromMentalDeficiency(),
                 Rotation = me.transform.rotation.FromMentalDeficiency(),
                 Velocity = me.motor.velocity.FromMentalDeficiency(),
-                Stopped = false
+                Stopped = false,
+                Latency = ServerLatency
             });
         } else if (!stopAnnounced) {
             stopAnnounced = true;
             
-            Plugin.NetworkConnection.SendMessage((new ServerboundPositionUpdate {
+            Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
                 Position = position.FromMentalDeficiency(),
                 Rotation = me.motor.rotation.FromMentalDeficiency(),
                 Velocity = Vector3.Zero,
-                Stopped = true
-            }));
+                Stopped = true,
+                Latency = ServerLatency
+            });
         }
     }
 
@@ -314,7 +348,7 @@ public class PlayerManager : IDisposable {
     private void HandlePlayerPositionUpdate(ClientboundPlayerPositionUpdate playerPositionUpdate) {
         foreach (var kvp in playerPositionUpdate.Positions) {
             if (this.Players.TryGetValue(kvp.Key, out var associatedPlayer)) {
-                associatedPlayer.SetPos(kvp.Value, playerPositionUpdate.Tick);
+                associatedPlayer.SetPos(kvp.Value);
             }
         }
     }
