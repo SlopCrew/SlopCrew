@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
@@ -60,7 +61,7 @@ public class AssociatedPlayer {
         // Setup the nameplate itself
         var nameplate = new GameObject("SlopCrew_Nameplate");
         var tmp = nameplate.AddComponent<TextMeshPro>();
-        tmp.text = this.SanitizeNameplate(this.SlopPlayer.Name);
+        tmp.text = this.SlopPlayer.Name;
 
         // Yoink the font from somewhere else because I guess asset loading is impossible
         var uiManager = Core.Instance.UIManager;
@@ -109,11 +110,6 @@ public class AssociatedPlayer {
 
         container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
-    }
-
-    private string SanitizeNameplate(string original) {
-        var regex = new Regex("<size.*?>");
-        return regex.Replace(original, "");
     }
 
     private void SpawnMapPin() {
