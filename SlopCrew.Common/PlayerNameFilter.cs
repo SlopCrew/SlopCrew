@@ -8,7 +8,7 @@ public static class PlayerNameFilter {
     
     // these names are caught in the filter. exclude them.
     private static List<String> BasedNames = new() {
-        "onlinegangbanger",
+        "gangbangeronline",
         "<color=#00ff37>DICK <color=#f4fff2>GRIPPA"
     };
     
