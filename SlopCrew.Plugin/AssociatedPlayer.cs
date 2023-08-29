@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using HarmonyLib;
@@ -18,22 +19,32 @@ public class AssociatedPlayer {
     public MapPin? MapPin;
 
     public Queue<Transform> TransformUpdates = new Queue<Transform>();
-    public Transform TargetTransform = new Transform();
-    public Transform PrevTarget = new Transform();
+    public Transform TargetTransform;
+    public Transform PrevTarget;
     public Vector3 FromPosition;
     public Quaternion FromRotation;
     public float TimeElapsed;
     public float TimeToTarget;
     public float LerpAmount;
 
+    private Vector3 newPos;
+
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
 
-        // NEED TO REDO THIS
-        //this.StartPos = slopPlayer.Position.ToMentalDeficiency();
-        //this.TargetPos = slopPlayer.Position.ToMentalDeficiency();
-        this.FromPosition = slopPlayer.Position.ToMentalDeficiency();
+        Transform startTransform = new Transform() {
+            Position = slopPlayer.Position,
+            Rotation = slopPlayer.Rotation,
+            Velocity = slopPlayer.Velocity,
+            Latency = 0,
+            Stopped = true,
+            Tick = 0
+        };
+
+        this.TargetTransform = startTransform;
+        this.PrevTarget = startTransform;
+        newPos = startTransform.Position.ToMentalDeficiency();
 
         if (Plugin.ConfigShowPlayerNameplates.Value) {
             this.SpawnNameplate();
@@ -156,16 +167,14 @@ public class AssociatedPlayer {
         //this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
     }
 
-    public void SetPos(SlopCrew.Common.Transform tf, uint currentTick) {
+    public void SetPos(Transform tf) {
         if (this.ReptilePlayer is not null) {
-            tf.Tick = currentTick;
             this.TransformUpdates.Enqueue(tf);
         }
     }
     
     public void InterpolatePosition() {
         var target = this.TargetTransform.Position.ToMentalDeficiency();
-        var newPos = Vector3.zero;
 
         if (this.TargetTransform.Stopped) {
             // If player is stopped just lerp to the target position
@@ -178,7 +187,6 @@ public class AssociatedPlayer {
             newPos = Vector3.LerpUnclamped(this.FromPosition, target, this.LerpAmount);
         }
 
-        //Plugin.Log.LogInfo("MOVING: FROM: " + this.FromPosition + " TO: " + target + " BY: " + this.LerpAmount);
         this.ReptilePlayer.motor.RigidbodyMove(newPos);
     }
 
