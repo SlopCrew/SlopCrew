@@ -21,6 +21,8 @@ public class AmbientTriggerPatch {
     }
 
     private static AssociatedPlayer? GetAssociatedPlayer(Collider trigger) {
+        if (!Plugin.SlopConfig.FixAmbientColors.Value) return null;
+
         foreach (var player in Plugin.PlayerManager.AssociatedPlayers) {
             var collider = player.ReptilePlayer.interactionCollider;
             if (collider == trigger) return player;

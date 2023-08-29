@@ -18,6 +18,7 @@ public class SlopConfigFile {
 
     // Fixes
     public ConfigEntry<bool> FixBikeGate;
+    public ConfigEntry<bool> FixAmbientColors;
 
     public SlopConfigFile(ConfigFile config) {
         this.config = config;
@@ -79,6 +80,13 @@ public class SlopConfigFile {
             "FixBikeGate",
             true,
             "Fix other players being able to start bike gate cutscenes."
+        );
+
+        this.FixAmbientColors = this.config.Bind(
+            "Fixes",
+            "FixAmbientColors",
+            true,
+            "Fix other players being able to change color grading."
         );
     }
 }
