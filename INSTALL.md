@@ -16,7 +16,7 @@
 - Drop the zip file into your game folder. **Extract its contents**, do ***not*** extract it into a new folder. You should now have a file called `winhttp.dll` and a `BepInEx` folder next to `Bomb Rush Cyberfunk.exe`. You can now delete the zip file.
 - Start the game and close it. This will generate additional BepInEx directories.
 - Download Slop Crew [from GitHub](https://github.com/NotNite/SlopCrew/releases).
-- Navigate to your `Bomb Rush Cyberfunk\BepInEx\plugins` directory. Extract Slop Crew in there. As long as the SlopCrew DLL files are *somewhere* in that `BepInEx\plugins` directory, the mod will load.
+- Navigate to your `Bomb Rush Cyberfunk\BepInEx\plugins` directory. Extract Slop Crew in there. As long as the Slop Crew DLL files are *somewhere* in that `BepInEx\plugins` directory, the mod will load.
 - Start the game, and close it once more. This will generate the config file.
 - Optional, but suggested: navigate to your `Bomb Rush Cyberfunk\BepInEx\config` directory and open `SlopCrew.Plugin.cfg` with any text editor to change settings (like your name).
 
@@ -56,7 +56,9 @@ $ dotnet run SlopCrew.Server --configuration Release
 
 Docker users can also use the `Dockerfile`/`docker-compose.yml`, or make their own using the image at `ghcr.io/notnite/slopcrew-server:latest`.
 
-## Compiling the plugin (for developers)
+## Stuff for developers
+
+### Compiling the plugin
 
 The `SlopCrew.Plugin` project references DLLs in your game install. To not commit piracy, the location to your game file must be specified with the `BRCPath` variable.
 
@@ -65,3 +67,41 @@ This path will vary per person, and will point to the folder that contains the g
 - Visual Studio: Set `BRCPath` as a global environment variable (I haven't figured out how to set it per-project yet).
 - JetBrains Rider: Go to `File | Settings | Build, Execution, Deployment | Toolset and Build` and edit the MSBuild global properties.
 - dotnet CLI: Pass `-p:BRCPath="path/to/game"` as an argument.
+
+### Using the API
+
+Slop Crew features an API you can use in your own BepInEx plugin. First, submodule this repository in your own code:
+
+```shell
+$ git submodule add https://github.com/NotNite/SlopCrew.git SlopCrew
+```
+
+Next, add the `SlopCrew.API` project as a reference to your project (adding it to your solution beforehand).
+
+Now, you can use the API in your code. Here's a short example:
+
+```cs
+using SlopCrew.API;
+
+[BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+[BepInProcess("Bomb Rush Cyberfunk.exe")]
+public class Plugin : BaseUnityPlugin {
+    private void Awake() {
+        // Access the API directly - this may be null
+        // (e.g. Slop Crew isn't installed or hasn't loaded yet)
+        var api = APIManager.API;
+        this.Logger.LogInfo("Player count: " + api?.PlayerCount);
+
+        // You can also use the event for when Slop Crew is loaded
+        // Note that this will not fire if Slop Crew is loaded before yours; check for
+        // the API being null before registering the event
+        APIManager.OnAPIRegistered += (api) => {
+            this.Logger.LogInfo("Player count: " + api.PlayerCount);
+        };
+    }
+}
+```
+
+The API allows you to access information about Slop Crew (player count, server address, connection status) and listen for when it changes via events (player count changes, connects/disconnects).
+
+It's intended that your plugin builds and ships with the SlopCrew.API assembly - do not remove it. Slop Crew also ships with the assembly, and will populate the API field when it loads. The API does not contain any Slop Crew functionality, and your plugin does not need to mark Slop Crew as a dependency on Thunderstore.
