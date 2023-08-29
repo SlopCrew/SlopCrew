@@ -185,7 +185,7 @@ public class Server {
         return id;
     }
     
-    public List<ConnectionState> GetConnections() {
-        return this.Module.Connections.Values.ToList();
+    public IEnumerable<ConnectionState> GetConnections() {
+        return this.Module.Connections.Values;
     }
 }
