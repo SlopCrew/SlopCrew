@@ -2,42 +2,33 @@
 using Graphite;
 using Serilog;
 using SlopCrew.Common.Network;
+using System.Collections.Concurrent;
 
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
+    public ConcurrentDictionary<IWebSocketContext, ConnectionState> Connections = new();
 
     public SlopWebSocketModule() : base("/", true) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
-        lock (this.Connections) {
-            this.Connections[context] = new ConnectionState(context);
-            this.UpdateConnectionCount();
-        }
-
+        this.Connections[context] = new ConnectionState(context);
+        this.UpdateConnectionCount();
         return Task.CompletedTask;
     }
 
     protected override Task OnClientDisconnectedAsync(IWebSocketContext context) {
-        lock (this.Connections) {
-            if (this.Connections.TryGetValue(context, out var state)) {
-                Server.Instance.UntrackConnection(state);
-            }
-
-            this.Connections.Remove(context);
+        if (this.Connections.TryRemove(context, out var state)) {
+            Server.Instance.UntrackConnection(state);
             this.UpdateConnectionCount();
         }
-    
         return Task.CompletedTask;
     }
 
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
-        lock (this.Connections) {
-            if (!this.Connections.TryGetValue(context, out var state)) return Task.CompletedTask;
-
+        if (this.Connections.TryGetValue(context, out var state)) {
             try {
                 var msg = NetworkPacket.Read(buffer);
                 state.HandlePacket(msg);
