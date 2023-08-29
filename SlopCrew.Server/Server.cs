@@ -3,7 +3,6 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
-using EmbedIO.WebSockets;
 using Graphite;
 using Constants = SlopCrew.Common.Constants;
 
@@ -178,13 +177,15 @@ public class Server {
     }
 
     public uint GetNextID() {
-        var ids = this.GetConnections().Select(x => x.Player?.ID).ToList();
-        var id = 0u;
-        while (ids.Contains(id)) id++;
+        var ids = new HashSet<uint>(this.GetConnections().Select(x => x.Player?.ID).Where(id => id.HasValue).Cast<uint>());
+        uint id = 0;
+        while (ids.Contains(id)) {
+            id++;
+        }
         return id;
     }
-
-    public List<ConnectionState> GetConnections() {
-        return this.Module.Connections.Values.ToList();
+    
+    public IEnumerable<ConnectionState> GetConnections() {
+        return this.Module.Connections.Values;
     }
 }
