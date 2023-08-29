@@ -86,19 +86,21 @@ public class PlayerPatch {
             while (associatedPlayer.TransformUpdates.Count > 0) {
                 var transformUpdate = associatedPlayer.TransformUpdates.Dequeue();
 
-                associatedPlayer.TimeElapsed = 0f;
+                if (PlayerManager.ServerTick > transformUpdate.Tick) {
+                    associatedPlayer.TimeElapsed = 0f;
 
-                // Update target and previous target transform
-                associatedPlayer.PrevTarget = associatedPlayer.TargetTransform;
-                associatedPlayer.TargetTransform = transformUpdate;
-                associatedPlayer.FromPosition = associatedPlayer.ReptilePlayer.motor.BodyPosition();
-                associatedPlayer.FromRotation = associatedPlayer.ReptilePlayer.motor.rotation;
+                    // Update target and previous target transform
+                    associatedPlayer.PrevTarget = associatedPlayer.TargetTransform;
+                    associatedPlayer.TargetTransform = transformUpdate;
+                    associatedPlayer.FromPosition = associatedPlayer.ReptilePlayer.motor.BodyPosition();
+                    associatedPlayer.FromRotation = associatedPlayer.ReptilePlayer.motor.rotation;
                 
-                // Calculate time to next target position
-                var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
+                    // Calculate time to next target position
+                    var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
                                    Constants.TickRate;
-                var latency = 0; // Need a proper way to check the server latency
-                associatedPlayer.TimeToTarget = lerpTime + latency;
+                    var latency = (associatedPlayer.TargetTransform.Latency + PlayerManager.ServerLatency / 2f) / 1000f;
+                    associatedPlayer.TimeToTarget = lerpTime + latency;
+                }
             }
 
             if (associatedPlayer.TimeToTarget == 0f) {
