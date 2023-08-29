@@ -20,32 +20,32 @@ public class Plugin : BaseUnityPlugin {
 
     public static bool IsConnected = false;
     public static int PlayerCount = 0;
-    
+
     // START ===== CONFIG VALUES ===== START \\
-    
+
     // General
     public static ConfigEntry<string> ConfigAddress = null!;
     public static ConfigEntry<string> ConfigUsername = null!;
     public static ConfigEntry<string> ConfigSecretCode = null!;
-    
+
     // UI
     public static ConfigEntry<bool> ConfigUIShowConnectionInfo = null!;
     public static ConfigEntry<bool> ConfigUIShowPlayerNameplates = null!;
     public static ConfigEntry<bool> ConfigUIBillboardNameplates = null!;
     public static ConfigEntry<bool> ConfigUIShowPlayerPins = null!;
-    
+
     // Fixes
     public static ConfigEntry<bool> ConfigFixBikeGate = null!;
-    
+
     // END ===== CONFIG VALUES ===== END \\
-    
+
     private void Awake() {
         Log = this.Logger;
         Application.runInBackground = true;
 
         this.SetupHarmony();
         this.SetupConfig();
-        
+
         API = new();
         APIManager.RegisterAPI(API);
 
@@ -85,7 +85,7 @@ public class Plugin : BaseUnityPlugin {
             "Big Slopper",
             "Username to show to other players."
         );
-        
+
         ConfigSecretCode = this.Config.Bind(
             "Server",
             "SecretCode",
