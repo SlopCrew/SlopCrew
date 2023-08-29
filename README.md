@@ -6,7 +6,7 @@
 
 ---
 
-[Discord](https://discord.gg/a2nVaZGGNz) - [Thunderstore](https://thunderstore.io/c/bomb-rush-cyberfunk/p/NotNet/SlopCrew/)
+[Discord](https://discord.gg/a2nVaZGGNz) - [Thunderstore](https://thunderstore.io/c/bomb-rush-cyberfunk/p/NotNet/SlopCrew/) - [GitHub](https://github.com/NotNite/SlopCrew)
 
 It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends.
 
