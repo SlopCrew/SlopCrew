@@ -8,7 +8,7 @@ namespace SlopCrew.Server;
 public class SlopWebSocketModule : WebSocketModule {
     public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
 
-    public SlopWebSocketModule() : base("/", false) { }
+    public SlopWebSocketModule() : base("/", true) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
         lock (this.Connections) {
