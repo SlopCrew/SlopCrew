@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using TMPro;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ public class VersionUIHandlerPatch {
         var hex = ColorUtility.ToHtmlStringRGB(origColor);
 
         obj.alignment = TextAlignmentOptions.BottomLeft;
-        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - {Plugin.ConfigUsername.Value}\n"
+        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - {PlayerNameFilter.DoFilter(Plugin.ConfigUsername.Value)}\n"
                    + $"<color=#{hex}>" + verText;
     }
 }
