@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>1.2.0</Version>
+        <Version>1.2.1</Version>
         <AssemblyName>SlopCrew.Plugin</AssemblyName>
         <Product>SlopCrew</Product>
         <Authors>NotNite</Authors>
@@ -81,7 +81,7 @@
 
 
     <ItemGroup>
-        <ProjectReference Include="..\SlopCrew.API\SlopCrew.API.csproj" />
+        <ProjectReference Include="..\SlopCrew.API\SlopCrew.API.csproj"/>
         <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
     </ItemGroup>
 

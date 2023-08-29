@@ -76,8 +76,8 @@ public class PlayerPatch {
     }
 
     [HarmonyPostfix]
-    [HarmonyPatch("FixedUpdatePlayer")]
-    public static void FixedUpdatePlayer(Player __instance) {
+    [HarmonyPatch("UpdatePlayer")]
+    public static void UpdatePlayer(Player __instance) {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
 
         if (associatedPlayer is not null) {
@@ -94,7 +94,7 @@ public class PlayerPatch {
                     associatedPlayer.TargetTransform = transformUpdate;
                     associatedPlayer.FromPosition = associatedPlayer.ReptilePlayer.motor.BodyPosition();
                     associatedPlayer.FromRotation = associatedPlayer.ReptilePlayer.motor.rotation;
-                
+
                     // Calculate time to next target position
                     var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
                                    Constants.TickRate;
@@ -108,10 +108,10 @@ public class PlayerPatch {
             } else {
                 associatedPlayer.LerpAmount = associatedPlayer.TimeElapsed / associatedPlayer.TimeToTarget;
             }
-            
+
             associatedPlayer.InterpolatePosition();
             associatedPlayer.InterpolateRotation();
-            
+
             associatedPlayer.MapPin?.SetLocation();
         }
     }

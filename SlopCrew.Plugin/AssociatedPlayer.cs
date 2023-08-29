@@ -32,6 +32,7 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
+        this.ReptilePlayer.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
 
         var startTransform = new Transform {
             Position = slopPlayer.Transform.Position,
