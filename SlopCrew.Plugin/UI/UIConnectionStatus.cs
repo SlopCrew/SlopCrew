@@ -48,7 +48,7 @@ public class UIConnectionStatus : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        var connStatus = Plugin.IsConnected ? "<color=green>True" : "<color=red>False";
-        this.tmp.text = $"Connected: {connStatus}<color=white>\nPlayers: {Plugin.PlayerCount}";
+        var connStatus = Plugin.API.Connected ? "<color=green>True" : "<color=red>False";
+        this.tmp.text = $"Connected: {connStatus}<color=white>\nPlayers: {Plugin.API.PlayerCount}";
     }
 }

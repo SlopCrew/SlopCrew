@@ -18,14 +18,6 @@ public class Plugin : BaseUnityPlugin {
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
 
-    public static bool IsConnected = false;
-    public static int PlayerCount = 0;
-
-    // START ===== CONFIG VALUES ===== START \\
-
-
-    // END ===== CONFIG VALUES ===== END \\
-
     private void Awake() {
         Log = this.Logger;
         SlopConfig = new(this.Config);
