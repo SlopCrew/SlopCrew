@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using HarmonyLib;
@@ -7,6 +9,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using Transform = SlopCrew.Common.Transform;
 
 namespace SlopCrew.Plugin;
 
@@ -15,18 +18,33 @@ public class AssociatedPlayer {
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
-    public Vector3 StartPos;
-    public Vector3 TargetPos;
-    public Quaternion StartRot;
-    public Quaternion TargetRot;
+    public Queue<Transform> TransformUpdates = new();
+    public Transform TargetTransform;
+    public Transform PrevTarget;
+    public Vector3 FromPosition;
+    public Quaternion FromRotation;
     public float TimeElapsed;
+    public float TimeToTarget;
+    public float LerpAmount;
+
+    private Vector3 newPos;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.SlopPlayer = slopPlayer;
         this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
 
-        this.StartPos = slopPlayer.Position.ToMentalDeficiency();
-        this.TargetPos = slopPlayer.Position.ToMentalDeficiency();
+        var startTransform = new Transform {
+            Position = slopPlayer.Transform.Position,
+            Rotation = slopPlayer.Transform.Rotation,
+            Velocity = slopPlayer.Transform.Velocity,
+            Stopped = true,
+            Tick = 0,
+            Latency = 0
+        };
+
+        this.TargetTransform = startTransform;
+        this.PrevTarget = startTransform;
+        newPos = startTransform.Position.ToMentalDeficiency();
 
         if (Plugin.ConfigShowPlayerNameplates.Value) {
             this.SpawnNameplate();
@@ -59,10 +77,10 @@ public class AssociatedPlayer {
             var heat = gameplay.wanted1;
             var icon = heat.GetComponent<Image>();
 
-            var devIcon = new GameObject("SlopCrew_DevIcon"); 
+            var devIcon = new GameObject("SlopCrew_DevIcon");
             devIcon.name = "SlopCrew_DevIcon";
             devIcon.SetActive(true);
-            
+
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = icon.sprite;
 
@@ -70,7 +88,7 @@ public class AssociatedPlayer {
             var localPosition = devIcon.transform.localPosition;
             localPosition -= new Vector3(0, localPosition.y / 2, 0);
             devIcon.transform.localPosition = localPosition;
-            
+
             devIcon.transform.parent = container.transform;
             devIcon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             devIcon.transform.position += new Vector3(0, 0.25f, 0);
@@ -149,13 +167,39 @@ public class AssociatedPlayer {
         //this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
     }
 
-    public void SetPos(SlopCrew.Common.Transform tf) {
+    public void SetPos(Transform tf) {
         if (this.ReptilePlayer is not null) {
-            this.StartPos = this.ReptilePlayer.motor.BodyPosition();
-            this.TargetPos = tf.Position.ToMentalDeficiency();
-            this.StartRot = this.ReptilePlayer.motor.rotation;
-            this.TargetRot = tf.Rotation.ToMentalDeficiency();
-            this.TimeElapsed = 0f;
+            this.TransformUpdates.Enqueue(tf);
         }
+    }
+
+    public void InterpolatePosition() {
+        var target = this.TargetTransform.Position.ToMentalDeficiency();
+
+        if (this.TargetTransform.Stopped) {
+            // If player is stopped just lerp to the target position
+            newPos = Vector3.Lerp(this.FromPosition, target, this.LerpAmount);
+        } else if ((target - this.FromPosition).magnitude > 10f) {
+            // Teleport them to the target position if they happen to get too far away
+            this.ReptilePlayer.motor.RigidbodyMove(target);
+        } else {
+            // Interpolate to the target position
+            newPos = Vector3.LerpUnclamped(this.FromPosition, target, this.LerpAmount);
+        }
+
+        this.ReptilePlayer.motor.RigidbodyMove(newPos);
+    }
+
+    public void InterpolateRotation() {
+        var target = this.TargetTransform.Rotation.ToMentalDeficiency();
+        Quaternion newRot;
+
+        if (this.TargetTransform.Stopped) {
+            newRot = Quaternion.Lerp(this.FromRotation, target, this.LerpAmount);
+        } else {
+            newRot = Quaternion.SlerpUnclamped(this.FromRotation, target, this.LerpAmount);
+        }
+
+        this.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
     }
 }

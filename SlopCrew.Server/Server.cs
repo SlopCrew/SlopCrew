@@ -45,9 +45,7 @@ public class Server {
         this.WebServer = new WebServer(o => {
             if (interfaceStr.StartsWith("https:")) {
                 if (File.Exists(certificatePath)) {
-                    o.WithCertificate(
-                        new System.Security.Cryptography.X509Certificates.X509Certificate2(
-                            certificatePath, certificatePass));
+                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, certificatePass));
                 } else {
                     Log.Error("Certificate {Path} does not exist, falling back to HTTP", certificatePath);
                     interfaceStr = interfaceStr.Replace("https:", "http:");
@@ -187,7 +185,6 @@ public class Server {
     }
 
     public List<ConnectionState> GetConnections() {
-        var connections = this.Module.Connections;
-        return connections.Values.ToList();
+        return this.Module.Connections.Values.ToList();
     }
 }

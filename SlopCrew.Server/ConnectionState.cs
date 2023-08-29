@@ -92,19 +92,14 @@ public class ConnectionState {
     private void HandlePositionUpdate(ServerboundPositionUpdate positionUpdate) {
         for (var i = 0; i < 3; i++) {
             // check to see if packet will crash clients
-            if (!float.IsFinite(positionUpdate.Position[i])
-                || !float.IsFinite(positionUpdate.Velocity[i])) break;
+            if (!float.IsFinite(positionUpdate.Transform.Position[i])
+                || !float.IsFinite(positionUpdate.Transform.Velocity[i])) break;
         }
 
-        this.Player!.Position = positionUpdate.Position;
-        this.Player.Rotation = positionUpdate.Rotation;
-        this.Player.Velocity = positionUpdate.Velocity;
+        this.Player!.Transform = positionUpdate.Transform;
 
-        this.QueuedPositionUpdate = new Transform {
-            Position = positionUpdate.Position,
-            Rotation = positionUpdate.Rotation,
-            Velocity = positionUpdate.Velocity
-        };
+        this.QueuedPositionUpdate = positionUpdate.Transform;
+        this.QueuedPositionUpdate.Tick = Server.CurrentTick;
     }
 
     private void HandleVisualUpdate(ServerboundVisualUpdate visualUpdate) {

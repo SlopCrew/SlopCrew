@@ -82,13 +82,36 @@ public class PlayerPatch {
 
         if (associatedPlayer is not null) {
             associatedPlayer.TimeElapsed += Time.deltaTime;
-            var lerpAmount = associatedPlayer.TimeElapsed / Constants.TickRate;
-            var newPos = Vector3.Lerp(associatedPlayer.StartPos, associatedPlayer.TargetPos, lerpAmount);
-            var newRot = Quaternion.Slerp(associatedPlayer.StartRot, associatedPlayer.TargetRot, lerpAmount);
 
-            associatedPlayer.ReptilePlayer.motor.RigidbodyMove(newPos);
-            associatedPlayer.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
+            while (associatedPlayer.TransformUpdates.Count > 0) {
+                var transformUpdate = associatedPlayer.TransformUpdates.Dequeue();
 
+                if (PlayerManager.ServerTick > transformUpdate.Tick) {
+                    associatedPlayer.TimeElapsed = 0f;
+
+                    // Update target and previous target transform
+                    associatedPlayer.PrevTarget = associatedPlayer.TargetTransform;
+                    associatedPlayer.TargetTransform = transformUpdate;
+                    associatedPlayer.FromPosition = associatedPlayer.ReptilePlayer.motor.BodyPosition();
+                    associatedPlayer.FromRotation = associatedPlayer.ReptilePlayer.motor.rotation;
+                
+                    // Calculate time to next target position
+                    var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
+                                   Constants.TickRate;
+                    var latency = (associatedPlayer.TargetTransform.Latency + PlayerManager.ServerLatency / 2f) / 1000f;
+                    associatedPlayer.TimeToTarget = lerpTime + latency;
+                }
+            }
+
+            if (associatedPlayer.TimeToTarget == 0f) {
+                associatedPlayer.LerpAmount = 1f;
+            } else {
+                associatedPlayer.LerpAmount = associatedPlayer.TimeElapsed / associatedPlayer.TimeToTarget;
+            }
+            
+            associatedPlayer.InterpolatePosition();
+            associatedPlayer.InterpolateRotation();
+            
             associatedPlayer.MapPin?.SetLocation();
         }
     }

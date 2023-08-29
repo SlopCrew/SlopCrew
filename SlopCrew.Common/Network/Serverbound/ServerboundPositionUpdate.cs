@@ -6,19 +6,14 @@ namespace SlopCrew.Common.Network.Serverbound;
 public class ServerboundPositionUpdate : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ServerboundPositionUpdate;
 
-    public Vector3 Position;
-    public Quaternion Rotation;
-    public Vector3 Velocity;
+    public Transform Transform;
 
     public override void Read(BinaryReader br) {
-        this.Position = br.ReadVector3();
-        this.Rotation = br.ReadQuaternion();
-        this.Velocity = br.ReadVector3();
+        this.Transform = new Transform();
+        this.Transform.Read(br);
     }
 
     public override void Write(BinaryWriter bw) {
-        bw.Write(this.Position);
-        bw.Write(this.Rotation);
-        bw.Write(this.Velocity);
+        this.Transform.Write(bw);
     }
 }

@@ -13,9 +13,7 @@ public class Player : NetworkSerializable {
     public int Outfit;
     public int MoveStyle;
 
-    public Vector3 Position;
-    public Quaternion Rotation;
-    public Vector3 Velocity;
+    public Transform Transform;
 
     public bool IsDeveloper;
 
@@ -28,10 +26,9 @@ public class Player : NetworkSerializable {
         this.Outfit = br.ReadInt32();
         this.MoveStyle = br.ReadInt32();
 
-        this.Position = br.ReadVector3();
-        this.Rotation = br.ReadQuaternion();
-        this.Velocity = br.ReadVector3();
-        
+        this.Transform = new Transform();
+        this.Transform.Read(br);
+
         this.IsDeveloper = br.ReadBoolean();
     }
 
@@ -44,10 +41,8 @@ public class Player : NetworkSerializable {
         bw.Write(this.Outfit);
         bw.Write(this.MoveStyle);
 
-        bw.Write(this.Position);
-        bw.Write(this.Rotation);
-        bw.Write(this.Velocity);
-        
+        this.Transform.Write(bw);
+
         bw.Write(this.IsDeveloper);
     }
 }
