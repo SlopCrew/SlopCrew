@@ -15,7 +15,9 @@ public static class PlayerNameFilter {
         "<color=#00ff37>DICK <color=#f4fff2>GRIPPA",
         "undies",
         "[JKS]<#FF0>K1LL<#000>B1LL",
-        "[JKS] <color=lightblue>SpookPPL"
+        "[JKS] <color=lightblue>SpookPPL",
+        "Start9",
+        "Jazzy Senpai"
     };
     
     // Regex out rich tags that can be abused
