@@ -372,6 +372,7 @@ public class PlayerManager : IDisposable {
             characterVisual.SetFrictionEffect(frictionEffect);
             characterVisual.SetSpraycan(spraycan);
             characterVisual.SetPhone(phone);
+            associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
     }

@@ -19,6 +19,7 @@ public class AssociatedPlayer {
 
     public int Score;
     public int Multiplier;
+    public bool PhoneOut;
 
     public Queue<Transform> TransformUpdates = new();
     public Transform TargetTransform;

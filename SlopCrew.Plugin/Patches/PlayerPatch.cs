@@ -138,4 +138,35 @@ public class PlayerPatch {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
         return associatedPlayer == null;
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("UpdateHoldProps")]
+    private static void UpdateHoldProps(Player __instance) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+
+        if (associatedPlayer is not null) {
+            var trPlr = Traverse.Create(__instance);
+            var phoneLayerWeight = trPlr.Field<float>("phoneLayerWeight");
+            var characterVisual = trPlr.Field<CharacterVisual>("characterVisual").Value;
+            var anim = trPlr.Field<Animator>("anim").Value;
+
+            // this is basically copy pasted from a decompile, lol, lmao, etc
+            var dt = Core.dt;
+
+            if (associatedPlayer.PhoneOut) {
+                phoneLayerWeight.Value += __instance.grabPhoneSpeed * dt;
+                characterVisual.SetPhone(true);
+                if (phoneLayerWeight.Value >= 1.0f)
+                    phoneLayerWeight.Value = 1f;
+                anim.SetLayerWeight(3, phoneLayerWeight.Value);
+            } else {
+                phoneLayerWeight.Value -= __instance.grabPhoneSpeed * dt;
+                if (phoneLayerWeight.Value <= 0.0f) {
+                    phoneLayerWeight.Value = 0.0f;
+                    characterVisual.SetPhone(false);
+                }
+                anim.SetLayerWeight(3, phoneLayerWeight.Value);
+            }
+        }
+    }
 }
