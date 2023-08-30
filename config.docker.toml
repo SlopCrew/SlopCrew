@@ -1,0 +1,7 @@
+# See INSTALL.md for all values
+interface = "http://+:42069"
+debug = false
+
+[graphite]
+host = "graphite"
+port = 2003

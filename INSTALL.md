@@ -39,7 +39,20 @@ Follow the instructions for your operating system below. Afterwards, you will ne
 - Port forward the server through your router and share your public IP with your friends.
 - Run the server through a reverse proxy, like NGINX or Caddy (making sure to setup WebSocket support).
 
-The server listens on all interfaces on port 42069 by default - this can be changed with the `SLOP_INTERFACE` environment variable.
+The server uses a TOML config file (pass the path to it as an argument to the executable, the `SLOP_CONFIG` environment variable, or place it in the working directory). Here are the default values - commented out values are null by default:
+
+```toml
+interface = "http://+:42069"
+debug = false
+
+# [certificates]
+# path = "./cert/cert.pfx"
+# password = "hunter2"
+
+# [graphite]
+# host = "localhost"
+# port = 2003
+```
 
 ### Windows
 

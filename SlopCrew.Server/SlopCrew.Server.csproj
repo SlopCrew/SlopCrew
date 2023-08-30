@@ -11,6 +11,7 @@
         <PackageReference Include="Graphite.NET" Version="1.1.0" />
         <PackageReference Include="Serilog" Version="3.0.1" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+        <PackageReference Include="Tomlyn" Version="0.16.2" />
     </ItemGroup>
 
     <ItemGroup>

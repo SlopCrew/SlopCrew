@@ -9,55 +9,57 @@ using Constants = SlopCrew.Common.Constants;
 namespace SlopCrew.Server;
 
 public class Server {
-    public static Server Instance = new();
+    public static Server Instance = null!;
     public static Logger Logger = null!;
     public static uint CurrentTick;
 
-    private string interfaceStr;
-    private bool debug;
+    private Config config;
 
     public WebServer WebServer;
     public SlopWebSocketModule Module;
     public GraphiteTcpClient? Graphite;
 
-    public Server() {
-        this.interfaceStr = Environment.GetEnvironmentVariable("SLOP_INTERFACE") ?? "http://+:42069";
-        var certificatePath = Environment.GetEnvironmentVariable("SLOP_CERTIFICATE_PATH") ?? "./cert/cert.pfx";
-        var certificatePass = Environment.GetEnvironmentVariable("SLOP_CERTIFICATE_PASS") ?? null;
-
-        var debugStr = Environment.GetEnvironmentVariable("SLOP_DEBUG")?.Trim().ToLower();
-        this.debug = int.TryParse(debugStr, out var debugInt) ? debugInt != 0 : debugStr == "true";
-
-        var graphiteStr = Environment.GetEnvironmentVariable("SLOP_GRAPHITE")?.Trim().ToLower();
-        if (graphiteStr != null) {
-            var graphitePortStr = Environment.GetEnvironmentVariable("SLOP_GRAPHITE_PORT")?.Trim().ToLower();
-            var graphitePort = int.TryParse(graphitePortStr, out var graphitePortInt) ? graphitePortInt : 2003;
-            this.Graphite = new GraphiteTcpClient(graphiteStr, graphitePort, "slop");
-        }
-
+    public Server(string[] args) {
         var logger = new LoggerConfiguration().WriteTo.Console();
-        if (this.debug) logger = logger.MinimumLevel.Verbose();
         Logger = logger.CreateLogger();
         Log.Logger = Logger;
 
+        this.config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
+        if (this.config.Debug) logger.MinimumLevel.Verbose();
+
+        if (this.config.Graphite.Host != null) {
+            Log.Information("Connecting to Graphite ({Host}:{Port})...", this.config.Graphite.Host,
+                            this.config.Graphite.Port);
+            this.Graphite = new GraphiteTcpClient(
+                this.config.Graphite.Host,
+                this.config.Graphite.Port,
+                "slop"
+            );
+        }
+
         this.Module = new SlopWebSocketModule();
         this.WebServer = new WebServer(o => {
-            if (interfaceStr.StartsWith("https:")) {
-                if (File.Exists(certificatePath)) {
-                    o.WithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, certificatePass));
+            var certPath = this.config.Certificates.Path;
+            var certPass = this.config.Certificates.Password;
+
+            if (this.config.Interface.StartsWith("https:")) {
+                if (File.Exists(certPath)) {
+                    o.WithCertificate(
+                        new System.Security.Cryptography.X509Certificates.X509Certificate2(
+                            certPath, certPass));
                 } else {
-                    Log.Error("Certificate {Path} does not exist, falling back to HTTP", certificatePath);
-                    interfaceStr = interfaceStr.Replace("https:", "http:");
+                    Log.Error("Certificate {Path} does not exist, falling back to HTTP", certPath);
+                    this.config.Interface = this.config.Interface.Replace("https:", "http:");
                 }
             }
 
-            o.WithUrlPrefix(this.interfaceStr);
+            o.WithUrlPrefix(this.config.Interface);
             o.WithMode(HttpListenerMode.EmbedIO);
         }).WithModule(this.Module);
     }
 
     public void Start() {
-        Log.Information("Listening on {Interface} - press any key to close", this.interfaceStr);
+        Log.Information("Listening on {Interface} - press any key to close", this.config.Interface);
 
         // ReSharper disable once FunctionNeverReturns
         new Thread(() => {
@@ -177,14 +179,15 @@ public class Server {
     }
 
     public uint GetNextID() {
-        var ids = new HashSet<uint>(this.GetConnections().Select(x => x.Player?.ID).Where(id => id.HasValue).Cast<uint>());
+        var ids = new HashSet<uint>(this.GetConnections().Select(x => x.Player?.ID).Where(id => id.HasValue)
+                                        .Cast<uint>());
         uint id = 0;
         while (ids.Contains(id)) {
             id++;
         }
         return id;
     }
-    
+
     public IEnumerable<ConnectionState> GetConnections() {
         return this.Module.Connections.Values;
     }

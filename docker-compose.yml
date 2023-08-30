@@ -12,12 +12,11 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      SLOP_INTERFACE: "http://+:42069"
-      SLOP_GRAPHITE: "graphite"
-      SLOP_GRAPHITE_PORT: 2003
+      - SLOP_CONFIG=/config.toml
     ports:
       - "42069:42069"
     volumes:
+      - ./config.docker.toml:/config.toml:ro
       - ./cert:/cert:ro
     networks:
       - slopcrew-network
