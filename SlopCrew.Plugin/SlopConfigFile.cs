@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System.Collections.Generic;
+using BepInEx.Configuration;
 
 namespace SlopCrew.Plugin;
 
@@ -27,9 +28,20 @@ public class SlopConfigFile {
         this.Address = this.config.Bind(
             "Server",
             "Address",
-            "wss://slop.n2.pm/",
+            "wss://sloppers.club/",
             "Address of the server to connect to, in WebSocket format."
         );
+
+        // Migrate old servers to the new server
+        var oldAddresses = new List<string> {
+            "ws://lmaobox.n2.pm:1337/",
+            "wss://slop.n2.pm/"
+        };
+        if (oldAddresses.Contains(this.Address.Value)) {
+            Plugin.Log.LogInfo("Migrating address to new server");
+            this.Address.Value = "wss://sloppers.club/";
+            this.config.Save();
+        }
 
         this.SecretCode = this.config.Bind(
             "Server",
