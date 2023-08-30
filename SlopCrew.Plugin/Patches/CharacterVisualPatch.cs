@@ -20,6 +20,7 @@ public class CharacterVisualPatch {
     private static BoostpackEffectMode LastBoostpackEffectMode = BoostpackEffectMode.OFF;
     private static FrictionEffectMode LastFrictionEffectMode = FrictionEffectMode.OFF;
     private static bool LastSpraycan = false;
+    private static bool LastPhone = false;
 
     [HarmonyPrefix]
     [HarmonyPatch("SetBoostpackEffect")]
@@ -90,6 +91,29 @@ public class CharacterVisualPatch {
         var characterVisual = GetMyCharacterVisual();
         if (__instance == characterVisual) {
             var different = LastSpraycan != set;
+            if (different) Plugin.PlayerManager.IsVisualRefreshQueued = true;
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch("SetPhone")]
+    public static bool SetPhone_Prefix(CharacterVisual __instance, bool set) {
+        var characterVisual = GetMyCharacterVisual();
+        if (__instance == characterVisual) {
+            LastPhone = characterVisual.VFX.phone;
+        } else if (GetAssociatedPlayer(__instance) is not null) {
+            return Plugin.PlayerManager.IsSettingVisual;
+        }
+
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("SetPhone")]
+    public static void SetPhone_Postfix(CharacterVisual __instance, bool set) {
+        var characterVisual = GetMyCharacterVisual();
+        if (__instance == characterVisual) {
+            var different = LastPhone != set;
             if (different) Plugin.PlayerManager.IsVisualRefreshQueued = true;
         }
     }

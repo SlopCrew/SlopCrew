@@ -98,7 +98,8 @@ var packets = new List<NetworkPacket> {
     new ServerboundVisualUpdate {
         BoostpackEffect = 2,
         FrictionEffect = 3,
-        Spraycan = false
+        Spraycan = false,
+        Phone = true
     }
 };
 

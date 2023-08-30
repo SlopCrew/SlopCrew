@@ -99,7 +99,8 @@ public class ConnectionState {
             Player = this.Player!.ID,
             BoostpackEffect = visualUpdate.BoostpackEffect,
             FrictionEffect = visualUpdate.FrictionEffect,
-            Spraycan = visualUpdate.Spraycan
+            Spraycan = visualUpdate.Spraycan,
+            Phone = visualUpdate.Phone
         };
     }
 

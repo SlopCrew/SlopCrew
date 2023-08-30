@@ -253,7 +253,8 @@ public class PlayerManager : IDisposable {
         Plugin.NetworkConnection.SendMessage(new ServerboundVisualUpdate {
             BoostpackEffect = (int) characterVisual.boostpackEffectMode,
             FrictionEffect = (int) characterVisual.frictionEffectMode,
-            Spraycan = characterVisual.VFX.spraycan.activeSelf
+            Spraycan = characterVisual.VFX.spraycan.activeSelf,
+            Phone = characterVisual.VFX.phone.activeSelf
         });
     }
 
@@ -374,6 +375,7 @@ public class PlayerManager : IDisposable {
             var boostpackEffect = (BoostpackEffectMode) playerVisualUpdate.BoostpackEffect;
             var frictionEffect = (FrictionEffectMode) playerVisualUpdate.FrictionEffect;
             var spraycan = playerVisualUpdate.Spraycan;
+            var phone = playerVisualUpdate.Phone;
 
             characterVisual.hasEffects = true;
             characterVisual.hasBoostPack = true;
@@ -383,6 +385,7 @@ public class PlayerManager : IDisposable {
             characterVisual.SetBoostpackEffect(boostpackEffect);
             characterVisual.SetFrictionEffect(frictionEffect);
             characterVisual.SetSpraycan(spraycan);
+            characterVisual.SetPhone(phone);
             this.IsSettingVisual = false;
         }
     }
