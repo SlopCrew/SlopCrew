@@ -3,7 +3,6 @@ using System.Text.Json;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
-using Serilog;
 
 namespace SlopCrew.Server;
 
@@ -17,6 +16,20 @@ public class SlopAPIController : WebApiController {
         };
 
         var json = JsonSerializer.Serialize(response);
+        await this.HttpContext.SendStringAsync(json, "application/json", Encoding.UTF8);
+    }
+
+    [Route(HttpVerbs.Get, "/shields")]
+    public async Task GetShields() {
+        var response = new {
+            schemaVersion = 1,
+            label = "players online",
+            message = Server.Instance.Metrics.Connections.ToString(),
+            color = "orange"
+        };
+
+        var json = JsonSerializer.Serialize(response);
+        Console.WriteLine(json);
         await this.HttpContext.SendStringAsync(json, "application/json", Encoding.UTF8);
     }
 }

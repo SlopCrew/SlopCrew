@@ -74,6 +74,14 @@ public class ConnectionState {
     }
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {
+        var isBiggestLoser = enter.Player.Character is < -1 or > 26
+                             || enter.Player.Outfit is < 0 or > 3
+                             || enter.Player.MoveStyle is < 0 or > 5;
+        if (isBiggestLoser) {
+            this.TonightsBiggestLoser();
+            return;
+        }
+
         // Assign a unique ID on first hello
         // Subsequent hellos keep the originally assigned ID
         enter.Player.ID = this.Player?.ID ?? server.GetNextID();
@@ -160,5 +168,11 @@ public class ConnectionState {
             module.BroadcastInStage(this.Context, this.QueuedVisualUpdate);
             this.QueuedVisualUpdate = null;
         }
+    }
+
+    public void TonightsBiggestLoser() {
+        var str = this.Player is not null ? this.Player.Name + $" ({this.Player.ID})" : "no player";
+        Log.Information("tonights biggest loser is {PlayerID} {IP}", str, this.Context.RemoteEndPoint);
+        this.Context.WebSocket.CloseAsync();
     }
 }

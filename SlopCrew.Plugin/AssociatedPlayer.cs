@@ -35,7 +35,7 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
         this.SlopPlayer = slopPlayer;
-        
+
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,
             (Characters) slopPlayer.Character,
@@ -43,7 +43,7 @@ public class AssociatedPlayer {
             outfit: slopPlayer.Outfit,
             moveStyleEquipped: (MoveStyle) slopPlayer.MoveStyle
         );
-        
+
         player.motor.gravity = 0;
         this.ReptilePlayer = player;
         this.ReptilePlayer.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
@@ -169,10 +169,10 @@ public class AssociatedPlayer {
 
         if (this.MapPin is not null)
             Object.Destroy(this.MapPin);
-        
+
         if (this.emptyTransform?.gameObject is not null)
             Object.Destroy(this.emptyTransform.gameObject);
-        
+
         if (this.emptyTransform is not null)
             Object.Destroy(this.emptyTransform);
     }
