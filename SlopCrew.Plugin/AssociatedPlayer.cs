@@ -32,9 +32,24 @@ public class AssociatedPlayer {
 
     private Vector3 newPos;
 
+    private static UnityEngine.Transform? EmptyTransform;
+
     public AssociatedPlayer(Common.Player slopPlayer) {
+        // This is the only way to get an empty transform in Unity for some reason
+        EmptyTransform ??= new GameObject("SlopCrew_EmptyTransform").transform;
+        
         this.SlopPlayer = slopPlayer;
-        this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
+        
+        var player = WorldHandler.instance.SetupAIPlayerAt(
+            EmptyTransform,
+            (Characters) slopPlayer.Character,
+            PlayerType.NONE,
+            outfit: slopPlayer.Outfit,
+            moveStyleEquipped: (MoveStyle) slopPlayer.MoveStyle
+        );
+        
+        player.motor.gravity = 0;
+        this.ReptilePlayer = player;
         this.ReptilePlayer.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
 
         var startTransform = new Transform {
