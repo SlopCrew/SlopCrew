@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using HarmonyLib;
 using Reptile;
-using SlopCrew.Common;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
@@ -32,16 +30,14 @@ public class AssociatedPlayer {
 
     private Vector3 newPos;
 
-    private static UnityEngine.Transform? EmptyTransform;
+    private UnityEngine.Transform? emptyTransform;
 
     public AssociatedPlayer(Common.Player slopPlayer) {
-        // This is the only way to get an empty transform in Unity for some reason
-        EmptyTransform ??= new GameObject("SlopCrew_EmptyTransform").transform;
-        
+        this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
         this.SlopPlayer = slopPlayer;
         
         var player = WorldHandler.instance.SetupAIPlayerAt(
-            EmptyTransform,
+            this.emptyTransform,
             (Characters) slopPlayer.Character,
             PlayerType.NONE,
             outfit: slopPlayer.Outfit,
@@ -173,6 +169,12 @@ public class AssociatedPlayer {
 
         if (this.MapPin is not null)
             Object.Destroy(this.MapPin);
+        
+        if (this.emptyTransform?.gameObject is not null)
+            Object.Destroy(this.emptyTransform.gameObject);
+        
+        if (this.emptyTransform is not null)
+            Object.Destroy(this.emptyTransform);
     }
 
     public void ResetPlayer(Common.Player slopPlayer) {
