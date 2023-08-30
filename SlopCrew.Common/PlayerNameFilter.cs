@@ -18,9 +18,25 @@ public static class PlayerNameFilter {
         "[JKS] <color=lightblue>SpookPPL"
     };
     
-    // Regex out some tags
+    // Regex out rich tags that can be abused
     private static List<Regex> Regexes = new() {
-        new Regex("<size.*?>")
+        new Regex("<a href*?>"),
+        new Regex("<alpha*?>"),
+        new Regex("<br>"),
+        new Regex("<cspace.*?>"),
+        new Regex("<font .*?>"),
+        new Regex("<indent.*?>"),
+        new Regex("<line-.*?>"),
+        new Regex("<margin.*?>"),
+        new Regex("<mark.*?>"),
+        new Regex("<mspace.*?>"),
+        new Regex("<pos.*?>"),
+        new Regex("<rotate.*?>"),
+        new Regex("<size.*?>"),
+        new Regex("<space.*?>"),
+        new Regex("<style.*?>"),
+        new Regex("<voffset.*?>"),
+        new Regex("<width.*?>")
     };
 
     public static string DoFilter(string name) {
