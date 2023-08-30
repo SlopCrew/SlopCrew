@@ -19,9 +19,11 @@ public class ConnectionState {
     public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
 
     public IWebSocketContext Context;
+    public object SendLock;
 
     public ConnectionState(IWebSocketContext context) {
         this.Context = context;
+        this.SendLock = new();
     }
 
     public void HandlePacket(NetworkPacket msg) {

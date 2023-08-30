@@ -43,11 +43,24 @@ public class SlopWebSocketModule : WebSocketModule {
     }
 
     public void SendToContext(IWebSocketContext context, NetworkPacket msg) {
-        this.SendAsync(context, msg.Serialize());
+        var serialized = msg.Serialize();
+        if (this.Connections.TryGetValue(context, out var state)) {
+            lock (state.SendLock) {
+                this.SendAsync(context, serialized);
+            }
+        } else {
+            this.SendAsync(context, serialized);
+        }
     }
 
     public void SendToContext(IWebSocketContext context, byte[] msg) {
-        this.SendAsync(context, msg);
+        if (this.Connections.TryGetValue(context, out var state)) {
+            lock (state.SendLock) {
+                this.SendAsync(context, msg);
+            }
+        } else {
+            this.SendAsync(context, msg);
+        }
     }
 
     public void BroadcastInStage(
@@ -62,7 +75,9 @@ public class SlopWebSocketModule : WebSocketModule {
 
         var serialized = msg.Serialize();
         foreach (var session in otherSessions) {
-            this.SendAsync(session.Key, serialized);
+            lock (session.Value.SendLock) {
+                this.SendAsync(session.Key, serialized);
+            }
         }
     }
 }
