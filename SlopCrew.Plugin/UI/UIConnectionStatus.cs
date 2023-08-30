@@ -33,18 +33,9 @@ public class UIConnectionStatus : MonoBehaviour {
         rect.pivot = new Vector2(0, 1);
         rect.anchoredPosition = new Vector2(0.2f, 0.9f);
 
-        this.tmp.rectTransform.SetParent(gameplay.gameplayScreen.GetComponent<RectTransform>(), false);
-    }
-
-    private void Update() {
         var player = WorldHandler.instance.GetCurrentPlayer();
-        if (player is null || !player.isActiveAndEnabled) {
-            this.tmp.enabled = false;
-            return;
-        }
-
         var phone = Traverse.Create(player).Field<Phone>("phone").Value;
-        this.tmp.enabled = phone.transform.Find("OpenCanvas").gameObject.activeSelf;
+        this.tmp.rectTransform.SetParent(phone.transform.Find("OpenCanvas").GetComponent<RectTransform>(), false);
     }
 
     private void FixedUpdate() {
