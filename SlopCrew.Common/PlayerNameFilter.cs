@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace SlopCrew.Common;
 
-// NOTE(NotNite): This class is in common to allow you to see if your name gets filtered on the title screen
-// This also adds a *lot* of bloat to the plugin, so let's re-evaluate if it should be here
-public static class PlayerNameFilter {
-    private static ProfanityFilter.ProfanityFilter Filter = new();
+public class PlayerNameFilter {
+    private static List<string> BannedWords = LoadBannedWords();
 
     // These people's names get caught in the profanity filter - let's let them through
     private static List<String> BasedNames = new() {
@@ -21,7 +21,7 @@ public static class PlayerNameFilter {
         "Itz Vexx",
         "<color=#F00>Humongous Slopper"
     };
-    
+
     // Regex out rich tags that can be abused
     private static List<Regex> Regexes = new() {
         new Regex("<a href*?>"),
@@ -43,6 +43,23 @@ public static class PlayerNameFilter {
         new Regex("<width.*?>")
     };
 
+    private static List<string> LoadBannedWords() {
+        var result = new List<string>();
+
+        var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SlopCrew.Common.res.profanity.txt");
+        if (stream is null) throw new Exception("Could not load profanity filter");
+        var text = new StreamReader(stream).ReadToEnd();
+
+        var lines = text.Split('\n');
+        foreach (var line in lines) {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("#")) continue;
+            result.Add(trimmed);
+        }
+
+        return result;
+    }
+
     public static string DoFilter(string name) {
         if (HitsFilter(name)) return Constants.CensoredName;
 
@@ -57,6 +74,14 @@ public static class PlayerNameFilter {
 
     public static bool HitsFilter(string name) {
         if (BasedNames.Contains(name)) return false;
-        return Filter.ContainsProfanity(name.ToLower());
+        return ContainsProfanity(name);
+    }
+
+    public static bool ContainsProfanity(string text) {
+        foreach (var line in BannedWords) {
+            if (text.ToLower().Contains(line.ToLower())) return true;
+        }
+
+        return false;
     }
 }

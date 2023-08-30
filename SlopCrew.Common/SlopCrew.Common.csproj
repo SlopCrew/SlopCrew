@@ -4,8 +4,9 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-   
+
     <ItemGroup>
-        <PackageReference Include="Profanity.Detector" Version="0.1.8"/>
+        <Ignore Include="res\**" />
+        <EmbeddedResource Include="res\**"/>
     </ItemGroup>
 </Project>
