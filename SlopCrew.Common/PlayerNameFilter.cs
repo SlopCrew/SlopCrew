@@ -14,7 +14,8 @@ public static class PlayerNameFilter {
         "gangbangeronline",
         "<color=#00ff37>DICK <color=#f4fff2>GRIPPA",
         "undies",
-        "[JKS]<#FF0>K1LL<#000>B1LL"
+        "[JKS]<#FF0>K1LL<#000>B1LL",
+        "[JKS] <color=lightblue>SpookPPL"
     };
     
     // Regex out some tags
