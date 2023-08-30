@@ -78,6 +78,20 @@ var packets = new List<NetworkPacket> {
     new ClientboundSync {
         ServerTickActual = 1234
     },
+    
+    new ClientboundPlayerScoreUpdate {
+        Multiplier = 3,
+        Player = 42069,
+        Score = 694201337
+    },
+    
+    new ClientboundPong {
+        ID = 42069
+    },
+    
+    new ServerboundPing {
+        ID = 42069
+    },
 
     new ServerboundAnimation {
         Animation = 5,
@@ -100,7 +114,16 @@ var packets = new List<NetworkPacket> {
         FrictionEffect = 3,
         Spraycan = false,
         Phone = true
-    }
+    },
+    
+    new ServerboundScoreUpdate {
+        Multiplier = 3,
+        Score = 694201337
+    },
+    
+    new ServerboundVersion {
+        Version = 130
+    },
 };
 
 foreach (var packet in packets) {

@@ -76,31 +76,6 @@ public class PlayerManager : IDisposable {
         this.IsHelloRefreshQueued = true;
     }
 
-    public static Reptile.Player SpawnReptilePlayer(Common.Player slopPlayer) {
-        var worldHandler = WorldHandler.instance;
-
-        // Why the hell is this the only way to get an empty transform
-        var targetTransform = new GameObject("UnitySucksLmao").transform;
-        targetTransform.SetPositionAndRotation(slopPlayer.Transform.Position.ToMentalDeficiency(),
-                                               slopPlayer.Transform.Rotation.ToMentalDeficiency());
-
-        //Plugin.Log.LogInfo("Creating player for " + slopPlayer.Name + " at " + slopPlayer.Position);
-        var player = worldHandler.SetupAIPlayerAt(
-            targetTransform,
-            (Characters) slopPlayer.Character,
-            PlayerType.NONE,
-            outfit: slopPlayer.Outfit,
-            moveStyleEquipped: (MoveStyle) slopPlayer.MoveStyle
-        );
-
-        player.motor.gravity = 0;
-
-        //var vel = slopPlayer.Velocity.ToMentalDeficiency();
-        //player.SetVelocity(vel);
-
-        return player;
-    }
-
     public void Update() {
         if (this.IsResetQueued) {
             this.IsResetQueued = false;
