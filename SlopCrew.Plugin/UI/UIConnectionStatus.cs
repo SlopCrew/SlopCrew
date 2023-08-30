@@ -1,5 +1,4 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
 using TMPro;
@@ -27,7 +26,7 @@ public class UIConnectionStatus : MonoBehaviour {
         this.tmp.alignment = TextAlignmentOptions.TopLeft;
         var rect = this.tmp.rectTransform;
 
-        // this goes top left, because x0 y0 is bottom right in Unity :^) - jay
+        // this goes top left, because x0 y0 is bottom left in Unity :^) - jay
         rect.anchorMin = new Vector2(0, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 1);
         rect.pivot = new Vector2(0, 1);
