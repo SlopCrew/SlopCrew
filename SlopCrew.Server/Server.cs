@@ -30,11 +30,16 @@ public class Server {
         if (this.config.Graphite.Host != null) {
             Log.Information("Connecting to Graphite ({Host}:{Port})...", this.config.Graphite.Host,
                             this.config.Graphite.Port);
-            this.Graphite = new GraphiteTcpClient(
-                this.config.Graphite.Host,
-                this.config.Graphite.Port,
-                "slop"
-            );
+            try {
+                this.Graphite = new GraphiteTcpClient(
+                    this.config.Graphite.Host,
+                    this.config.Graphite.Port,
+                    "slop"
+                );
+            } catch (Exception e) {
+                Log.Error(e, "Error connecting to Graphite - metrics will not work!");
+                this.Graphite = null;
+            }
         }
 
         this.Module = new SlopWebSocketModule();
