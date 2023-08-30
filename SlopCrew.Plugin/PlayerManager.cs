@@ -235,7 +235,6 @@ public class PlayerManager : IDisposable {
         var multiplier = (int) traverse.Field<float>("scoreMultiplier").Value;
         if (score == this.lastScoreAndMultiplier.Item1 && multiplier == this.lastScoreAndMultiplier.Item2) return;
 
-        Plugin.Log.LogInfo("Sending score update: " + score + "x" + multiplier);
         Plugin.NetworkConnection.SendMessage(new ServerboundScoreUpdate {
             Score = score,
             Multiplier = multiplier
