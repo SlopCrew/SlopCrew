@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Server", "SlopCrew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.API", "SlopCrew.API\SlopCrew.API.csproj", "{9F225D8D-252F-4E86-8A69-66213CB0684C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.NetworkTests", "SlopCrew.NetworkTests\SlopCrew.NetworkTests.csproj", "{AC7AACCA-428C-415E-BF2C-5F9DE1011217}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
