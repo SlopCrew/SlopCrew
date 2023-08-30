@@ -15,6 +15,7 @@ public class ConnectionState {
 
     public ClientboundPlayerAnimation? QueuedAnimation;
     public Transform? QueuedPositionUpdate;
+    public ClientboundPlayerScoreUpdate? QueuedScoreUpdate;
     public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
 
     public IWebSocketContext Context;
@@ -32,11 +33,11 @@ public class ConnectionState {
                 // Older version, no thanks
                 this.Context.WebSocket.CloseAsync();
                 return;
-            
+
             case ServerboundPing ping:
                 HandlePing(ping);
                 return;
-            
+
             case ServerboundPlayerHello enter:
                 this.HandleHello(enter, server);
                 return;
@@ -49,15 +50,19 @@ public class ConnectionState {
 
         switch (msg) {
             case ServerboundAnimation animation:
-                HandleAnimation(animation);
+                this.HandleAnimation(animation);
                 break;
 
             case ServerboundPositionUpdate positionUpdate:
-                HandlePositionUpdate(positionUpdate);
+                this.HandlePositionUpdate(positionUpdate);
+                break;
+
+            case ServerboundScoreUpdate scoreUpdate:
+                this.HandleScoreUpdate(scoreUpdate);
                 break;
 
             case ServerboundVisualUpdate visualUpdate:
-                HandleVisualUpdate(visualUpdate);
+                this.HandleVisualUpdate(visualUpdate);
                 break;
         }
     }
@@ -112,6 +117,14 @@ public class ConnectionState {
         this.QueuedPositionUpdate.Tick = Server.CurrentTick;
     }
 
+    private void HandleScoreUpdate(ServerboundScoreUpdate scoreUpdate) {
+        this.QueuedScoreUpdate = new ClientboundPlayerScoreUpdate {
+            Player = this.Player!.ID,
+            Score = scoreUpdate.Score,
+            Multiplier = scoreUpdate.Multiplier
+        };
+    }
+
     private void HandleVisualUpdate(ServerboundVisualUpdate visualUpdate) {
         this.QueuedVisualUpdate = new ClientboundPlayerVisualUpdate {
             Player = this.Player!.ID,
@@ -136,6 +149,11 @@ public class ConnectionState {
         if (this.QueuedAnimation is not null) {
             module.BroadcastInStage(this.Context, this.QueuedAnimation);
             this.QueuedAnimation = null;
+        }
+
+        if (this.QueuedScoreUpdate is not null) {
+            module.BroadcastInStage(this.Context, this.QueuedScoreUpdate);
+            this.QueuedScoreUpdate = null;
         }
 
         if (this.QueuedVisualUpdate is not null) {

@@ -18,16 +18,18 @@ public abstract class NetworkPacket : NetworkSerializable {
 
             {NetworkMessageType.ClientboundPlayerAnimation, () => new ClientboundPlayerAnimation()},
             {NetworkMessageType.ClientboundPlayerPositionUpdate, () => new ClientboundPlayerPositionUpdate()},
+            {NetworkMessageType.ClientboundPlayerScoreUpdate, () => new ClientboundPlayerScoreUpdate()},
             {NetworkMessageType.ClientboundPlayersUpdate, () => new ClientboundPlayersUpdate()},
             {NetworkMessageType.ClientboundPlayerVisualUpdate, () => new ClientboundPlayerVisualUpdate()},
-            {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
             {NetworkMessageType.ClientboundPong, () => new ClientboundPong()},
+            {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
 
             {NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation()},
+            {NetworkMessageType.ServerboundPing, () => new ServerboundPing()},
             {NetworkMessageType.ServerboundPlayerHello, () => new ServerboundPlayerHello()},
             {NetworkMessageType.ServerboundPositionUpdate, () => new ServerboundPositionUpdate()},
-            {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
-            {NetworkMessageType.ServerboundPing, () => new ServerboundPing()}
+            {NetworkMessageType.ServerboundScoreUpdate, () => new ServerboundScoreUpdate()},
+            {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()}
         };
 
     public static NetworkPacket Read(byte[] data) {

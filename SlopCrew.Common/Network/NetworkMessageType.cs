@@ -6,14 +6,16 @@ public enum NetworkMessageType {
 
     ClientboundPlayerAnimation,
     ClientboundPlayerPositionUpdate,
+    ClientboundPlayerScoreUpdate,
     ClientboundPlayersUpdate,
     ClientboundPlayerVisualUpdate,
-    ClientboundSync,
     ClientboundPong,
+    ClientboundSync,
 
     ServerboundAnimation,
+    ServerboundPing,
     ServerboundPlayerHello,
     ServerboundPositionUpdate,
-    ServerboundVisualUpdate,
-    ServerboundPing
+    ServerboundScoreUpdate,
+    ServerboundVisualUpdate
 }

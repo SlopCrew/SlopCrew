@@ -17,6 +17,9 @@ public class AssociatedPlayer {
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
+    public int Score;
+    public int Multiplier;
+
     public Queue<Transform> TransformUpdates = new();
     public Transform TargetTransform;
     public Transform PrevTarget;

@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
@@ -11,7 +8,6 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using UnityEngine;
-using Random = System.Random;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -29,47 +25,19 @@ public class PlayerManager : IDisposable {
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
 
     private Queue<NetworkSerializable> messageQueue = new();
-    public uint ServerTick = 0;
-
-    public long LastPingSent = 0;
-    public uint? PingID;
-    public long ServerLatency = 0;
-    public Queue<long> RoundtripTimes = new();
-
     private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
     private bool stopAnnounced = false;
+
+    private int scoreUpdateCooldown = 10;
+    private (int, int) lastScoreAndMultiplier = (0, 0);
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
         StageManager.OnStageInitialized += this.StageInit;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived += this.OnMessage;
-
-        new Thread(() => {
-            const int tickRate = (int) (Constants.TickRate * 1000);
-            while (true) {
-                Thread.Sleep(tickRate);
-                ServerTick++;
-            }
-        }).Start();
-
-        new Thread(() => {
-            while (true) {
-                Thread.Sleep(5000);
-                if (this.PingID is not null) {
-                    Plugin.Log.LogWarning("Ping took more than 5s, something is very wrong");
-                }
-
-                this.PingID = (uint) new Random().Next(0, int.MaxValue);
-                this.LastPingSent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-                Plugin.NetworkConnection.SendMessage(new ServerboundPing {
-                    ID = this.PingID.Value
-                });
-            }
-        }).Start();
     }
 
     public void Reset() {
@@ -150,11 +118,18 @@ public class PlayerManager : IDisposable {
         if (this.updateTick <= Constants.TickRate) return;
         this.updateTick = 0;
 
-        HandlePositionUpdate(me);
-        ProcessMessageQueue();
-        HandleHelloRefresh(me, traverse);
-        HandleVisualRefresh(me, traverse);
-        UpdatePlayerCount();
+        this.HandlePositionUpdate(me);
+        this.ProcessMessageQueue();
+        this.HandleHelloRefresh(me, traverse);
+        this.HandleVisualRefresh(me, traverse);
+        this.UpdatePlayerCount();
+
+        // Score can be spammed (e.g. doing a manual), send it less often
+        this.scoreUpdateCooldown--;
+        if (this.scoreUpdateCooldown <= 0) {
+            this.scoreUpdateCooldown = 10;
+            this.UpdateScore();
+        }
     }
 
     private void HandlePositionUpdate(Reptile.Player me) {
@@ -172,8 +147,8 @@ public class PlayerManager : IDisposable {
                     Rotation = me.transform.rotation.FromMentalDeficiency(),
                     Velocity = me.motor.velocity.FromMentalDeficiency(),
                     Stopped = false,
-                    Tick = ServerTick,
-                    Latency = ServerLatency
+                    Tick = Plugin.NetworkConnection.ServerTick,
+                    Latency = Plugin.NetworkConnection.ServerLatency
                 }
             });
         } else if (!this.stopAnnounced) {
@@ -185,8 +160,8 @@ public class PlayerManager : IDisposable {
                     Rotation = me.motor.rotation.FromMentalDeficiency(),
                     Velocity = Vector3.Zero,
                     Stopped = true,
-                    Tick = ServerTick,
-                    Latency = ServerLatency
+                    Tick = Plugin.NetworkConnection.ServerTick,
+                    Latency = Plugin.NetworkConnection.ServerLatency
                 }
             });
         }
@@ -221,8 +196,8 @@ public class PlayerManager : IDisposable {
                     Rotation = me.transform.rotation.FromMentalDeficiency(),
                     Velocity = me.motor.velocity.FromMentalDeficiency(),
                     Stopped = false,
-                    Tick = ServerTick,
-                    Latency = ServerLatency
+                    Tick = Plugin.NetworkConnection.ServerTick,
+                    Latency = Plugin.NetworkConnection.ServerLatency
                 },
 
                 IsDeveloper = false
@@ -251,53 +226,49 @@ public class PlayerManager : IDisposable {
         Plugin.API.UpdatePlayerCount(this.Players.Count + 1);
     }
 
+    private void UpdateScore() {
+        var player = WorldHandler.instance?.GetCurrentPlayer();
+        if (player is null || !player.isActiveAndEnabled) return;
+
+        var traverse = Traverse.Create(player);
+        var score = (int) traverse.Field<float>("baseScore").Value;
+        var multiplier = (int) traverse.Field<float>("scoreMultiplier").Value;
+        if (score == this.lastScoreAndMultiplier.Item1 && multiplier == this.lastScoreAndMultiplier.Item2) return;
+
+        Plugin.Log.LogInfo("Sending score update: " + score + "x" + multiplier);
+        Plugin.NetworkConnection.SendMessage(new ServerboundScoreUpdate {
+            Score = score,
+            Multiplier = multiplier
+        });
+        this.lastScoreAndMultiplier = (score, multiplier);
+    }
+
     private void OnMessage(NetworkSerializable msg) {
         this.messageQueue.Enqueue(msg);
     }
 
     private void OnMessageInternal(NetworkSerializable msg) {
         switch (msg) {
-            case ClientboundPong pong:
-                HandlePong(pong);
-                break;
-
             case ClientboundPlayerAnimation playerAnimation:
-                HandlePlayerAnimation(playerAnimation);
-                break;
-
-            case ClientboundPlayersUpdate playersUpdate:
-                HandlePlayersUpdate(playersUpdate);
+                this.HandlePlayerAnimation(playerAnimation);
                 break;
 
             case ClientboundPlayerPositionUpdate playerPositionUpdate:
-                HandlePlayerPositionUpdate(playerPositionUpdate);
+                this.HandlePlayerPositionUpdate(playerPositionUpdate);
+                break;
+
+            case ClientboundPlayerScoreUpdate playerScoreUpdate:
+                this.HandlePlayerScoreUpdate(playerScoreUpdate);
+                break;
+
+            case ClientboundPlayersUpdate playersUpdate:
+                this.HandlePlayersUpdate(playersUpdate);
                 break;
 
             case ClientboundPlayerVisualUpdate playerVisualUpdate:
-                HandlePlayerVisualUpdate(playerVisualUpdate);
-                break;
-
-            case ClientboundSync serverTickUpdate:
-                HandleServerTickUpdate(serverTickUpdate);
+                this.HandlePlayerVisualUpdate(playerVisualUpdate);
                 break;
         }
-    }
-
-    private void HandlePong(ClientboundPong pong) {
-        if (pong.ID != this.PingID) {
-            Plugin.Log.LogWarning("Received unknown ping ID " + pong.ID);
-            this.PingID = null; // huh?
-            return;
-        }
-
-        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var roundtrip = now - this.LastPingSent;
-
-        this.RoundtripTimes.Enqueue(roundtrip);
-        while (this.RoundtripTimes.Count > 3) this.RoundtripTimes.Dequeue();
-
-        this.ServerLatency = (long) this.RoundtripTimes.Average();
-        this.PingID = null;
     }
 
     private void HandlePlayerAnimation(ClientboundPlayerAnimation playerAnimation) {
@@ -375,6 +346,13 @@ public class PlayerManager : IDisposable {
         }
     }
 
+    private void HandlePlayerScoreUpdate(ClientboundPlayerScoreUpdate playerScoreUpdate) {
+        if (this.Players.TryGetValue(playerScoreUpdate.Player, out var associatedPlayer)) {
+            associatedPlayer.Score = playerScoreUpdate.Score;
+            associatedPlayer.Multiplier = playerScoreUpdate.Multiplier;
+        }
+    }
+
     private void HandlePlayerVisualUpdate(ClientboundPlayerVisualUpdate playerVisualUpdate) {
         if (this.Players.TryGetValue(playerVisualUpdate.Player, out var associatedPlayer)) {
             var reptilePlayer = associatedPlayer.ReptilePlayer;
@@ -398,11 +376,6 @@ public class PlayerManager : IDisposable {
             this.IsSettingVisual = false;
         }
     }
-
-    private void HandleServerTickUpdate(ClientboundSync serverTickUpdate) {
-        ServerTick = serverTickUpdate.ServerTickActual;
-    }
-
 
     public void PlayAnimation(int anim, bool forceOverwrite, bool instant, float atTime) {
         // Sometimes the game likes to spam animations. Why? idk lol
