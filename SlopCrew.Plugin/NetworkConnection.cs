@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using SlopCrew.Common;
 using SlopCrew.Common.Network;
+using SlopCrew.Common.Network.Serverbound;
 using WebSocketSharp;
 using WebSocket = WebSocketSharp.WebSocket;
 
@@ -44,6 +46,11 @@ public class NetworkConnection {
 
     private void OnSocketOpen(object? sender, EventArgs e) {
         Plugin.API.UpdateConnected(true);
+
+        this.SendMessage(new ServerboundVersion {
+            Version = Constants.NetworkVersion
+        });
+
         if (Plugin.PlayerManager is not null) {
             Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }

@@ -25,9 +25,21 @@ public class ConnectionState {
 
     public void HandlePacket(NetworkPacket msg) {
         var server = Server.Instance;
-        if (msg is ServerboundPlayerHello enter) {
-            HandleHello(enter, server);
-            return;
+
+        // These packets get processed when player is null
+        switch (msg) {
+            case ServerboundVersion {Version: < Constants.NetworkVersion}:
+                // Older version, no thanks
+                this.Context.WebSocket.CloseAsync();
+                return;
+            
+            case ServerboundPing ping:
+                HandlePing(ping);
+                return;
+            
+            case ServerboundPlayerHello enter:
+                this.HandleHello(enter, server);
+                return;
         }
 
         if (this.Player is null) {
@@ -48,6 +60,12 @@ public class ConnectionState {
                 HandleVisualUpdate(visualUpdate);
                 break;
         }
+    }
+
+    private void HandlePing(ServerboundPing ping) {
+        Server.Instance.Module.SendToContext(this.Context, new ClientboundPong {
+            ID = ping.ID
+        });
     }
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {

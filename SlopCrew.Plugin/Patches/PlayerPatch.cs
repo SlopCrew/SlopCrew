@@ -86,7 +86,7 @@ public class PlayerPatch {
             while (associatedPlayer.TransformUpdates.Count > 0) {
                 var transformUpdate = associatedPlayer.TransformUpdates.Dequeue();
 
-                if (PlayerManager.ServerTick > transformUpdate.Tick) {
+                if (Plugin.PlayerManager.ServerTick > transformUpdate.Tick) {
                     associatedPlayer.TimeElapsed = 0f;
 
                     // Update target and previous target transform
@@ -98,7 +98,9 @@ public class PlayerPatch {
                     // Calculate time to next target position
                     var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
                                    Constants.TickRate;
-                    var latency = (associatedPlayer.TargetTransform.Latency + PlayerManager.ServerLatency / 2f) / 1000f;
+                    var latency =
+                        (associatedPlayer.TargetTransform.Latency + (Plugin.PlayerManager.ServerLatency / 2f))
+                        / 1000f;
                     associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
             }

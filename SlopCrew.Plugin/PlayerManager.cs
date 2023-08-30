@@ -11,6 +11,7 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using UnityEngine;
+using Random = System.Random;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -28,12 +29,17 @@ public class PlayerManager : IDisposable {
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
 
     private Queue<NetworkSerializable> messageQueue = new();
-    public static uint ServerTick = 0;
-    public static long ServerLatency = 0;
+    public uint ServerTick = 0;
+
+    public long LastPingSent = 0;
+    public uint? PingID;
+    public long ServerLatency = 0;
+    public Queue<long> RoundtripTimes = new();
+
     private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
-    private static bool stopAnnounced = false;
+    private bool stopAnnounced = false;
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -50,31 +56,18 @@ public class PlayerManager : IDisposable {
         }).Start();
 
         new Thread(() => {
-            var roundtripTimes = new Queue<long>();
-            var host = new Uri(Plugin.SlopConfig.Address.Value).Host;
-
             while (true) {
-                Thread.Sleep(1000);
-                var ping = new System.Net.NetworkInformation.Ping();
-                var options = new PingOptions {
-                    DontFragment = true
-                };
-
-                var data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // Why??
-                var buffer = Encoding.ASCII.GetBytes(data);
-                var timeout = 12000;
-
-                var reply = ping.Send(host, timeout, buffer, options);
-
-                if (reply?.Status == IPStatus.Success) {
-                    roundtripTimes.Enqueue(reply.RoundtripTime);
+                Thread.Sleep(5000);
+                if (this.PingID is not null) {
+                    Plugin.Log.LogWarning("Ping took more than 5s, something is very wrong");
                 }
 
-                while (roundtripTimes.Count > 3) {
-                    roundtripTimes.Dequeue();
-                }
+                this.PingID = (uint) new Random().Next(0, int.MaxValue);
+                this.LastPingSent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-                ServerLatency = (long) roundtripTimes.Average(); // hopefully keep a nice running average
+                Plugin.NetworkConnection.SendMessage(new ServerboundPing {
+                    ID = this.PingID.Value
+                });
             }
         }).Start();
     }
@@ -155,17 +148,12 @@ public class PlayerManager : IDisposable {
         this.updateTick += dt;
 
         if (this.updateTick <= Constants.TickRate) return;
-
         this.updateTick = 0;
 
         HandlePositionUpdate(me);
-
         ProcessMessageQueue();
-
         HandleHelloRefresh(me, traverse);
-
         HandleVisualRefresh(me, traverse);
-
         UpdatePlayerCount();
     }
 
@@ -175,7 +163,7 @@ public class PlayerManager : IDisposable {
         var moved = Math.Abs(deltaMove.Length()) > 0.125;
 
         if (moved) {
-            stopAnnounced = false;
+            this.stopAnnounced = false;
             this.lastPos = position.FromMentalDeficiency();
 
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
@@ -188,8 +176,8 @@ public class PlayerManager : IDisposable {
                     Latency = ServerLatency
                 }
             });
-        } else if (!stopAnnounced) {
-            stopAnnounced = true;
+        } else if (!this.stopAnnounced) {
+            this.stopAnnounced = true;
 
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
                 Transform = new Common.Transform {
@@ -269,6 +257,10 @@ public class PlayerManager : IDisposable {
 
     private void OnMessageInternal(NetworkSerializable msg) {
         switch (msg) {
+            case ClientboundPong pong:
+                HandlePong(pong);
+                break;
+
             case ClientboundPlayerAnimation playerAnimation:
                 HandlePlayerAnimation(playerAnimation);
                 break;
@@ -289,6 +281,23 @@ public class PlayerManager : IDisposable {
                 HandleServerTickUpdate(serverTickUpdate);
                 break;
         }
+    }
+
+    private void HandlePong(ClientboundPong pong) {
+        if (pong.ID != this.PingID) {
+            Plugin.Log.LogWarning("Received unknown ping ID " + pong.ID);
+            this.PingID = null; // huh?
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var roundtrip = now - this.LastPingSent;
+
+        this.RoundtripTimes.Enqueue(roundtrip);
+        while (this.RoundtripTimes.Count > 3) this.RoundtripTimes.Dequeue();
+
+        this.ServerLatency = (long) this.RoundtripTimes.Average();
+        this.PingID = null;
     }
 
     private void HandlePlayerAnimation(ClientboundPlayerAnimation playerAnimation) {

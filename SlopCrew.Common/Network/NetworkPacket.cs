@@ -11,52 +11,55 @@ public abstract class NetworkPacket : NetworkSerializable {
     public abstract NetworkMessageType MessageType { get; }
 
     delegate NetworkPacket PacketConstructor();
-    
-    static readonly Dictionary<NetworkMessageType, PacketConstructor> PacketConstructors = new Dictionary<NetworkMessageType, PacketConstructor> 
-    {
-        { NetworkMessageType.ClientboundPlayerAnimation, () => new ClientboundPlayerAnimation() },
-        { NetworkMessageType.ClientboundPlayerPositionUpdate, () => new ClientboundPlayerPositionUpdate() },
-        { NetworkMessageType.ClientboundPlayersUpdate, () => new ClientboundPlayersUpdate() },
-        { NetworkMessageType.ClientboundPlayerVisualUpdate, () => new ClientboundPlayerVisualUpdate() },
-        { NetworkMessageType.ClientboundSync, () => new ClientboundSync() },
-        { NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation() },
-        { NetworkMessageType.ServerboundPlayerHello, () => new ServerboundPlayerHello() },
-        { NetworkMessageType.ServerboundPositionUpdate, () => new ServerboundPositionUpdate() },
-        { NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate() }
-    };
+
+    static readonly Dictionary<NetworkMessageType, PacketConstructor> PacketConstructors =
+        new() {
+            {NetworkMessageType.ServerboundVersion, () => new ServerboundVersion()},
+
+            {NetworkMessageType.ClientboundPlayerAnimation, () => new ClientboundPlayerAnimation()},
+            {NetworkMessageType.ClientboundPlayerPositionUpdate, () => new ClientboundPlayerPositionUpdate()},
+            {NetworkMessageType.ClientboundPlayersUpdate, () => new ClientboundPlayersUpdate()},
+            {NetworkMessageType.ClientboundPlayerVisualUpdate, () => new ClientboundPlayerVisualUpdate()},
+            {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
+            {NetworkMessageType.ClientboundPong, () => new ClientboundPong()},
+
+            {NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation()},
+            {NetworkMessageType.ServerboundPlayerHello, () => new ServerboundPlayerHello()},
+            {NetworkMessageType.ServerboundPositionUpdate, () => new ServerboundPositionUpdate()},
+            {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
+            {NetworkMessageType.ServerboundPing, () => new ServerboundPing()}
+        };
 
     public static NetworkPacket Read(byte[] data) {
         using var ms = new MemoryStream(data);
         using var br = new BinaryReader(ms);
 
         var packetType = (NetworkMessageType) br.ReadInt32();
-
         if (!PacketConstructors.TryGetValue(packetType, out var constructor)) {
-            throw new Exception($"Failed to parse packet type {packetType}");
+            throw new Exceptions.UnknownPacketException(packetType);
         }
 
         var packet = constructor();
-        packet.Read(br);
+
+        try {
+            packet.Read(br);
+        } catch (Exception e) {
+            throw new Exceptions.PacketSerializeException(packetType, e);
+        }
+
         return packet;
     }
 
-    public byte[] Serialize() 
-    {
+    public byte[] Serialize() {
         using var ms = new MemoryStream();
-        using (var bw = new BinaryWriter(ms, Encoding.Default, leaveOpen: true))
-        {
+        using (var bw = new BinaryWriter(ms, Encoding.Default, leaveOpen: true)) {
             bw.Write((int) this.MessageType);
             this.Write(bw);
-        }        
-
-        if (ms.Length == ms.Capacity)
-        {
-          return ms.GetBuffer();
         }
 
-        return ms.ToArray();
+        return ms.Length == ms.Capacity ? ms.GetBuffer() : ms.ToArray();
     }
-    
+
     public static string DebugBytes(string place, byte[] bytes) {
         var hex = BitConverter.ToString(bytes).Replace("-", " ");
         return $"[{place}] {hex}";
