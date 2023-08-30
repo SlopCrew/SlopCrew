@@ -172,7 +172,8 @@ public class ConnectionState {
 
     public void TonightsBiggestLoser() {
         var str = this.Player is not null ? this.Player.Name + $" ({this.Player.ID})" : "no player";
-        Log.Information("tonights biggest loser is {PlayerID} {IP}", str, this.Context.RemoteEndPoint);
+        var ip = this.Context.Headers.Get("X-Forwarded-For") ?? this.Context.RemoteEndPoint.ToString();
+        Log.Information("tonights biggest loser is {PlayerID} {IP}", str, ip);
         this.Context.WebSocket.CloseAsync();
     }
 }
