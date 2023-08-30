@@ -14,15 +14,16 @@ public class SlopWebSocketModule : WebSocketModule {
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
         this.Connections[context] = new ConnectionState(context);
-        this.UpdateConnectionCount();
+        Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
         return Task.CompletedTask;
     }
 
     protected override Task OnClientDisconnectedAsync(IWebSocketContext context) {
         if (this.Connections.TryRemove(context, out var state)) {
             Server.Instance.UntrackConnection(state);
-            this.UpdateConnectionCount();
+            Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
         }
+
         return Task.CompletedTask;
     }
 
@@ -63,11 +64,5 @@ public class SlopWebSocketModule : WebSocketModule {
         foreach (var session in otherSessions) {
             this.SendAsync(session.Key, serialized);
         }
-    }
-
-    private void UpdateConnectionCount() {
-        var count = this.Connections.Count;
-        Log.Information("Now at {ConnectionCount} connections", count);
-        Server.Instance.Graphite?.Send("connections", count);
     }
 }

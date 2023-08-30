@@ -3,6 +3,7 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
+using EmbedIO.WebApi;
 using Graphite;
 using Constants = SlopCrew.Common.Constants;
 
@@ -17,7 +18,7 @@ public class Server {
 
     public WebServer WebServer;
     public SlopWebSocketModule Module;
-    public GraphiteTcpClient? Graphite;
+    public Metrics Metrics;
 
     public Server(string[] args) {
         var logger = new LoggerConfiguration().WriteTo.Console();
@@ -27,22 +28,9 @@ public class Server {
         this.config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
         if (this.config.Debug) logger.MinimumLevel.Verbose();
 
-        if (this.config.Graphite.Host != null) {
-            Log.Information("Connecting to Graphite ({Host}:{Port})...", this.config.Graphite.Host,
-                            this.config.Graphite.Port);
-            try {
-                this.Graphite = new GraphiteTcpClient(
-                    this.config.Graphite.Host,
-                    this.config.Graphite.Port,
-                    "slop"
-                );
-            } catch (Exception e) {
-                Log.Error(e, "Error connecting to Graphite - metrics will not work!");
-                this.Graphite = null;
-            }
-        }
-
+        this.Metrics = new Metrics(this.config);
         this.Module = new SlopWebSocketModule();
+
         this.WebServer = new WebServer(o => {
             var certPath = this.config.Certificates.Path;
             var certPass = this.config.Certificates.Password;
@@ -60,7 +48,13 @@ public class Server {
 
             o.WithUrlPrefix(this.config.Interface);
             o.WithMode(HttpListenerMode.EmbedIO);
-        }).WithModule(this.Module);
+        });
+
+        // my editorconfig sucks and indents it a lot so let's do this on a separate statement
+        this.WebServer = this.WebServer
+                             // API goes before websocket or it gets eaten
+                             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
+                             .WithModule(this.Module);
     }
 
     public void Start() {
@@ -167,7 +161,7 @@ public class Server {
                                            .Cast<Player>()
                                            .ToList();
 
-        this.Graphite?.Send($"population.{stage}", allPlayersInStage.Count);
+        this.Metrics.UpdatePopulation(stage, allPlayersInStage.Count);
 
         foreach (var connection in connections) {
             if (connection != exclude) {
