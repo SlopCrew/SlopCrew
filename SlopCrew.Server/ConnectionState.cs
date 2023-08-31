@@ -76,9 +76,14 @@ public class ConnectionState {
     }
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {
-        var isBiggestLoser = enter.Player.Character is < -1 or > 26
-                             || enter.Player.Outfit is < 0 or > 3
-                             || enter.Player.MoveStyle is < 0 or > 5;
+        // Temporary solution to CharacterAPI players crashing other players
+        enter.Player.Character %= 27;
+        enter.Player.Outfit %= 4;
+        enter.Player.MoveStyle %= 6;
+
+        var isBiggestLoser = enter.Player.Character < -1
+                             || enter.Player.Outfit < 0
+                             || enter.Player.MoveStyle < 0;
         if (isBiggestLoser) {
             this.TonightsBiggestLoser();
             return;
