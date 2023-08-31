@@ -23,13 +23,15 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ClientboundPlayerVisualUpdate, () => new ClientboundPlayerVisualUpdate()},
             {NetworkMessageType.ClientboundPong, () => new ClientboundPong()},
             {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
+            {NetworkMessageType.ClientboundEncounterStart, () => new ClientboundEncounterStart()},
 
             {NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation()},
             {NetworkMessageType.ServerboundPing, () => new ServerboundPing()},
             {NetworkMessageType.ServerboundPlayerHello, () => new ServerboundPlayerHello()},
             {NetworkMessageType.ServerboundPositionUpdate, () => new ServerboundPositionUpdate()},
             {NetworkMessageType.ServerboundScoreUpdate, () => new ServerboundScoreUpdate()},
-            {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()}
+            {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
+            {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()}
         };
 
     public static NetworkPacket Read(byte[] data) {

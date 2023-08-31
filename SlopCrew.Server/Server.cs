@@ -26,8 +26,14 @@ public class Server {
         Log.Logger = Logger;
 
         this.config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
-        if (this.config.Debug) logger.MinimumLevel.Verbose();
-
+        if (this.config.Debug) {
+            var newLogger = new LoggerConfiguration().WriteTo.Console()
+                                                     .MinimumLevel.Verbose()
+                                                     .CreateLogger();
+            Logger = newLogger;
+            Log.Logger = Logger;
+        }
+        
         this.Metrics = new Metrics(this.config);
         this.Module = new SlopWebSocketModule();
 

@@ -16,6 +16,7 @@ public class AssociatedPlayer {
     public MapPin? MapPin;
 
     public int Score;
+    public int BaseScore;
     public int Multiplier;
     public bool PhoneOut;
 
@@ -217,5 +218,9 @@ public class AssociatedPlayer {
         }
 
         this.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
+    }
+    
+    public bool IsValid() {
+        return this.ReptilePlayer != null;
     }
 }
