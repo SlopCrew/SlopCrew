@@ -1,7 +1,7 @@
 {
   "name": "SlopCrew",
   "version_number": "1.3.1",
-  "website_url": "https://github.com/NotNite/SlopCrew",
+  "website_url": "https://github.com/SlopCrew/SlopCrew",
   "description": "multiplayer mod for skateboard video game",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100"
