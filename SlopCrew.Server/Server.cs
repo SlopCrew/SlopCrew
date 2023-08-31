@@ -178,13 +178,15 @@ public class Server {
     }
 
     public uint GetNextID() {
-        var ids = new HashSet<uint>(this.GetConnections().Select(x => x.Player?.ID).Where(id => id.HasValue)
-                                        .Cast<uint>());
-        uint id = 0;
-        while (ids.Contains(id)) {
-            id++;
+        lock (this.Module.Connections) {
+            var ids = new HashSet<uint>(this.GetConnections().Select(x => x.Player?.ID).Where(id => id.HasValue)
+                                            .Cast<uint>());
+            uint id = 0;
+            while (ids.Contains(id)) {
+                id++;
+            }
+            return id;
         }
-        return id;
     }
 
     public IEnumerable<ConnectionState> GetConnections() {
