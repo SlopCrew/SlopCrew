@@ -86,7 +86,7 @@ public class PlayerManager : IDisposable {
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
         var traverse = Traverse.Create(me);
-        
+
         if (Input.GetKeyDown(KeyCode.Y)) {
             this.HandleEncounterRequest(me);
         }
@@ -225,7 +225,8 @@ public class PlayerManager : IDisposable {
     }
 
     private void HandleEncounterRequest(Reptile.Player me) {
-        Plugin.Log.LogInfo("AAAAAA");
+        if (Plugin.SlopScoreEncounter.IsBusy()) return;
+
         var position = me.transform.position.FromMentalDeficiency();
 
         // Get the nearest associated player
@@ -243,7 +244,8 @@ public class PlayerManager : IDisposable {
     }
 
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
-        Plugin.SlopScoreEncounter.StartMainEvent(encounterStart.PlayerID);
+        if (Plugin.SlopScoreEncounter.IsBusy()) return;
+        Plugin.SlopScoreEncounter.Start(encounterStart.PlayerID);
     }
 
     private void OnMessage(NetworkSerializable msg) {

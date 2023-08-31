@@ -20,7 +20,7 @@ public class ConnectionState {
 
     public IWebSocketContext Context;
     public object SendLock;
-    
+
     public List<uint> EncounterRequests = new();
 
     public ConnectionState(IWebSocketContext context) {
@@ -68,7 +68,7 @@ public class ConnectionState {
             case ServerboundVisualUpdate visualUpdate:
                 this.HandleVisualUpdate(visualUpdate);
                 break;
-            
+
             case ServerboundEncounterRequest encounterRequest:
                 this.HandleEncounterRequest(encounterRequest);
                 break;
@@ -158,32 +158,30 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
-        Log.Information("{EncounterRequest} {OurID}", encounterRequest.PlayerID, this.Player!.ID);
-        
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
         var otherPlayer = Server.Instance.GetConnections()
                                 .FirstOrDefault(x => x.Player?.ID == encounterRequest.PlayerID);
-        
+
         if (otherPlayer is null) return;
         if (otherPlayer.Player?.Stage != this.Player.Stage) return;
         otherPlayer.EncounterRequests.Add(this.Player!.ID);
 
         if (this.EncounterRequests.Contains(otherPlayer.Player.ID)) {
             var module = Server.Instance.Module;
-            
+
             module.SendToContext(this.Context, new ClientboundEncounterStart() {
                 PlayerID = otherPlayer.Player.ID
             });
-            
+
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart() {
                 PlayerID = this.Player.ID
             });
-            
+
             this.EncounterRequests.Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests.Remove(this.Player.ID);
         }
-        
+
         Task.Run(async () => {
             await Task.Delay(5000);
             this.EncounterRequests.Remove(otherPlayer.Player.ID);
