@@ -146,13 +146,18 @@ public class SlopScoreEncounter {
         return str;
     }
 
+    private string FormatPlayerScore(float score) {
+        if (this.state == State.Start) return string.Empty;
+        return FormattingUtility.FormatPlayerScore(this.cultureInfo, score);
+    }
+
     private void SetScoreUI(string time) {
         var uiManager = Core.Instance.UIManager;
         var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
         gameplay.challengeGroup.SetActive(true);
 
-        var myScoreStr = FormattingUtility.FormatPlayerScore(this.cultureInfo, this.myScore);
-        var theirScoreStr = FormattingUtility.FormatPlayerScore(this.cultureInfo, this.theirScore);
+        var myScoreStr = this.FormatPlayerScore(this.myScore);
+        var theirScoreStr = this.FormatPlayerScore(this.theirScore);
         gameplay.totalScoreLabel.text = myScoreStr;
         gameplay.targetScoreLabel.text = theirScoreStr;
 
@@ -160,7 +165,7 @@ public class SlopScoreEncounter {
         var theirName = PlayerNameFilter.DoFilter(this.opponent!.SlopPlayer.Name);
         gameplay.totalScoreTitleLabel.text = myName;
         gameplay.targetScoreTitleLabel.text = theirName;
-        
+
         gameplay.timeLimitLabel.text = time;
     }
 }
