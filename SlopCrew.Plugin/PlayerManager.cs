@@ -31,7 +31,7 @@ public class PlayerManager : IDisposable {
     private bool stopAnnounced = false;
 
     private int scoreUpdateCooldown = 10;
-    private (int, int) lastScoreAndMultiplier = (0, 0);
+    public (int, int, int) LastScoreAndMultiplier = (0, 0, 0);
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -86,6 +86,10 @@ public class PlayerManager : IDisposable {
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
         var traverse = Traverse.Create(me);
+        
+        if (Input.GetKeyDown(KeyCode.Y)) {
+            this.HandleEncounterRequest(me);
+        }
 
         var dt = Time.deltaTime;
         this.updateTick += dt;
@@ -206,15 +210,40 @@ public class PlayerManager : IDisposable {
         if (player is null || !player.isActiveAndEnabled) return;
 
         var traverse = Traverse.Create(player);
-        var score = (int) traverse.Field<float>("baseScore").Value;
+        var score = (int) traverse.Field<float>("score").Value;
+        var baseScore = (int) traverse.Field<float>("baseScore").Value;
         var multiplier = (int) traverse.Field<float>("scoreMultiplier").Value;
-        if (score == this.lastScoreAndMultiplier.Item1 && multiplier == this.lastScoreAndMultiplier.Item2) return;
+        if (score == this.LastScoreAndMultiplier.Item1 && baseScore == this.LastScoreAndMultiplier.Item2 &&
+            multiplier == this.LastScoreAndMultiplier.Item3) return;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundScoreUpdate {
             Score = score,
+            BaseScore = baseScore,
             Multiplier = multiplier
         });
-        this.lastScoreAndMultiplier = (score, multiplier);
+        this.LastScoreAndMultiplier = (score, baseScore, multiplier);
+    }
+
+    private void HandleEncounterRequest(Reptile.Player me) {
+        Plugin.Log.LogInfo("AAAAAA");
+        var position = me.transform.position.FromMentalDeficiency();
+
+        // Get the nearest associated player
+        var nearestAssociatedPlayer = this.AssociatedPlayers
+                                          .OrderBy(x => Vector3.Distance(
+                                                       x.ReptilePlayer.transform.position.FromMentalDeficiency(),
+                                                       position))
+                                          .FirstOrDefault();
+
+        if (nearestAssociatedPlayer is null) return;
+
+        Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
+            PlayerID = nearestAssociatedPlayer.SlopPlayer.ID
+        });
+    }
+
+    private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
+        Plugin.SlopScoreEncounter.StartMainEvent(encounterStart.PlayerID);
     }
 
     private void OnMessage(NetworkSerializable msg) {
@@ -241,6 +270,10 @@ public class PlayerManager : IDisposable {
 
             case ClientboundPlayerVisualUpdate playerVisualUpdate:
                 this.HandlePlayerVisualUpdate(playerVisualUpdate);
+                break;
+
+            case ClientboundEncounterStart encounterStart:
+                this.HandleEncounterStart(encounterStart);
                 break;
         }
     }
@@ -323,6 +356,7 @@ public class PlayerManager : IDisposable {
     private void HandlePlayerScoreUpdate(ClientboundPlayerScoreUpdate playerScoreUpdate) {
         if (this.Players.TryGetValue(playerScoreUpdate.Player, out var associatedPlayer)) {
             associatedPlayer.Score = playerScoreUpdate.Score;
+            associatedPlayer.BaseScore = playerScoreUpdate.BaseScore;
             associatedPlayer.Multiplier = playerScoreUpdate.Multiplier;
         }
     }

@@ -7,17 +7,20 @@ public class ClientboundPlayerScoreUpdate : NetworkPacket {
 
     public uint Player;
     public int Score;
+    public int BaseScore;
     public int Multiplier;
 
     public override void Read(BinaryReader br) {
         this.Player = br.ReadUInt32();
         this.Score = br.ReadInt32();
+        this.BaseScore = br.ReadInt32();
         this.Multiplier = br.ReadInt32();
     }
 
     public override void Write(BinaryWriter bw) {
         bw.Write(this.Player);
         bw.Write(this.Score);
+        bw.Write(this.BaseScore);
         bw.Write(this.Multiplier);
     }
 }
