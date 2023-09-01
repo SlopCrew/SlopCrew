@@ -17,6 +17,11 @@ public class PlayerPatch {
     [HarmonyPrefix]
     [HarmonyPatch("ActivateAbility")]
     public static bool ActivateAbility(Player __instance, Ability a) {
+        if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
+            if (a is DieAbility) Plugin.PlayerManager.IsHelloRefreshQueued = true;
+            return true;
+        }
+
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
         return associatedPlayer == null;
     }

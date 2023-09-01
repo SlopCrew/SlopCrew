@@ -65,6 +65,10 @@ public class SlopScoreEncounter {
             this.Stop();
             return;
         }
+        if (this.opponent.SlopPlayer.IsDead) {
+            this.Stop();
+            return;
+        }
 
         var elapsed = this.stopwatch.Elapsed.TotalSeconds;
         switch (this.state) {

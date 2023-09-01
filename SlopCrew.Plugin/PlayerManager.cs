@@ -179,6 +179,7 @@ public class PlayerManager : IDisposable {
                     Latency = Plugin.NetworkConnection.ServerLatency
                 },
 
+                IsDead = me.IsDead(),
                 IsDeveloper = false
             },
 

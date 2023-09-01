@@ -41,7 +41,8 @@ var playerTwo = new Player {
     MoveStyle = 1,
 
     Transform = dummyTransform,
-
+    
+    IsDead = false,
     IsDeveloper = true
 };
 
@@ -89,6 +90,10 @@ var packets = new List<NetworkPacket> {
         ID = 42069
     },
     
+    new ClientboundEncounterStart {
+        PlayerID = 42069
+    },
+    
     new ServerboundPing {
         ID = 42069
     },
@@ -124,6 +129,10 @@ var packets = new List<NetworkPacket> {
     new ServerboundVersion {
         Version = 130
     },
+    
+    new ServerboundEncounterRequest {
+        PlayerID = 42069
+    }
 };
 
 foreach (var packet in packets) {
