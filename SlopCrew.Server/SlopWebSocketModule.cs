@@ -29,8 +29,10 @@ public class SlopWebSocketModule : WebSocketModule {
     }
 
     public void FuckingObliterate(IWebSocketContext context) {
-        var state = this.Connections[context];
-        Server.Instance.UntrackConnection(state);
+        if (this.Connections.TryGetValue(context, out var state)) {
+            Server.Instance.UntrackConnection(state);
+        }
+
         this.Connections.Remove(context);
         Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
     }
