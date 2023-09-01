@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
+using SlopCrew.Plugin.UI.Phone;
 using UnityEngine;
 
 namespace SlopCrew.Plugin;
@@ -17,6 +18,7 @@ public class Plugin : BaseUnityPlugin {
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
+    public static PhoneInitializer PhoneInitializer = null!;
 
     private void Awake() {
         Log = this.Logger;
@@ -30,6 +32,7 @@ public class Plugin : BaseUnityPlugin {
 
         NetworkConnection = new();
         PlayerManager = new();
+        PhoneInitializer = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }

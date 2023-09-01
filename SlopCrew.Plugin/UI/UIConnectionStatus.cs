@@ -14,7 +14,7 @@ public class UIConnectionStatus : MonoBehaviour {
         this.tmp = obj.AddComponent<TextMeshProUGUI>();
 
         var player = WorldHandler.instance.GetCurrentPlayer();
-        var phone = Traverse.Create(player).Field<Phone>("phone").Value;
+        var phone = Traverse.Create(player).Field<Reptile.Phone.Phone>("phone").Value;
         var clockLabel = Traverse.Create(phone.Statusbar).Field<TextMeshProUGUI>("m_ClockLabel").Value;
 
         this.tmp.font = clockLabel.font;
