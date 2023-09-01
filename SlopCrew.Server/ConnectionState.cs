@@ -33,10 +33,14 @@ public class ConnectionState {
 
         // These packets get processed when player is null
         switch (msg) {
-            case ServerboundVersion {Version: < Constants.NetworkVersion}:
-                // Older version, no thanks
-                this.Context.WebSocket.CloseAsync();
+            case ServerboundVersion version: {
+                if (version.Version != Constants.NetworkVersion) {
+                    this.Context.WebSocket.CloseAsync();
+                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                version.Version, Constants.NetworkVersion);
+                }
                 return;
+            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
