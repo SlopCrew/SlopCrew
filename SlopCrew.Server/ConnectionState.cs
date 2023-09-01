@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
