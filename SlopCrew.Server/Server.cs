@@ -4,7 +4,6 @@ using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
 using EmbedIO.WebApi;
-using Graphite;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -26,6 +25,8 @@ public class Server {
         Log.Logger = Logger;
 
         this.config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
+
+        // Thanks Serilog
         if (this.config.Debug) {
             var newLogger = new LoggerConfiguration().WriteTo.Console()
                                                      .MinimumLevel.Verbose()
@@ -33,7 +34,7 @@ public class Server {
             Logger = newLogger;
             Log.Logger = Logger;
         }
-        
+
         this.Metrics = new Metrics(this.config);
         this.Module = new SlopWebSocketModule();
 
