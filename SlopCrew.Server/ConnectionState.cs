@@ -162,16 +162,18 @@ public class ConnectionState {
 
         if (otherPlayer is null) return;
         if (otherPlayer.Player?.Stage != this.Player.Stage) return;
+        Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
         otherPlayer.EncounterRequests.Add(this.Player!.ID);
 
         if (this.EncounterRequests.Contains(otherPlayer.Player.ID)) {
+            Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
             var module = Server.Instance.Module;
 
-            module.SendToContext(this.Context, new ClientboundEncounterStart() {
+            module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID
             });
 
-            module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart() {
+            module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID
             });
 
