@@ -10,7 +10,7 @@ namespace SlopCrew.Server;
 public class SlopWebSocketModule : WebSocketModule {
     public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
 
-    public SlopWebSocketModule() : base("/", true) { }
+    public SlopWebSocketModule() : base("/", false) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
         lock (this.Connections) {
@@ -23,13 +23,18 @@ public class SlopWebSocketModule : WebSocketModule {
 
     protected override Task OnClientDisconnectedAsync(IWebSocketContext context) {
         lock (this.Connections) {
-            var state = this.Connections[context];
-            Server.Instance.UntrackConnection(state);
-            this.Connections.Remove(context);
-            Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
-
+            this.FuckingObliterate(context);
             return Task.CompletedTask;
         }
+    }
+
+    public void FuckingObliterate(IWebSocketContext context) {
+        if (this.Connections.TryGetValue(context, out var state)) {
+            Server.Instance.UntrackConnection(state);
+        }
+
+        this.Connections.Remove(context);
+        Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
     }
 
     protected override Task OnMessageReceivedAsync(

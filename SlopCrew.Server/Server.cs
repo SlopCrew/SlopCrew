@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using Serilog;
 using Serilog.Core;
 using SlopCrew.Common;
@@ -87,6 +88,12 @@ public class Server {
     }
 
     private void RunTick() {
+        // Clean out dead connections
+        var deadConnections = this.GetConnections().Where(x => x.Context.WebSocket.State == WebSocketState.Closed);
+        foreach (var conn in deadConnections) {
+            this.Module.FuckingObliterate(conn.Context);
+        }
+
         // Go through each connection and run their respective ticks.
         foreach (var connection in this.GetConnections()) {
             connection.RunTick();
