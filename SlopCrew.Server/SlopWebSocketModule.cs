@@ -8,38 +8,45 @@ using SlopCrew.Common;
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public ConcurrentDictionary<IWebSocketContext, ConnectionState> Connections = new();
+    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
 
     public SlopWebSocketModule() : base("/", true) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
-        this.Connections[context] = new ConnectionState(context);
-        Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
-        return Task.CompletedTask;
+        lock (this.Connections) {
+            this.Connections[context] = new ConnectionState(context);
+            Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
+
+            return Task.CompletedTask;
+        }
     }
 
     protected override Task OnClientDisconnectedAsync(IWebSocketContext context) {
-        if (this.Connections.TryRemove(context, out var state)) {
+        lock (this.Connections) {
+            var state = this.Connections[context];
             Server.Instance.UntrackConnection(state);
+            this.Connections.Remove(context);
             Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
-        }
 
-        return Task.CompletedTask;
+            return Task.CompletedTask;
+        }
     }
 
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
-        if (this.Connections.TryGetValue(context, out var state)) {
-            try {
-                var msg = NetworkPacket.Read(buffer);
-                state.HandlePacket(msg);
-            } catch (Exception e) {
-                Log.Error(e, "Error while handling message");
+        lock (this.Connections) {
+            if (this.Connections.TryGetValue(context, out var state)) {
+                try {
+                    var msg = NetworkPacket.Read(buffer);
+                    state.HandlePacket(msg);
+                } catch (Exception e) {
+                    Log.Error(e, "Error while handling message");
+                }
             }
-        }
 
-        return Task.CompletedTask;
+            return Task.CompletedTask;
+        }
     }
 
     public void SendToContext(IWebSocketContext context, NetworkPacket msg) {
