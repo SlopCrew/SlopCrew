@@ -48,7 +48,7 @@ public class AssociatedPlayer {
 
         player.motor.gravity = 0;
         this.ReptilePlayer = player;
-        
+
         // Can't seem to safely remove these but don't need to use em
         this.ReptilePlayer.motor.SetKinematic(true);
         this.ReptilePlayer.motor.enabled = false;
@@ -129,6 +129,7 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
+        container.transform.localPosition = new Vector3(0, 1, 0); // what
         container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
     }
