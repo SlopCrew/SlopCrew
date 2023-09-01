@@ -30,6 +30,8 @@ public class AssociatedPlayer {
     public float LerpAmount;
 
     private Vector3 newPos;
+    private Quaternion newRot;
+    private Vector3 velocity;
 
     private UnityEngine.Transform? emptyTransform;
 
@@ -47,7 +49,10 @@ public class AssociatedPlayer {
 
         player.motor.gravity = 0;
         this.ReptilePlayer = player;
-        this.ReptilePlayer.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
+
+        // Can't seem to safely remove these but don't need to use em
+        this.ReptilePlayer.motor.SetKinematic(true);
+        this.ReptilePlayer.motor.enabled = false;
 
         var startTransform = new Transform {
             Position = slopPlayer.Transform.Position,
@@ -61,6 +66,7 @@ public class AssociatedPlayer {
         this.TargetTransform = startTransform;
         this.PrevTarget = startTransform;
         newPos = startTransform.Position.ToMentalDeficiency();
+        newRot = startTransform.Rotation.ToMentalDeficiency();
 
         if (Plugin.SlopConfig.ShowPlayerNameplates.Value) {
             this.SpawnNameplate();
@@ -124,6 +130,7 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
+        container.transform.localPosition = new Vector3(0, 1, 0); // what
         container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
     }
@@ -193,31 +200,21 @@ public class AssociatedPlayer {
     public void InterpolatePosition() {
         var target = this.TargetTransform.Position.ToMentalDeficiency();
 
-        if (this.TargetTransform.Stopped) {
-            // If player is stopped just lerp to the target position
-            newPos = Vector3.Lerp(this.FromPosition, target, this.LerpAmount);
-        } else if ((target - this.FromPosition).magnitude > 10f) {
-            // Teleport them to the target position if they happen to get too far away
-            this.ReptilePlayer.motor.RigidbodyMove(target);
-        } else {
-            // Interpolate to the target position
-            newPos = Vector3.LerpUnclamped(this.FromPosition, target, this.LerpAmount);
-        }
+        // This should roughly reflect tick rate I think?
+        var timeToTarget = 0.1f;
 
-        this.ReptilePlayer.motor.RigidbodyMove(newPos);
+        // Use SmoothDamp to get physics-y interpolation that scales with speed
+        newPos = Vector3.SmoothDamp(this.ReptilePlayer.transform.position, target, ref velocity, timeToTarget);
+
+        this.ReptilePlayer.transform.position = newPos;
     }
 
     public void InterpolateRotation() {
         var target = this.TargetTransform.Rotation.ToMentalDeficiency();
-        Quaternion newRot;
 
-        if (this.TargetTransform.Stopped) {
-            newRot = Quaternion.Lerp(this.FromRotation, target, this.LerpAmount);
-        } else {
-            newRot = Quaternion.SlerpUnclamped(this.FromRotation, target, this.LerpAmount);
-        }
+        newRot = Quaternion.RotateTowards(this.ReptilePlayer.transform.rotation, target, 360 * Time.deltaTime);
 
-        this.ReptilePlayer.motor.RigidbodyMoveRotation(newRot.normalized);
+        this.ReptilePlayer.transform.rotation = newRot;
     }
     
     public bool IsValid() {

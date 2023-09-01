@@ -97,28 +97,11 @@ public class PlayerPatch {
                     // Update target and previous target transform
                     associatedPlayer.PrevTarget = associatedPlayer.TargetTransform;
                     associatedPlayer.TargetTransform = transformUpdate;
-                    associatedPlayer.FromPosition = associatedPlayer.ReptilePlayer.motor.BodyPosition();
-                    associatedPlayer.FromRotation = associatedPlayer.ReptilePlayer.motor.rotation;
-
-                    // Calculate time to next target position
-                    var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
-                                   Constants.TickRate;
-                    var latency =
-                        (associatedPlayer.TargetTransform.Latency + (Plugin.NetworkConnection.ServerLatency / 2f))
-                        / 1000f;
-                    associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
-            }
-
-            if (associatedPlayer.TimeToTarget == 0f) {
-                associatedPlayer.LerpAmount = 1f;
-            } else {
-                associatedPlayer.LerpAmount = associatedPlayer.TimeElapsed / associatedPlayer.TimeToTarget;
             }
 
             associatedPlayer.InterpolatePosition();
             associatedPlayer.InterpolateRotation();
-
             associatedPlayer.MapPin?.SetLocation();
         }
     }

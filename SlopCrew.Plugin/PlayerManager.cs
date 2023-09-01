@@ -28,6 +28,7 @@ public class PlayerManager : IDisposable {
     private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
+    private Vector3 lastRot = Vector3.Zero;
     private bool stopAnnounced = false;
 
     private int scoreUpdateCooldown = 10;
@@ -113,12 +114,15 @@ public class PlayerManager : IDisposable {
 
     private void HandlePositionUpdate(Reptile.Player me) {
         var position = me.transform.position;
+        var rotation = me.transform.rotation.eulerAngles;
         var deltaMove = position.FromMentalDeficiency() - this.lastPos;
-        var moved = Math.Abs(deltaMove.Length()) > 0.125;
+        var deltaRot = rotation.FromMentalDeficiency() - this.lastRot;
+        var moved = (Math.Abs(deltaMove.Length()) > 0.125) || (Math.Abs(deltaRot.Length()) > 0.125);
 
         if (moved) {
             this.stopAnnounced = false;
             this.lastPos = position.FromMentalDeficiency();
+            this.lastRot = rotation.FromMentalDeficiency();
 
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
                 Transform = new Common.Transform {
@@ -136,7 +140,7 @@ public class PlayerManager : IDisposable {
             Plugin.NetworkConnection.SendMessage(new ServerboundPositionUpdate {
                 Transform = new Common.Transform {
                     Position = position.FromMentalDeficiency(),
-                    Rotation = me.motor.rotation.FromMentalDeficiency(),
+                    Rotation = me.transform.rotation.FromMentalDeficiency(),
                     Velocity = Vector3.Zero,
                     Stopped = true,
                     Tick = Plugin.NetworkConnection.ServerTick,
