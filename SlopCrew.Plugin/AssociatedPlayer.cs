@@ -84,6 +84,7 @@ public class AssociatedPlayer {
         var nameplate = new GameObject("SlopCrew_Nameplate");
         var tmp = nameplate.AddComponent<TextMeshPro>();
         tmp.text = this.SlopPlayer.Name;
+        nameplate.AddComponent<TextMeshProFilter>();
 
         // Yoink the font from somewhere else because I guess asset loading is impossible
         var uiManager = Core.Instance.UIManager;

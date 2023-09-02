@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Reptile;
+using TMPro;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.UI.Phone;
@@ -18,12 +19,13 @@ public class PhoneInitializer {
 
         var app = slopAppObj.AddComponent<AppSlopCrew>();
         var content = contentObj.AddComponent<RectTransform>();
-        var tmp = contentObj.AddComponent<TMPro.TextMeshProUGUI>();
+        var tmp = contentObj.AddComponent<TextMeshProUGUI>();
+        contentObj.AddComponent<TextMeshProFilter>();
 
         // seems to be a hardcoded size
         content.sizeDelta = new(1070, 1775);
         tmp.rectTransform.sizeDelta = content.sizeDelta;
-        tmp.alignment = TMPro.TextAlignmentOptions.Center;
+        tmp.alignment = TextAlignmentOptions.Center;
 
         // Same shit we do for the nameplate
         var uiManager = Core.Instance.UIManager;

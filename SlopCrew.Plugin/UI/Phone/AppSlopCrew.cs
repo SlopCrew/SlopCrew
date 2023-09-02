@@ -10,7 +10,7 @@ using TMPro;
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class AppSlopCrew : App {
-    public TextMeshProUGUI? Label;
+    public TMP_Text? Label;
     private AssociatedPlayer? nearestPlayer;
 
     public override void Awake() {
