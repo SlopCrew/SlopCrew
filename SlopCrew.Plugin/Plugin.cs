@@ -19,6 +19,7 @@ public class Plugin : BaseUnityPlugin {
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
     public static SlopScoreEncounter SlopScoreEncounter = null!;
+    public static SlopComboEncounter SlopComboEncounter = null!;
     public static PhoneInitializer PhoneInitializer = null!;
 
     private void Awake() {
@@ -34,6 +35,7 @@ public class Plugin : BaseUnityPlugin {
         NetworkConnection = new();
         PlayerManager = new();
         SlopScoreEncounter = new();
+        SlopComboEncounter = new();
         PhoneInitializer = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };

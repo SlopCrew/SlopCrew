@@ -226,8 +226,8 @@ public class PlayerManager : IDisposable {
     }
     
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
-        if (Plugin.SlopScoreEncounter.IsBusy()) return;
-        Plugin.SlopScoreEncounter.Start(encounterStart.PlayerID);
+        if (Plugin.SlopComboEncounter.IsBusy()) return;
+        Plugin.SlopComboEncounter.Start(encounterStart.PlayerID);
     }
 
     private void OnMessage(NetworkSerializable msg) {
