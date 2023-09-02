@@ -133,7 +133,9 @@ public class AssociatedPlayer {
 
         container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
-        container.transform.position = new Vector3(0, 1f, 0);
+
+        var hb = this.ReptilePlayer.hitbox.transform;
+        container.transform.position = new Vector3(0, hb.localScale.y + 0.5f, 0);
     }
 
     private void SpawnMapPin() {
