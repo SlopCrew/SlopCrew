@@ -131,11 +131,11 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
-        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
+        var traverse = Traverse.Create(this.ReptilePlayer);
+        var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+        container.transform.parent = characterVisual.head.transform;
+        container.transform.position = new Vector3(0, 1f, 0);
         container.AddComponent<UINameplate>();
-
-        var hb = this.ReptilePlayer.hitbox.transform;
-        container.transform.position = new Vector3(0, hb.localScale.y + 0.5f, 0);
     }
 
     private void SpawnMapPin() {
