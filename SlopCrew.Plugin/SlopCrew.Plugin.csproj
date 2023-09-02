@@ -20,7 +20,7 @@
         <PackageReference Include="BepInEx.Core" Version="5.*"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all"/>
-        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+        <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
 
         <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11"/>
     </ItemGroup>
@@ -89,6 +89,10 @@
         <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Ignore Include="res\**"/>
+        <EmbeddedResource Include="res\**"/>
+    </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Exec
