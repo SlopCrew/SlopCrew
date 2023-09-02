@@ -160,6 +160,7 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
+        var module = Server.Instance.Module;
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
         var otherPlayer = Server.Instance.GetConnections()
@@ -167,16 +168,23 @@ public class ConnectionState {
 
         if (otherPlayer is null) return;
         if (otherPlayer.Player?.Stage != this.Player.Stage) return;
-        Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
-        if (!otherPlayer.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
-            otherPlayer.EncounterRequests.Add(encounterRequest.EncounterType, new());
-        otherPlayer.EncounterRequests[encounterRequest.EncounterType].Add(this.Player!.ID);
 
+        Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
+
+        if (!otherPlayer.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
+            otherPlayer.EncounterRequests[encounterRequest.EncounterType] = new();
         if (!this.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
-            this.EncounterRequests.Add(encounterRequest.EncounterType, new());
+            this.EncounterRequests[encounterRequest.EncounterType] = new();
+
+        if (!otherPlayer.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
+            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Add(this.Player!.ID);
+            module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
+                PlayerID = this.Player.ID
+            });
+        }
+
         if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
-            var module = Server.Instance.Module;
 
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,

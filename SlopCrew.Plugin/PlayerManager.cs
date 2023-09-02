@@ -40,8 +40,6 @@ public class PlayerManager : IDisposable {
         StageManager.OnStageInitialized += this.StageInit;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived += this.OnMessage;
-        
-        PhoneTests.StartTests(); // TODO remove
     }
 
     public void Reset() {
@@ -93,7 +91,7 @@ public class PlayerManager : IDisposable {
 
         var dt = Time.deltaTime;
         this.updateTick += dt;
-        
+
         if (this.updateTick <= Constants.TickRate) return;
         this.updateTick = 0;
 
@@ -227,7 +225,7 @@ public class PlayerManager : IDisposable {
         });
         this.LastScoreAndMultiplier = (score, baseScore, multiplier);
     }
-    
+
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
         if (Plugin.CurrentEncounter?.IsBusy() == true) return;
         Plugin.CurrentEncounter = encounterStart.EncounterType switch {
@@ -235,8 +233,15 @@ public class PlayerManager : IDisposable {
             EncounterType.ScoreEncounter => new SlopScoreEncounter(),
             _ => null
         };
-        
+
         Plugin.CurrentEncounter?.Start(encounterStart.PlayerID);
+    }
+
+    private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
+        if (this.Players.TryGetValue(encounterRequest.PlayerID, out var associatedPlayer)) {
+            var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
+            Plugin.PhoneInitializer.ShowNotif(name);
+        }
     }
 
     private void OnMessage(NetworkSerializable msg) {
@@ -267,6 +272,10 @@ public class PlayerManager : IDisposable {
 
             case ClientboundEncounterStart encounterStart:
                 this.HandleEncounterStart(encounterStart);
+                break;
+
+            case ClientboundEncounterRequest encounterRequest:
+                this.HandleEncounterRequest(encounterRequest);
                 break;
         }
     }

@@ -19,5 +19,8 @@ public enum NetworkMessageType {
     ServerboundPositionUpdate,
     ServerboundScoreUpdate,
     ServerboundVisualUpdate,
-    ServerboundEncounterRequest
+    ServerboundEncounterRequest,
+    
+    // down here rn to have backwards-compat
+    ClientboundEncounterRequest
 }
