@@ -23,7 +23,7 @@ public class AppSlopCrew : App {
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
-            EncounterType = Common.Encounter.EncounterType.ScoreEncounter
+            EncounterType = EncounterType.ScoreEncounter
         });
     }
 
