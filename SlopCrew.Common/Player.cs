@@ -14,6 +14,7 @@ public class Player : NetworkSerializable {
 
     public Transform Transform;
 
+    public bool IsDead;
     public bool IsDeveloper;
 
     public override void Read(BinaryReader br) {
@@ -28,6 +29,7 @@ public class Player : NetworkSerializable {
         this.Transform = new Transform();
         this.Transform.Read(br);
 
+        this.IsDead = br.ReadBoolean();
         this.IsDeveloper = br.ReadBoolean();
     }
 
@@ -42,6 +44,7 @@ public class Player : NetworkSerializable {
 
         this.Transform.Write(bw);
 
+        bw.Write(this.IsDead);
         bw.Write(this.IsDeveloper);
     }
 }

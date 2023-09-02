@@ -22,6 +22,8 @@ public class ConnectionState {
     public IWebSocketContext Context;
     public object SendLock;
 
+    public List<uint> EncounterRequests = new();
+
     public ConnectionState(IWebSocketContext context) {
         this.Context = context;
         this.SendLock = new();
@@ -32,10 +34,14 @@ public class ConnectionState {
 
         // These packets get processed when player is null
         switch (msg) {
-            case ServerboundVersion {Version: < Constants.NetworkVersion}:
-                // Older version, no thanks
-                this.Context.WebSocket.CloseAsync();
+            case ServerboundVersion version: {
+                if (version.Version != Constants.NetworkVersion) {
+                    this.Context.WebSocket.CloseAsync();
+                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                version.Version, Constants.NetworkVersion);
+                }
                 return;
+            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
@@ -66,6 +72,10 @@ public class ConnectionState {
 
             case ServerboundVisualUpdate visualUpdate:
                 this.HandleVisualUpdate(visualUpdate);
+                break;
+
+            case ServerboundEncounterRequest encounterRequest:
+                this.HandleEncounterRequest(encounterRequest);
                 break;
         }
     }
@@ -134,6 +144,7 @@ public class ConnectionState {
         this.QueuedScoreUpdate = new ClientboundPlayerScoreUpdate {
             Player = this.Player!.ID,
             Score = scoreUpdate.Score,
+            BaseScore = scoreUpdate.BaseScore,
             Multiplier = scoreUpdate.Multiplier
         };
     }
@@ -146,6 +157,40 @@ public class ConnectionState {
             Spraycan = visualUpdate.Spraycan,
             Phone = visualUpdate.Phone
         };
+    }
+
+    private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
+        if (encounterRequest.PlayerID == this.Player!.ID) return;
+
+        var otherPlayer = Server.Instance.GetConnections()
+                                .FirstOrDefault(x => x.Player?.ID == encounterRequest.PlayerID);
+
+        if (otherPlayer is null) return;
+        if (otherPlayer.Player?.Stage != this.Player.Stage) return;
+        Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
+        otherPlayer.EncounterRequests.Add(this.Player!.ID);
+
+        if (this.EncounterRequests.Contains(otherPlayer.Player.ID)) {
+            Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
+            var module = Server.Instance.Module;
+
+            module.SendToContext(this.Context, new ClientboundEncounterStart {
+                PlayerID = otherPlayer.Player.ID
+            });
+
+            module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
+                PlayerID = this.Player.ID
+            });
+
+            this.EncounterRequests.Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests.Remove(this.Player.ID);
+        }
+
+        Task.Run(async () => {
+            await Task.Delay(5000);
+            this.EncounterRequests.Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests.Remove(this.Player.ID);
+        });
     }
 
     public string DebugName() {

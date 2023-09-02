@@ -74,6 +74,10 @@
             <HintPath>$(ManagedPath)/UnityEngine.ImageConversionModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule">
+            <HintPath>$(ManagedPath)/UnityEngine.InputLegacyModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="DOTween">
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>

@@ -16,6 +16,7 @@ public class AssociatedPlayer {
     public MapPin? MapPin;
 
     public int Score;
+    public int BaseScore;
     public int Multiplier;
     public bool PhoneOut;
 
@@ -214,5 +215,9 @@ public class AssociatedPlayer {
         newRot = Quaternion.RotateTowards(this.ReptilePlayer.transform.rotation, target, 360 * Time.deltaTime);
 
         this.ReptilePlayer.transform.rotation = newRot;
+    }
+    
+    public bool IsValid() {
+        return this.ReptilePlayer != null;
     }
 }
