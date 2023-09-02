@@ -101,7 +101,6 @@ public class NetworkConnection {
             var packet = NetworkPacket.Read(args.RawData);
             OnMessageReceived?.Invoke(packet);
 
-
             switch (packet) {
                 case ClientboundPong pong:
                     this.HandlePong(pong);

@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Reptile;
+using Reptile.Phone;
 using TMPro;
 using UnityEngine;
 
@@ -41,5 +42,17 @@ public class PhoneInitializer {
         // why are these zero? idk!
         slopAppObj.transform.localScale = new(1, 1, 1);
         contentObj.transform.localScale = new(1, 1, 1);
+    }
+
+    public void ShowNotif(string name) {
+        var player = WorldHandler.instance.GetCurrentPlayer();
+        var phone = Traverse.Create(player).Field<Reptile.Phone.Phone>("phone").Value;
+        var app = phone.GetAppInstance<AppSlopCrew>();
+
+        var emailApp = phone.GetAppInstance<AppEmail>();
+        var emailNotif = emailApp.GetComponent<Notification>();
+        app.SetNotification(emailNotif);
+
+        phone.PushNotification(app, name, null);
     }
 }

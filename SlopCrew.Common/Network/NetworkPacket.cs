@@ -24,6 +24,7 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ClientboundPong, () => new ClientboundPong()},
             {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
             {NetworkMessageType.ClientboundEncounterStart, () => new ClientboundEncounterStart()},
+            {NetworkMessageType.ClientboundEncounterRequest, () => new ClientboundEncounterRequest()},
 
             {NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation()},
             {NetworkMessageType.ServerboundPing, () => new ServerboundPing()},
