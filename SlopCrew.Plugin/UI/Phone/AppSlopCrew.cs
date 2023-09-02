@@ -70,4 +70,9 @@ public class AppSlopCrew : App {
                               PlayerNameFilter.DoFilter(this.nearestPlayer.SlopPlayer.Name);
         }
     }
+
+    public void SetNotification(Notification notif) {
+        this.m_Notification = notif;
+        this.m_Notification.InitNotification(this);
+    }
 }

@@ -40,6 +40,8 @@ public class PlayerManager : IDisposable {
         StageManager.OnStageInitialized += this.StageInit;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived += this.OnMessage;
+        
+        PhoneTests.StartTests(); // TODO remove
     }
 
     public void Reset() {
@@ -91,7 +93,7 @@ public class PlayerManager : IDisposable {
 
         var dt = Time.deltaTime;
         this.updateTick += dt;
-
+        
         if (this.updateTick <= Constants.TickRate) return;
         this.updateTick = 0;
 
