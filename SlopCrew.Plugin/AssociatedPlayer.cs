@@ -119,11 +119,12 @@ public class AssociatedPlayer {
         }
 
         // Configure the container's position
+        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
         container.transform.position = new Vector3(
-            bounds.center.x,
-            bounds.max.y + 0.125f,
-            bounds.center.z
+            0,
+            bounds.max.y,
+            0
         );
 
         // Rotate it to match the player's head
@@ -131,11 +132,7 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
-        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
-
-        var hb = this.ReptilePlayer.hitbox.transform;
-        container.transform.position = new Vector3(0, hb.localScale.y + 0.5f, 0);
     }
 
     private void SpawnMapPin() {
