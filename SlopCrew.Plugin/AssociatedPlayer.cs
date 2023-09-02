@@ -131,16 +131,16 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
-        container.transform.localPosition = new Vector3(0, 1, 0); // what
         container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
+        container.transform.position = new Vector3(0, 1f, 0);
     }
 
     private void SpawnMapPin() {
         var mapController = Mapcontroller.Instance;
         this.MapPin = Traverse.Create(mapController)
-                              .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
-                              .GetValue<MapPin>();
+            .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
+            .GetValue<MapPin>();
 
         this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
         this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
@@ -217,7 +217,7 @@ public class AssociatedPlayer {
 
         this.ReptilePlayer.transform.rotation = newRot;
     }
-    
+
     public bool IsValid() {
         return this.ReptilePlayer != null;
     }
