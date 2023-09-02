@@ -88,10 +88,6 @@ public class PlayerManager : IDisposable {
         if (me is null) return;
         var traverse = Traverse.Create(me);
 
-        if (Input.GetKeyDown(KeyCode.Y)) {
-            this.HandleEncounterRequest(me);
-        }
-
         var dt = Time.deltaTime;
         this.updateTick += dt;
 
@@ -228,26 +224,7 @@ public class PlayerManager : IDisposable {
         });
         this.LastScoreAndMultiplier = (score, baseScore, multiplier);
     }
-
-    private void HandleEncounterRequest(Reptile.Player me) {
-        if (Plugin.SlopScoreEncounter.IsBusy()) return;
-
-        var position = me.transform.position.FromMentalDeficiency();
-
-        // Get the nearest associated player
-        var nearestAssociatedPlayer = this.AssociatedPlayers
-                                          .OrderBy(x => Vector3.Distance(
-                                                       x.ReptilePlayer.transform.position.FromMentalDeficiency(),
-                                                       position))
-                                          .FirstOrDefault();
-
-        if (nearestAssociatedPlayer is null) return;
-
-        Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
-            PlayerID = nearestAssociatedPlayer.SlopPlayer.ID
-        });
-    }
-
+    
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
         if (Plugin.SlopScoreEncounter.IsBusy()) return;
         Plugin.SlopScoreEncounter.Start(encounterStart.PlayerID);

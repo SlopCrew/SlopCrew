@@ -1,4 +1,5 @@
-﻿using Reptile;
+﻿using HarmonyLib;
+using Reptile;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.UI.Phone;
@@ -11,7 +12,7 @@ public class PhoneInitializer {
 
         var slopAppObj = new GameObject("AppSlopCrew");
         slopAppObj.layer = Layers.Phone;
-        
+
         var contentObj = new GameObject("Content");
         contentObj.layer = Layers.Phone;
 
@@ -22,9 +23,14 @@ public class PhoneInitializer {
         // seems to be a hardcoded size
         content.sizeDelta = new(1070, 1775);
         tmp.rectTransform.sizeDelta = content.sizeDelta;
-
         tmp.alignment = TMPro.TextAlignmentOptions.Center;
-        tmp.text = ":3";
+
+        // Same shit we do for the nameplate
+        var uiManager = Core.Instance.UIManager;
+        var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+        tmp.font = gameplay.trickNameLabel.font;
+        tmp.fontSize = 100f;
+
         app.Label = tmp;
 
         slopAppObj.transform.SetParent(apps);
