@@ -203,11 +203,8 @@ public class AssociatedPlayer {
     public void InterpolatePosition() {
         var target = this.TargetTransform.Position.ToMentalDeficiency();
 
-        // This should roughly reflect tick rate I think?
-        var timeToTarget = 0.1f;
-
         // Use SmoothDamp to get physics-y interpolation that scales with speed
-        newPos = Vector3.SmoothDamp(this.ReptilePlayer.transform.position, target, ref velocity, timeToTarget);
+        newPos = Vector3.SmoothDamp(this.ReptilePlayer.transform.position, target, ref velocity, this.TimeToTarget);
 
         this.ReptilePlayer.transform.position = newPos;
     }

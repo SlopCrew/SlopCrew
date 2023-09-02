@@ -97,6 +97,12 @@ public class PlayerPatch {
                     // Update target and previous target transform
                     associatedPlayer.PrevTarget = associatedPlayer.TargetTransform;
                     associatedPlayer.TargetTransform = transformUpdate;
+
+                    // Calculate time to next target position
+                    var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
+                                   Constants.TickRate;
+                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) / 1000f / 2f;
+                    associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
             }
 
@@ -157,7 +163,7 @@ public class PlayerPatch {
             }
         }
     }
-    
+
     [HarmonyPrefix]
     [HarmonyPatch("Init")]
     public static void Init(
