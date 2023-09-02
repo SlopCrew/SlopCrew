@@ -28,10 +28,6 @@ public class SlopComboEncounter : SlopEncounter {
             if (this.comboDropped && this.opponentComboDropped) {
                 this.MyScoreMessage = this.FormatPlayerScore(this.lastComboScore);
                 this.TheirScoreMessage = this.FormatPlayerScore(this.opponentLastComboScore);
-                var audioManager = Core.Instance.AudioManager;
-                Traverse.Create(audioManager)
-                    .Method("PlaySfxUI", new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)},
-                            new object[] {SfxCollectionID.EnvironmentSfx, AudioClipID.MascotUnlock, 0f});
                 this.SetEncounterState(SlopEncounterState.Outro);
                 return;
             }

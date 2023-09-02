@@ -123,6 +123,15 @@ public class SlopEncounter {
 
     public void SetEncounterState(SlopEncounterState nextState) {
         Plugin.Log.LogInfo($"State change: {this.slopEncounterState} -> {nextState}");
+
+        // Play a sound at the end of the battle
+        if (nextState == SlopEncounterState.Outro) {
+            var audioManager = Core.Instance.AudioManager;
+            var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxUI",
+                                             new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)});
+            playSfx.Invoke(audioManager, new object[] {SfxCollectionID.EnvironmentSfx, AudioClipID.MascotUnlock, 0f});
+        }
+
         this.slopEncounterState = nextState;
         this.Stopwatch.Restart();
     }

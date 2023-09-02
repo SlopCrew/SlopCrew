@@ -30,8 +30,8 @@ public class Server {
         // Thanks Serilog
         if (this.config.Debug) {
             var newLogger = new LoggerConfiguration().WriteTo.Console()
-                                                     .MinimumLevel.Verbose()
-                                                     .CreateLogger();
+                .MinimumLevel.Verbose()
+                .CreateLogger();
             Logger = newLogger;
             Log.Logger = Logger;
         }
@@ -60,9 +60,9 @@ public class Server {
 
         // my editorconfig sucks and indents it a lot so let's do this on a separate statement
         this.WebServer = this.WebServer
-                             // API goes before websocket or it gets eaten
-                             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
-                             .WithModule(this.Module);
+            // API goes before websocket or it gets eaten
+            .WithWebApi("/api", m => m.WithController<SlopAPIController>())
+            .WithModule(this.Module);
     }
 
     public void Start() {
@@ -89,7 +89,8 @@ public class Server {
 
     private void RunTick() {
         // Clean out dead connections
-        var deadConnections = this.GetConnections().Where(x => x.Context.WebSocket.State == WebSocketState.Closed);
+        var deadConnections = this.GetConnections()
+            .Where(x => x.Context.WebSocket.State is WebSocketState.Closed or WebSocketState.None);
         foreach (var conn in deadConnections) {
             this.Module.FuckingObliterate(conn.Context);
         }
@@ -166,14 +167,14 @@ public class Server {
 
     private void BroadcastNewPlayers(int stage, ConnectionState? exclude = null) {
         var connections = this.GetConnections()
-                              .Where(x => x.Player?.Stage == stage)
-                              .ToList();
+            .Where(x => x.Player?.Stage == stage)
+            .ToList();
 
         // Precalculate this outside the loop and filter out null players
         var allPlayersInStage = connections.Select(c => c.Player)
-                                           .Where(p => p != null)
-                                           .Cast<Player>()
-                                           .ToList();
+            .Where(p => p != null)
+            .Cast<Player>()
+            .ToList();
 
         this.Metrics.UpdatePopulation(stage, allPlayersInStage.Count);
 
@@ -181,8 +182,8 @@ public class Server {
             if (connection != exclude) {
                 // This will be a list of all players except for the current one
                 var playersToSend = allPlayersInStage
-                                    .Where(p => p.ID != connection.Player?.ID)
-                                    .ToList();
+                    .Where(p => p.ID != connection.Player?.ID)
+                    .ToList();
 
                 this.Module.SendToContext(connection.Context, new ClientboundPlayersUpdate {
                     Players = playersToSend
