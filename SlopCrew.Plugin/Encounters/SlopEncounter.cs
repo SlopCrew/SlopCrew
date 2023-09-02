@@ -121,7 +121,7 @@ public class SlopEncounter {
         return false;
     }
 
-    public void SetEncounterState(SlopEncounterState nextState) {
+    public virtual void SetEncounterState(SlopEncounterState nextState) {
         Plugin.Log.LogInfo($"State change: {this.slopEncounterState} -> {nextState}");
 
         // Play a sound at the end of the battle

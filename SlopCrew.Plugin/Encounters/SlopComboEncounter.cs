@@ -8,8 +8,8 @@ namespace SlopCrew.Plugin.Encounters;
 public class SlopComboEncounter : SlopEncounter {
     private bool comboDropped = false;
     private bool opponentComboDropped = false;
-    private float lastComboScore = 0;
-    private float opponentLastComboScore = 0;
+    private float? lastComboScore;
+    private float? opponentLastComboScore;
 
     public override void Start(uint encounterStartPlayerID) {
         this.PlayDuration = 300;
@@ -26,8 +26,6 @@ public class SlopComboEncounter : SlopEncounter {
         if (elapsed > 15) {
             // If both players dropped their combo, end the encounter
             if (this.comboDropped && this.opponentComboDropped) {
-                this.MyScoreMessage = this.FormatPlayerScore(this.lastComboScore);
-                this.TheirScoreMessage = this.FormatPlayerScore(this.opponentLastComboScore);
                 this.SetEncounterState(SlopEncounterState.Outro);
                 return;
             }
@@ -59,5 +57,14 @@ public class SlopComboEncounter : SlopEncounter {
             }
             this.TheirScore = opponentBaseScore * opponentMultiplier;
         }
+    }
+
+    public override void SetEncounterState(SlopEncounterState nextState) {
+        if (nextState == SlopEncounterState.Outro) {
+            this.MyScoreMessage = this.FormatPlayerScore(this.lastComboScore ?? this.MyScore);
+            this.TheirScoreMessage = this.FormatPlayerScore(this.opponentLastComboScore ?? this.TheirScore);
+        }
+
+        base.SetEncounterState(nextState);
     }
 }
