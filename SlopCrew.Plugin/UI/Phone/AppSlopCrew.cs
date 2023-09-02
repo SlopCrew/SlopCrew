@@ -22,7 +22,8 @@ public class AppSlopCrew : App {
         if (this.nearestPlayer == null) return;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
-            PlayerID = this.nearestPlayer.SlopPlayer.ID
+            PlayerID = this.nearestPlayer.SlopPlayer.ID,
+            EncounterType = Common.Encounter.EncounterType.ScoreEncounter
         });
     }
 

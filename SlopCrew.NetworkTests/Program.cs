@@ -132,6 +132,7 @@ var packets = new List<NetworkPacket> {
     
     new ServerboundEncounterRequest {
         PlayerID = 42069
+        //EncounterType = Encounter.EncounterType.ScoreEncounter PLEASE FIX!!!
     }
 };
 

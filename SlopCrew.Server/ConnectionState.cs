@@ -175,11 +175,13 @@ public class ConnectionState {
             var module = Server.Instance.Module;
 
             module.SendToContext(this.Context, new ClientboundEncounterStart {
-                PlayerID = otherPlayer.Player.ID
+                PlayerID = otherPlayer.Player.ID,
+                EncounterType = encounterRequest.EncounterType
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
-                PlayerID = this.Player.ID
+                PlayerID = this.Player.ID,
+                EncounterType = encounterRequest.EncounterType
             });
 
             this.EncounterRequests.Remove(otherPlayer.Player.ID);
