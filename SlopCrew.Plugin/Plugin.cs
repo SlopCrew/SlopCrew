@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
+using SlopCrew.Plugin.Encounters;
 using SlopCrew.Plugin.UI.Phone;
 using UnityEngine;
 
@@ -18,8 +19,7 @@ public class Plugin : BaseUnityPlugin {
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
-    public static SlopScoreEncounter SlopScoreEncounter = null!;
-    public static SlopComboEncounter SlopComboEncounter = null!;
+    public static SlopEncounter? CurrentEncounter;
     public static PhoneInitializer PhoneInitializer = null!;
 
     private void Awake() {
@@ -34,8 +34,6 @@ public class Plugin : BaseUnityPlugin {
 
         NetworkConnection = new();
         PlayerManager = new();
-        SlopScoreEncounter = new();
-        SlopComboEncounter = new();
         PhoneInitializer = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };

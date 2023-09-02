@@ -1,4 +1,4 @@
-﻿namespace SlopCrew.Plugin;
+﻿namespace SlopCrew.Plugin.Encounters;
 
 public class SlopScoreEncounter : SlopEncounter {
     public override void Start(uint encounterStartPlayerID) {

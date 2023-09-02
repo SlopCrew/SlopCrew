@@ -22,7 +22,7 @@ public class ConnectionState {
     public IWebSocketContext Context;
     public object SendLock;
 
-    public List<uint> EncounterRequests = new();
+    public Dictionary<EncounterType, List<uint>> EncounterRequests = new();
 
     public ConnectionState(IWebSocketContext context) {
         this.Context = context;
@@ -163,14 +163,18 @@ public class ConnectionState {
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
         var otherPlayer = Server.Instance.GetConnections()
-                                .FirstOrDefault(x => x.Player?.ID == encounterRequest.PlayerID);
+            .FirstOrDefault(x => x.Player?.ID == encounterRequest.PlayerID);
 
         if (otherPlayer is null) return;
         if (otherPlayer.Player?.Stage != this.Player.Stage) return;
         Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
-        otherPlayer.EncounterRequests.Add(this.Player!.ID);
+        if (!otherPlayer.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
+            otherPlayer.EncounterRequests.Add(encounterRequest.EncounterType, new());
+        otherPlayer.EncounterRequests[encounterRequest.EncounterType].Add(this.Player!.ID);
 
-        if (this.EncounterRequests.Contains(otherPlayer.Player.ID)) {
+        if (!this.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
+            this.EncounterRequests.Add(encounterRequest.EncounterType, new());
+        if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
             var module = Server.Instance.Module;
 
@@ -184,14 +188,14 @@ public class ConnectionState {
                 EncounterType = encounterRequest.EncounterType
             });
 
-            this.EncounterRequests.Remove(otherPlayer.Player.ID);
-            otherPlayer.EncounterRequests.Remove(this.Player.ID);
+            this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
         }
 
         Task.Run(async () => {
             await Task.Delay(5000);
-            this.EncounterRequests.Remove(otherPlayer.Player.ID);
-            otherPlayer.EncounterRequests.Remove(this.Player.ID);
+            this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
         });
     }
 

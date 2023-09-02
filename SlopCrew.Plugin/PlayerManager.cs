@@ -7,6 +7,7 @@ using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using SlopCrew.Plugin.Encounters;
 using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
@@ -226,8 +227,14 @@ public class PlayerManager : IDisposable {
     }
     
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
-        if (Plugin.SlopComboEncounter.IsBusy()) return;
-        Plugin.SlopComboEncounter.Start(encounterStart.PlayerID);
+        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
+        Plugin.CurrentEncounter = encounterStart.EncounterType switch {
+            EncounterType.ComboEncounter => new SlopComboEncounter(),
+            EncounterType.ScoreEncounter => new SlopScoreEncounter(),
+            _ => null
+        };
+        
+        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID);
     }
 
     private void OnMessage(NetworkSerializable msg) {

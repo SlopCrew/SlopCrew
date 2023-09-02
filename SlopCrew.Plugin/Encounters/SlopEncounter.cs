@@ -1,21 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
 
-namespace SlopCrew.Plugin;
+namespace SlopCrew.Plugin.Encounters;
 
 public class SlopEncounter {
     protected double PlayDuration;
     protected float MyScore;
+    protected string? MyScoreMessage;
     protected float TheirScore;
+    protected string? TheirScoreMessage;
     protected AssociatedPlayer? Opponent;
-    
+
     private const double StartDuration = 3;
     private const double OutroDuration = 5;
-    
+
     private CultureInfo cultureInfo = null!;
 
     protected Stopwatch Stopwatch = new();
@@ -39,6 +42,7 @@ public class SlopEncounter {
         if (Plugin.PlayerManager.Players.TryGetValue(encounterStartPlayerID, out var associatedPlayer)) {
             this.Opponent = associatedPlayer;
             this.slopEncounterState = SlopEncounterState.Start;
+            this.ResetPlayerScore();
             this.Stopwatch.Restart();
         }
     }
@@ -62,16 +66,11 @@ public class SlopEncounter {
             return;
         }
 
-        var elapsed = this.Stopwatch.Elapsed.TotalSeconds;  
+        var elapsed = this.Stopwatch.Elapsed.TotalSeconds;
         switch (this.slopEncounterState) {
             case SlopEncounterState.Start: {
                 if (this.EnsureElapsed(elapsed, SlopEncounterState.Play)) {
-                    // Clear their score when it's time to play
-                    var player = WorldHandler.instance.GetCurrentPlayer();
-                    var traverse = Traverse.Create(player);
-                    traverse.Field<float>("score").Value = 0f;
-                    traverse.Field<float>("baseScore").Value = 0f;
-                    traverse.Field<float>("multiplier").Value = 1f;
+                    this.ResetPlayerScore();
                     return;
                 }
 
@@ -127,8 +126,8 @@ public class SlopEncounter {
         this.slopEncounterState = nextState;
         this.Stopwatch.Restart();
     }
-    
-    public virtual void EncounterUpdate() {}
+
+    public virtual void EncounterUpdate() { }
 
     // Stolen from Reptile code
     private string NiceTimerString(double timer) {
@@ -139,7 +138,17 @@ public class SlopEncounter {
         return str;
     }
 
-    private string FormatPlayerScore(float score) {
+    private void ResetPlayerScore() {
+        var player = WorldHandler.instance.GetCurrentPlayer();
+        var traverse = Traverse.Create(player);
+        traverse.Field<float>("score").Value = 0f;
+        traverse.Field<float>("baseScore").Value = 0f;
+        traverse.Field<float>("multiplier").Value = 1f;
+        this.MyScoreMessage = null;
+        this.TheirScoreMessage = null;
+    }
+
+    protected string FormatPlayerScore(float score) {
         if (this.slopEncounterState == SlopEncounterState.Start) return string.Empty;
         return FormattingUtility.FormatPlayerScore(this.cultureInfo, score);
     }
@@ -149,8 +158,10 @@ public class SlopEncounter {
         var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
         gameplay.challengeGroup.SetActive(true);
 
-        gameplay.totalScoreLabel.text = FormatPlayerScore(this.MyScore);
-        gameplay.targetScoreLabel.text = FormatPlayerScore(this.TheirScore);
+        gameplay.totalScoreLabel.text =
+            this.MyScoreMessage ?? this.FormatPlayerScore(this.MyScore);
+        gameplay.targetScoreLabel.text =
+            this.TheirScoreMessage ?? this.FormatPlayerScore(this.TheirScore);
 
         var myName = PlayerNameFilter.DoFilter(Plugin.SlopConfig.Username.Value);
         var theirName = PlayerNameFilter.DoFilter(this.Opponent!.SlopPlayer.Name);
@@ -159,7 +170,7 @@ public class SlopEncounter {
 
         gameplay.timeLimitLabel.text = time;
     }
-    
+
     private void TurnOffScoreUI() {
         var uiManager = Core.Instance.UIManager;
         var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;

@@ -12,10 +12,23 @@ namespace SlopCrew.Plugin.UI.Phone;
 public class AppSlopCrew : App {
     public TMP_Text? Label;
     private AssociatedPlayer? nearestPlayer;
+    private EncounterType encounterType = EncounterType.ScoreEncounter;
 
     public override void Awake() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
         base.Awake();
+    }
+
+    public override void OnPressUp() {
+        this.encounterType = this.encounterType == EncounterType.ScoreEncounter
+                                 ? EncounterType.ComboEncounter
+                                 : EncounterType.ScoreEncounter;
+    }
+
+    public override void OnPressDown() {
+        this.encounterType = this.encounterType == EncounterType.ScoreEncounter
+                                 ? EncounterType.ComboEncounter
+                                 : EncounterType.ScoreEncounter;
     }
 
     public override void OnPressRight() {
@@ -23,7 +36,7 @@ public class AppSlopCrew : App {
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
-            EncounterType = EncounterType.ScoreEncounter
+            EncounterType = this.encounterType
         });
     }
 
@@ -31,7 +44,7 @@ public class AppSlopCrew : App {
         var me = WorldHandler.instance.GetCurrentPlayer();
         if (me is null || this.Label is null) return;
 
-        if (Plugin.SlopScoreEncounter.IsBusy()) {
+        if (Plugin.CurrentEncounter?.IsBusy() == true) {
             this.Label.text = "glhf";
             return;
         }
@@ -49,7 +62,11 @@ public class AppSlopCrew : App {
         if (this.nearestPlayer == null) {
             this.Label.text = "No players nearby";
         } else {
-            this.Label.text = "Press right\nto battle\n" +
+            var modeName = this.encounterType switch {
+                EncounterType.ScoreEncounter => "score",
+                EncounterType.ComboEncounter => "combo"
+            };
+            this.Label.text = $"Press right\nto {modeName} battle\n" +
                               PlayerNameFilter.DoFilter(this.nearestPlayer.SlopPlayer.Name);
         }
     }

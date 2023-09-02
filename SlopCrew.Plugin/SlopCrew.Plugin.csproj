@@ -94,6 +94,7 @@
         <EmbeddedResource Include="res\**"/>
     </ItemGroup>
 
+
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Exec
             Command="xcopy /Y /I &quot;$(TargetDir)&quot; &quot;$(BRCPath)/BepInEx/plugins/SlopCrew&quot;"
