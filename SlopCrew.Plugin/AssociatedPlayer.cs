@@ -119,11 +119,12 @@ public class AssociatedPlayer {
         }
 
         // Configure the container's position
+        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
         container.transform.position = new Vector3(
-            bounds.center.x,
-            bounds.max.y + 0.125f,
-            bounds.center.z
+            0,
+            bounds.max.y,
+            0
         );
 
         // Rotate it to match the player's head
@@ -131,10 +132,6 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
-        var traverse = Traverse.Create(this.ReptilePlayer);
-        var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
-        container.transform.parent = characterVisual.head.transform;
-        container.transform.position = new Vector3(0, 1f, 0);
         container.AddComponent<UINameplate>();
     }
 
