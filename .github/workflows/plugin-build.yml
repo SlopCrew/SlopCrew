@@ -1,0 +1,40 @@
+on: [push, pull_request]
+
+name: Plugin builds
+
+jobs:
+    plugin:
+        name: Build plugin
+        runs-on: windows-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Install .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: 7.0.x
+
+            - name: Setup Bomb Rush Cyberfunk dependencies
+              run: |
+                  New-Item -ItemType Directory -Path ./local
+                  Invoke-WebRequest -Uri https://sloppers.club/publicized.zip -OutFile ./local/BombRushCyberfunk.zip
+                  Expand-Archive -Path ./local/BombRushCyberfunk.zip -DestinationPath ./local/BombRushCyberfunk
+                  Remove-Item ./local/BombRushCyberfunk.zip
+
+            - name: Build
+              run: ./build.ps1
+              env:
+                  BRCPath: ./local/BombRushCyberfunk
+
+            - name: Upload plugin artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: plugin
+                  path: ./out/SlopCrew.zip
+
+            - name: upload thunderstore artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: thunderstore
+                  path: ./out/thunderstore.zip
