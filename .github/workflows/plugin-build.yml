@@ -16,11 +16,7 @@ jobs:
                   dotnet-version: 7.0.x
 
             - name: Setup Bomb Rush Cyberfunk dependencies
-              run: |
-                  New-Item -ItemType Directory -Path ./local
-                  Invoke-WebRequest -Uri https://sloppers.club/publicized.zip -OutFile ./local/BombRushCyberfunk.zip
-                  Expand-Archive -Path ./local/BombRushCyberfunk.zip -DestinationPath ./local/BombRushCyberfunk
-                  Remove-Item ./local/BombRushCyberfunk.zip
+              run: ./gha.ps1
 
             - name: Build
               run: ./build.ps1
