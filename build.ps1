@@ -31,7 +31,7 @@ dotnet build "$project" --configuration Release
 
 # GitHub release
 $version = (Get-Item "$buildDir/SlopCrew.Plugin.dll").VersionInfo.ProductVersion
-Compress-Archive -Path "$buildDir/*" -DestinationPath "$outDir/$version.zip" -Force
+Compress-Archive -Path "$buildDir/*" -DestinationPath "$outDir/SlopCrew.zip" -Force
 
 # Thunderstore release
 Copy-Item "$buildDir/" "$thunderstorePluginDir/" -Recurse -Force
