@@ -8,7 +8,6 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
-using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -26,7 +25,6 @@ public class PlayerManager : IDisposable {
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
 
     private Queue<NetworkSerializable> messageQueue = new();
-    private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
     private Vector3 lastRot = Vector3.Zero;
@@ -40,6 +38,7 @@ public class PlayerManager : IDisposable {
         StageManager.OnStageInitialized += this.StageInit;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived += this.OnMessage;
+        Plugin.NetworkConnection.OnTick += this.OnTick;
     }
 
     public void Reset() {
@@ -54,7 +53,6 @@ public class PlayerManager : IDisposable {
         this.Players.Clear();
         this.messageQueue.Clear();
 
-        this.updateTick = 0;
         this.lastAnimation = null;
         this.lastPos = Vector3.Zero;
     }
@@ -64,6 +62,7 @@ public class PlayerManager : IDisposable {
         StageManager.OnStageInitialized -= this.StageInit;
         StageManager.OnStagePostInitialization -= this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived -= this.OnMessage;
+        Plugin.NetworkConnection.OnTick -= this.OnTick;
     }
 
     public AssociatedPlayer? GetAssociatedPlayer(Reptile.Player reptilePlayer) {
@@ -82,18 +81,13 @@ public class PlayerManager : IDisposable {
         if (this.IsResetQueued) {
             this.IsResetQueued = false;
             this.Reset();
-            return;
         }
+    }
 
+    private void OnTick(uint tick) {
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
         var traverse = Traverse.Create(me);
-
-        var dt = Time.deltaTime;
-        this.updateTick += dt;
-
-        if (this.updateTick <= Constants.TickRate) return;
-        this.updateTick = 0;
 
         this.HandlePositionUpdate(me);
         this.ProcessMessageQueue();

@@ -40,12 +40,15 @@ public class SlopWebSocketModule : WebSocketModule {
     ) {
         ConnectionState? state;
         lock (this.Connections) {
-            if (!this.Connections.TryGetValue(context, out state)) return Task.CompletedTask;
+            if (!this.Connections.TryGetValue(context, out state)) {
+                Log.Warning("Message from connection with no state? {ID}", context.Id);
+                return Task.CompletedTask;
+            }
         }
 
         try {
             var msg = NetworkPacket.Read(buffer);
-            state?.HandlePacket(msg);
+            state.HandlePacket(msg);
         } catch (Exception e) {
             Log.Error(e, "Error while handling message");
         }
