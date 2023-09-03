@@ -60,6 +60,7 @@ public class AppSlopCrew : App {
 
     public override void OnPressRight() {
         if (!this.SendEncounterRequest()) return;
+        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
 
         // People wanted an audible sound so you'll get one
         var audioManager = Core.Instance.AudioManager;
