@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>1.4.2</Version>
+        <Version>1.4.3</Version>
         <AssemblyName>SlopCrew.Plugin</AssemblyName>
         <Product>SlopCrew</Product>
         <Authors>NotNite</Authors>
