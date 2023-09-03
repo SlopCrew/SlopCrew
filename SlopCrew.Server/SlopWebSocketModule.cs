@@ -2,13 +2,11 @@
 using Graphite;
 using Serilog;
 using SlopCrew.Common.Network;
-using System.Collections.Concurrent;
-using SlopCrew.Common;
 
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public Dictionary<IWebSocketContext, ConnectionState?> Connections = new();
+    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
 
     public SlopWebSocketModule() : base("/", false) { }
 
@@ -30,10 +28,10 @@ public class SlopWebSocketModule : WebSocketModule {
 
     public void FuckingObliterate(IWebSocketContext context) {
         if (this.Connections.TryGetValue(context, out var state)) {
+            this.Connections.Remove(context);
             Server.Instance.UntrackConnection(state);
         }
 
-        this.Connections.Remove(context);
         Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
     }
 

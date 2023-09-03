@@ -160,8 +160,18 @@ public class Server {
 
         // Don't bother untracking someone we never tracked in the first place
         if (player is null) return;
+        
+        var connections = this.GetConnections()
+            .Where(x => x.Player?.Stage == player.Stage)
+            .ToList();
 
-        // Contains checks just in case we get into this state somehow
+        // Precalculate this outside the loop and filter out null players
+        var allPlayersInStage = connections.Select(c => c.Player)
+            .Where(p => p != null)
+            .Cast<Player>()
+            .ToList();
+        this.Metrics.UpdatePopulation(player.Stage, allPlayersInStage.Count);
+
         this.BroadcastNewPlayers(player.Stage, conn);
     }
 
