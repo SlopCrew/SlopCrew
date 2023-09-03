@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HarmonyLib;
@@ -7,6 +8,7 @@ using Reptile.Phone;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Serverbound;
 using TMPro;
+using UnityEngine.UI;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin.UI.Phone;
@@ -15,6 +17,12 @@ public class AppSlopCrew : App {
     public TMP_Text? Label;
     private AssociatedPlayer? nearestPlayer;
     private EncounterType encounterType = EncounterType.ScoreEncounter;
+
+    private List<EncounterType> encounterTypes = new() {
+        EncounterType.ScoreEncounter,
+        EncounterType.ComboEncounter
+    };
+
     private bool notifInitialized;
     private bool playerLocked;
 
@@ -23,16 +31,31 @@ public class AppSlopCrew : App {
         base.Awake();
     }
 
+    protected override void OnAppInit() {
+        var homeScreen = this.MyPhone.GetAppInstance<AppHomeScreen>();
+        var scrollView = Traverse.Create(homeScreen).Field<HomescreenScrollView>("m_ScrollView").Value;
+        var traverse = Traverse.Create(scrollView);
+        var upArrow = traverse.Field<Image>("m_ArrowUp").Value;
+        var downArrow = traverse.Field<Image>("m_ArrowDown").Value;
+
+        var ourUpArrow = Instantiate(upArrow.gameObject, this.transform);
+        var ourDownArrow = Instantiate(downArrow.gameObject, this.transform);
+
+        var half = (1775 / 2) - 100;
+        ourUpArrow.transform.localPosition = new UnityEngine.Vector3(0, half, 0);
+        ourDownArrow.transform.localPosition = new UnityEngine.Vector3(0, -half, 0);
+    }
+
     public override void OnPressUp() {
-        this.encounterType = this.encounterType == EncounterType.ScoreEncounter
-                                 ? EncounterType.ComboEncounter
-                                 : EncounterType.ScoreEncounter;
+        var nextIndex = this.encounterTypes.IndexOf(this.encounterType) - 1;
+        if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
+        this.encounterType = this.encounterTypes[nextIndex];
     }
 
     public override void OnPressDown() {
-        this.encounterType = this.encounterType == EncounterType.ScoreEncounter
-                                 ? EncounterType.ComboEncounter
-                                 : EncounterType.ScoreEncounter;
+        var nextIndex = this.encounterTypes.IndexOf(this.encounterType) + 1;
+        if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
+        this.encounterType = this.encounterTypes[nextIndex];
     }
 
     public override void OnPressRight() {
