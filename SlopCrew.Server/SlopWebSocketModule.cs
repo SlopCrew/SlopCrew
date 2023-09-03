@@ -8,7 +8,7 @@ using SlopCrew.Common;
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
+    public Dictionary<IWebSocketContext, ConnectionState?> Connections = new();
 
     public SlopWebSocketModule() : base("/", false) { }
 
@@ -40,18 +40,19 @@ public class SlopWebSocketModule : WebSocketModule {
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
+        ConnectionState? state;
         lock (this.Connections) {
-            if (this.Connections.TryGetValue(context, out var state)) {
-                try {
-                    var msg = NetworkPacket.Read(buffer);
-                    state.HandlePacket(msg);
-                } catch (Exception e) {
-                    Log.Error(e, "Error while handling message");
-                }
-            }
-
-            return Task.CompletedTask;
+            if (!this.Connections.TryGetValue(context, out state)) return Task.CompletedTask;
         }
+
+        try {
+            var msg = NetworkPacket.Read(buffer);
+            state?.HandlePacket(msg);
+        } catch (Exception e) {
+            Log.Error(e, "Error while handling message");
+        }
+
+        return Task.CompletedTask;
     }
 
     public void SendToContext(IWebSocketContext context, NetworkPacket msg) {
@@ -81,9 +82,9 @@ public class SlopWebSocketModule : WebSocketModule {
     ) {
         if (!this.Connections.TryGetValue(context, out var state)) return;
         var otherSessions = this.Connections.ToList()
-                                .Where(s => s.Key.Id != context.Id)
-                                .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
-                                .ToList();
+            .Where(s => s.Key.Id != context.Id)
+            .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
+            .ToList();
 
         var serialized = msg.Serialize();
         foreach (var session in otherSessions) {

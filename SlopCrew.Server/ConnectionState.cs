@@ -75,7 +75,9 @@ public class ConnectionState {
                 break;
 
             case ServerboundEncounterRequest encounterRequest:
-                this.HandleEncounterRequest(encounterRequest);
+                lock (Server.Instance.Module.Connections) {
+                    this.HandleEncounterRequest(encounterRequest);
+                }
                 break;
         }
     }
@@ -111,7 +113,9 @@ public class ConnectionState {
         this.Player.IsDeveloper = Constants.SecretCodes.Contains(hashString);
 
         // Syncs player to other players
-        server.TrackConnection(this);
+        lock (Server.Instance.Module.Connections) {
+            server.TrackConnection(this);
+        }
 
         // Set after we track connection because State:tm:
         this.LastStage = this.Player.Stage;
