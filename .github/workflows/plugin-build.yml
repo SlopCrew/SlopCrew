@@ -27,10 +27,10 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                   name: plugin
-                  path: ./out/SlopCrew.zip
+                  path: ./SlopCrew.Plugin/bin/Release/net462
 
             - name: Upload Thunderstore artifact
               uses: actions/upload-artifact@v3
               with:
                   name: thunderstore
-                  path: ./out/thunderstore.zip
+                  path: ./thunderstore
