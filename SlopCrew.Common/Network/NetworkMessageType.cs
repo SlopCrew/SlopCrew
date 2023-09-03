@@ -11,11 +11,18 @@ public enum NetworkMessageType {
     ClientboundPlayerVisualUpdate,
     ClientboundPong,
     ClientboundSync,
+    ClientboundRequestRace,
+    ClientboundRaceInitialize,
+    ClientboundRaceStart,
+    ClientboundRaceRank,
 
     ServerboundAnimation,
     ServerboundPing,
     ServerboundPlayerHello,
     ServerboundPositionUpdate,
     ServerboundScoreUpdate,
-    ServerboundVisualUpdate
+    ServerboundVisualUpdate,
+    ServerboundRequestRace,
+    ServerboundReadyForRace,
+    ServerboundFinishedRace
 }

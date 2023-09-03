@@ -1,10 +1,10 @@
+using EmbedIO;
+using EmbedIO.WebApi;
 using Serilog;
 using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
-using EmbedIO;
-using EmbedIO.WebApi;
-using Graphite;
+using SlopCrew.Server.Race;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -75,6 +75,38 @@ public class Server {
                 }
             }
         }).Start();
+
+        Task.Run(() => {
+            var racer = Racer.Instance;
+
+            while (!racer.CancellationToken.IsCancellationRequested) {
+                var queued = racer.Update();
+
+                var queuedInitialize = queued.RaceInitializeRequests;
+                var queuedRaceStart = queued.RaceStartRequests;
+                var queuedRaceRank = queued.RaceRankRequests;
+
+                foreach (var (ids, msg) in queuedInitialize) {
+                    if (ids.Any() && msg != null) {
+                        Server.Instance.Module.SendToTheConcerned(ids, msg);
+                    }
+                }
+
+                foreach (var (ids, msg) in queuedRaceStart) {
+                    if (ids.Any() && msg != null) {
+                        Server.Instance.Module.SendToTheConcerned(ids, msg);
+                    }
+                }
+
+                foreach (var (ids, msg) in queuedRaceRank) {
+                    if (ids.Any() && msg != null) {
+                        Server.Instance.Module.SendToTheConcerned(ids, msg);
+                    }
+                }
+
+                Task.Delay((int) Constants.TickRate * 1000);
+            }
+        }, Racer.Instance.CancellationToken);
 
         this.WebServer.Start();
     }

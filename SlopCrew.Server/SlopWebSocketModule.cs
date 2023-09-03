@@ -1,9 +1,8 @@
-﻿using EmbedIO.WebSockets;
-using Graphite;
+using EmbedIO.WebSockets;
 using Serilog;
 using SlopCrew.Common.Network;
+using SlopCrew.Server.Race;
 using System.Collections.Concurrent;
-using SlopCrew.Common;
 
 namespace SlopCrew.Server;
 
@@ -22,6 +21,8 @@ public class SlopWebSocketModule : WebSocketModule {
         if (this.Connections.TryRemove(context, out var state)) {
             Server.Instance.UntrackConnection(state);
             Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
+
+            Racer.Instance.RemovePlayerIfRacing(state.Player);
         }
 
         return Task.CompletedTask;
@@ -74,6 +75,23 @@ public class SlopWebSocketModule : WebSocketModule {
                                 .ToList();
 
         var serialized = msg.Serialize();
+        foreach (var session in otherSessions) {
+            lock (session.Value.SendLock) {
+                this.SendAsync(session.Key, serialized);
+            }
+        }
+    }
+
+    public void SendToTheConcerned(
+        IEnumerable<uint> ids,
+        NetworkPacket msg
+    ) {
+        var otherSessions = this.Connections.ToList()
+                                .Where(s => ids.Contains(s.Value.Player!.ID))
+                                .ToList();
+
+        var serialized = msg.Serialize();
+
         foreach (var session in otherSessions) {
             lock (session.Value.SendLock) {
                 this.SendAsync(session.Key, serialized);

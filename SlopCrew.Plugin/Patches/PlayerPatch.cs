@@ -1,11 +1,7 @@
-using System;
-using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Reptile;
-using SlopCrew.Common;
-using SlopCrew.Common.Network.Clientbound;
+using SlopCrew.Plugin.Scripts;
 using UnityEngine;
-using Logger = UnityEngine.Logger;
 using Player = Reptile.Player;
 
 namespace SlopCrew.Plugin.Patches;
@@ -150,6 +146,18 @@ public class PlayerPatch {
                 }
                 anim.SetLayerWeight(3, phoneLayerWeight.Value);
             }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch("FixedUpdatePlayer")]
+    public static void FixedUpdatePlayerPrefix(Player __instance) {
+        var currentPlayer = WorldHandler.instance?.GetCurrentPlayer();
+        if (__instance.name == currentPlayer?.name && !RaceManager.Instance!.IsInRace()) {
+            GrindAbility grindAbility = Traverse.Create(__instance).Field<GrindAbility>("grindAbility").Value;
+
+            grindAbility.speedTarget = RaceVelocityModifier.GrindSpeedTarget;
+            __instance.normalBoostSpeed = RaceVelocityModifier.BoostSpeedTarget;
         }
     }
 }

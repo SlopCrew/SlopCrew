@@ -1,8 +1,9 @@
-﻿using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
+using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace SlopCrew.Plugin;
@@ -17,6 +18,14 @@ public class Plugin : BaseUnityPlugin {
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
+
+    private static int _shouldIgnoreInput = 0;
+
+    public static bool ShouldIgnoreInput {
+        get => Interlocked.CompareExchange(ref _shouldIgnoreInput, 0, 0) == 1;
+        set => Interlocked.Exchange(ref _shouldIgnoreInput, value ? 1 : 0);
+    }
+
 
     private void Awake() {
         Log = this.Logger;

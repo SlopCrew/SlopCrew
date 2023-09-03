@@ -1,11 +1,12 @@
+using EmbedIO.WebSockets;
+using Serilog;
 using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using SlopCrew.Server.Race;
 using System.Security.Cryptography;
 using System.Text;
-using EmbedIO.WebSockets;
-using Serilog;
 
 namespace SlopCrew.Server;
 
@@ -31,7 +32,7 @@ public class ConnectionState {
 
         // These packets get processed when player is null
         switch (msg) {
-            case ServerboundVersion {Version: < Constants.NetworkVersion}:
+            case ServerboundVersion { Version: < Constants.NetworkVersion }:
                 // Older version, no thanks
                 this.Context.WebSocket.CloseAsync();
                 return;
@@ -65,6 +66,15 @@ public class ConnectionState {
 
             case ServerboundVisualUpdate visualUpdate:
                 this.HandleVisualUpdate(visualUpdate);
+                break;
+            case ServerboundRequestRace serverboundRequestRace:
+                this.HandleRequestRace(serverboundRequestRace);
+                break;
+            case ServerboundReadyForRace serverboundReadyForRace:
+                this.HandleReadyForRace(serverboundReadyForRace);
+                break;
+            case ServerboundFinishedRace serverboundFinishedRace:
+                this.HandleFinishedRace(serverboundFinishedRace);
                 break;
         }
     }
@@ -145,6 +155,43 @@ public class ConnectionState {
             Spraycan = visualUpdate.Spraycan,
             Phone = visualUpdate.Phone
         };
+    }
+
+    private void HandleRequestRace(ServerboundRequestRace serverboundRequestRace) {
+        if (Player == null) {
+            return;
+        }
+
+        Log.Information($"New race request from {Player.ID}");
+
+        var newRaceConf = Racer.Instance.GetARace(Player);
+
+        if (newRaceConf != null) {
+            Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
+                Response = true,
+                RaceConfig = newRaceConf
+            });
+        }
+    }
+
+    private void HandleReadyForRace(ServerboundReadyForRace serverboundReadyForRace) {
+        if (Player == null) {
+            return;
+        }
+
+        Log.Information($"Player {Player.ID} ready for his race");
+
+        Racer.Instance.MarkPlayerReady(Player.ID);
+    }
+
+    private void HandleFinishedRace(ServerboundFinishedRace serverboundFinishedRace) {
+        if (Player == null) {
+            return;
+        }
+
+        Log.Information($"{Player.ID} finished his race with a time {serverboundFinishedRace.Time}");
+
+        Racer.Instance.AddPlayerTime(Player.ID, serverboundFinishedRace.Time);
     }
 
     public string DebugName() {

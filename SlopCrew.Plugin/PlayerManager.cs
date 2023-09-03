@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using SlopCrew.Plugin.Scripts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
@@ -246,6 +247,18 @@ public class PlayerManager : IDisposable {
             case ClientboundPlayerVisualUpdate playerVisualUpdate:
                 this.HandlePlayerVisualUpdate(playerVisualUpdate);
                 break;
+            case ClientboundRequestRace clientboundRequestRace:
+                this.HandleRequestRace(clientboundRequestRace);
+                break;
+            case ClientboundRaceInitialize _:
+                this.HandleRaceInitialize(); //TODO: May be sent the race id to match if we got the correct msg
+                break;
+            case ClientboundRaceStart _:
+                this.HandleRaceStart();
+                break;
+            case ClientboundRaceRank clientboundRaceRank:
+                this.HandleRaceRank(clientboundRaceRank);
+                break;
         }
     }
 
@@ -355,6 +368,23 @@ public class PlayerManager : IDisposable {
             this.IsSettingVisual = false;
         }
     }
+
+    private void HandleRequestRace(ClientboundRequestRace clientboundRequestRace) {
+        RaceManager.Instance.OnRaceRequestResponse(clientboundRequestRace.Response, clientboundRequestRace.RaceConfig);
+    }
+
+    private void HandleRaceInitialize() {
+        RaceManager.Instance.OnRaceInitialize();
+    }
+
+    private void HandleRaceStart() {
+        RaceManager.Instance.OnRaceStart();
+    }
+
+    private void HandleRaceRank(ClientboundRaceRank clientboundRaceRank) {
+        RaceManager.Instance.OnRaceRank(clientboundRaceRank.Rank);
+    }
+
 
     public void PlayAnimation(int anim, bool forceOverwrite, bool instant, float atTime) {
         // Sometimes the game likes to spam animations. Why? idk lol

@@ -2,7 +2,7 @@ using HarmonyLib;
 using Reptile.Phone;
 using SlopCrew.Plugin.UI;
 
-namespace SlopCrew.Plugin.Patches; 
+namespace SlopCrew.Plugin.Patches;
 
 [HarmonyPatch(typeof(AppHomeScreen))]
 public class AppHomeScreenPatch {
