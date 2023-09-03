@@ -238,10 +238,7 @@ public class PlayerManager : IDisposable {
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
-        if (this.Players.TryGetValue(encounterRequest.PlayerID, out var associatedPlayer)) {
-            var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
-            Plugin.PhoneInitializer.ShowNotif(name);
-        }
+        Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
 
     private void OnMessage(NetworkSerializable msg) {

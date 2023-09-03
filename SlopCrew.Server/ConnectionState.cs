@@ -180,11 +180,11 @@ public class ConnectionState {
         if (!this.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
             this.EncounterRequests[encounterRequest.EncounterType] = new();
 
+        var canSendNotif = false;
         if (!otherPlayer.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
             otherPlayer.EncounterRequests[encounterRequest.EncounterType].Add(this.Player!.ID);
-            module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
-                PlayerID = this.Player.ID
-            });
+            // Only let people send it once every 5s
+            canSendNotif = true;
         }
 
         if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
@@ -202,6 +202,11 @@ public class ConnectionState {
 
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
+        } else if (canSendNotif) {
+            module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
+                PlayerID = this.Player.ID,
+                EncounterType = encounterRequest.EncounterType
+            });
         }
 
         Task.Run(async () => {

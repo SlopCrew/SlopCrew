@@ -17,6 +17,10 @@ public class SlopConfigFile {
     public ConfigEntry<bool> BillboardNameplates;
     public ConfigEntry<bool> ShowPlayerMapPins;
 
+    // Phone
+    public ConfigEntry<bool> ReceiveNotifications;
+    public ConfigEntry<bool> StartEncountersOnRequest;
+
     // Fixes
     public ConfigEntry<bool> FixBikeGate;
     public ConfigEntry<bool> FixAmbientColors;
@@ -84,6 +88,20 @@ public class SlopConfigFile {
             "ShowPlayerMapPins",
             true,
             "Show players on the phone map."
+        );
+
+        // Phone
+        this.ReceiveNotifications = this.config.Bind(
+            "Phone",
+            "ReceiveNotifications",
+            true,
+            "Receive notifications to start encounters from other players."
+        );
+        this.StartEncountersOnRequest = this.config.Bind(
+            "Phone",
+            "StartEncountersOnRequest",
+            true,
+            "Start encounters when opening a notification."
         );
 
         // Fixes

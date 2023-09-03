@@ -1,12 +1,17 @@
 ﻿using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
+using SlopCrew.Common;
+using SlopCrew.Common.Network.Clientbound;
 using TMPro;
 using UnityEngine;
+using Player = Reptile.Player;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class PhoneInitializer {
+    public ClientboundEncounterRequest? LastRequest;
+
     // We need to shove our own GameObject with a AppSlopCrew component into the prefab
     public void InitPhone(Player instance) {
         var prefab = instance.phonePrefab;
@@ -44,15 +49,22 @@ public class PhoneInitializer {
         contentObj.transform.localScale = new(1, 1, 1);
     }
 
-    public void ShowNotif(string name) {
-        var player = WorldHandler.instance.GetCurrentPlayer();
-        var phone = Traverse.Create(player).Field<Reptile.Phone.Phone>("phone").Value;
-        var app = phone.GetAppInstance<AppSlopCrew>();
+    public void ShowNotif(ClientboundEncounterRequest request) {
+        if (!Plugin.SlopConfig.ReceiveNotifications.Value) return;
 
-        var emailApp = phone.GetAppInstance<AppEmail>();
-        var emailNotif = emailApp.GetComponent<Notification>();
-        app.SetNotification(emailNotif);
+        if (Plugin.PlayerManager.Players.TryGetValue(request.PlayerID, out var associatedPlayer)) {
+            var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
 
-        phone.PushNotification(app, name, null);
+            var player = WorldHandler.instance.GetCurrentPlayer();
+            var phone = Traverse.Create(player).Field<Reptile.Phone.Phone>("phone").Value;
+            var app = phone.GetAppInstance<AppSlopCrew>();
+
+            var emailApp = phone.GetAppInstance<AppEmail>();
+            var emailNotif = emailApp.GetComponent<Notification>();
+            app.SetNotification(emailNotif);
+
+            this.LastRequest = request;
+            phone.PushNotification(app, name, null);
+        }
     }
 }
