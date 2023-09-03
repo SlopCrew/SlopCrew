@@ -119,7 +119,6 @@ public class AssociatedPlayer {
         }
 
         // Configure the container's position
-        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
         container.transform.position = new Vector3(
             0,
@@ -132,6 +131,7 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
+        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
     }
 
