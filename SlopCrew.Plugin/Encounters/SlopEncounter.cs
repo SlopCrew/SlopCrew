@@ -152,7 +152,7 @@ public class SlopEncounter {
         var traverse = Traverse.Create(player);
         traverse.Field<float>("score").Value = 0f;
         traverse.Field<float>("baseScore").Value = 0f;
-        traverse.Field<float>("multiplier").Value = 1f;
+        traverse.Field<float>("scoreMultiplier").Value = 1f;
         this.MyScoreMessage = null;
         this.TheirScoreMessage = null;
     }
