@@ -4,11 +4,7 @@ using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
-using SlopCrew.Plugin.Scripts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+using SlopCrew.Plugin.Encounters;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -26,20 +22,20 @@ public class PlayerManager : IDisposable {
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
 
     private Queue<NetworkSerializable> messageQueue = new();
-    private float updateTick = 0;
     private int? lastAnimation;
     private Vector3 lastPos = Vector3.Zero;
     private Vector3 lastRot = Vector3.Zero;
     private bool stopAnnounced = false;
 
     private int scoreUpdateCooldown = 10;
-    private (int, int) lastScoreAndMultiplier = (0, 0);
+    public (int, int, int) LastScoreAndMultiplier = (0, 0, 0);
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
         StageManager.OnStageInitialized += this.StageInit;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived += this.OnMessage;
+        Plugin.NetworkConnection.OnTick += this.OnTick;
     }
 
     public void Reset() {
@@ -54,7 +50,6 @@ public class PlayerManager : IDisposable {
         this.Players.Clear();
         this.messageQueue.Clear();
 
-        this.updateTick = 0;
         this.lastAnimation = null;
         this.lastPos = Vector3.Zero;
     }
@@ -64,6 +59,7 @@ public class PlayerManager : IDisposable {
         StageManager.OnStageInitialized -= this.StageInit;
         StageManager.OnStagePostInitialization -= this.StagePostInit;
         Plugin.NetworkConnection.OnMessageReceived -= this.OnMessage;
+        Plugin.NetworkConnection.OnTick -= this.OnTick;
     }
 
     public AssociatedPlayer? GetAssociatedPlayer(Reptile.Player reptilePlayer) {
@@ -82,18 +78,13 @@ public class PlayerManager : IDisposable {
         if (this.IsResetQueued) {
             this.IsResetQueued = false;
             this.Reset();
-            return;
         }
+    }
 
+    private void OnTick(uint tick) {
         var me = WorldHandler.instance?.GetCurrentPlayer();
         if (me is null) return;
         var traverse = Traverse.Create(me);
-
-        var dt = Time.deltaTime;
-        this.updateTick += dt;
-
-        if (this.updateTick <= Constants.TickRate) return;
-        this.updateTick = 0;
 
         this.HandlePositionUpdate(me);
         this.ProcessMessageQueue();
@@ -180,6 +171,7 @@ public class PlayerManager : IDisposable {
                     Latency = Plugin.NetworkConnection.ServerLatency
                 },
 
+                IsDead = me.IsDead(),
                 IsDeveloper = false
             },
 
@@ -211,15 +203,33 @@ public class PlayerManager : IDisposable {
         if (player is null || !player.isActiveAndEnabled) return;
 
         var traverse = Traverse.Create(player);
-        var score = (int) traverse.Field<float>("baseScore").Value;
+        var score = (int) traverse.Field<float>("score").Value;
+        var baseScore = (int) traverse.Field<float>("baseScore").Value;
         var multiplier = (int) traverse.Field<float>("scoreMultiplier").Value;
-        if (score == this.lastScoreAndMultiplier.Item1 && multiplier == this.lastScoreAndMultiplier.Item2) return;
+        if (score == this.LastScoreAndMultiplier.Item1 && baseScore == this.LastScoreAndMultiplier.Item2 &&
+            multiplier == this.LastScoreAndMultiplier.Item3) return;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundScoreUpdate {
             Score = score,
+            BaseScore = baseScore,
             Multiplier = multiplier
         });
-        this.lastScoreAndMultiplier = (score, multiplier);
+        this.LastScoreAndMultiplier = (score, baseScore, multiplier);
+    }
+
+    private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
+        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
+        Plugin.CurrentEncounter = encounterStart.EncounterType switch {
+            EncounterType.ComboEncounter => new SlopComboEncounter(),
+            EncounterType.ScoreEncounter => new SlopScoreEncounter(),
+            _ => null
+        };
+
+        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID);
+    }
+
+    private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
+        Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
 
     private void OnMessage(NetworkSerializable msg) {
@@ -247,6 +257,15 @@ public class PlayerManager : IDisposable {
             case ClientboundPlayerVisualUpdate playerVisualUpdate:
                 this.HandlePlayerVisualUpdate(playerVisualUpdate);
                 break;
+
+            case ClientboundEncounterRequest encounterRequest:
+                this.HandleEncounterRequest(encounterRequest);
+                break;
+            
+            case ClientboundEncounterStart encounterStart:
+                this.HandleEncounterStart(encounterStart);
+                break;
+
             case ClientboundRequestRace clientboundRequestRace:
                 this.HandleRequestRace(clientboundRequestRace);
                 break;
@@ -340,6 +359,7 @@ public class PlayerManager : IDisposable {
     private void HandlePlayerScoreUpdate(ClientboundPlayerScoreUpdate playerScoreUpdate) {
         if (this.Players.TryGetValue(playerScoreUpdate.Player, out var associatedPlayer)) {
             associatedPlayer.Score = playerScoreUpdate.Score;
+            associatedPlayer.BaseScore = playerScoreUpdate.BaseScore;
             associatedPlayer.Multiplier = playerScoreUpdate.Multiplier;
         }
     }

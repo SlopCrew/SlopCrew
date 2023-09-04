@@ -7,37 +7,52 @@ using System.Collections.Concurrent;
 namespace SlopCrew.Server;
 
 public class SlopWebSocketModule : WebSocketModule {
-    public ConcurrentDictionary<IWebSocketContext, ConnectionState> Connections = new();
+    public Dictionary<IWebSocketContext, ConnectionState> Connections = new();
 
     public SlopWebSocketModule() : base("/", true) { }
 
     protected override Task OnClientConnectedAsync(IWebSocketContext context) {
-        this.Connections[context] = new ConnectionState(context);
-        Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
-        return Task.CompletedTask;
+        lock (this.Connections) {
+            this.Connections[context] = new ConnectionState(context);
+            Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
+
+            return Task.CompletedTask;
+        }
     }
 
     protected override Task OnClientDisconnectedAsync(IWebSocketContext context) {
-        if (this.Connections.TryRemove(context, out var state)) {
-            Server.Instance.UntrackConnection(state);
-            Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
+        lock (this.Connections) {
+            this.FuckingObliterate(context);
+            return Task.CompletedTask;
+        }
+    }
 
+    public void FuckingObliterate(IWebSocketContext context) {
+        if (this.Connections.TryGetValue(context, out var state)) {
+            this.Connections.Remove(context);
+            Server.Instance.UntrackConnection(state);
             Racer.Instance.RemovePlayerIfRacing(state.Player);
         }
 
-        return Task.CompletedTask;
+        Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
     }
 
     protected override Task OnMessageReceivedAsync(
         IWebSocketContext context, byte[] buffer, IWebSocketReceiveResult result
     ) {
-        if (this.Connections.TryGetValue(context, out var state)) {
-            try {
-                var msg = NetworkPacket.Read(buffer);
-                state.HandlePacket(msg);
-            } catch (Exception e) {
-                Log.Error(e, "Error while handling message");
+        ConnectionState? state;
+        lock (this.Connections) {
+            if (!this.Connections.TryGetValue(context, out state)) {
+                Log.Warning("Message from connection with no state? {ID}", context.Id);
+                return Task.CompletedTask;
             }
+        }
+
+        try {
+            var msg = NetworkPacket.Read(buffer);
+            state.HandlePacket(msg);
+        } catch (Exception e) {
+            Log.Error(e, "Error while handling message");
         }
 
         return Task.CompletedTask;
@@ -70,9 +85,9 @@ public class SlopWebSocketModule : WebSocketModule {
     ) {
         if (!this.Connections.TryGetValue(context, out var state)) return;
         var otherSessions = this.Connections.ToList()
-                                .Where(s => s.Key.Id != context.Id)
-                                .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
-                                .ToList();
+            .Where(s => s.Key.Id != context.Id)
+            .Where(s => s.Value.Player?.Stage == state.Player?.Stage)
+            .ToList();
 
         var serialized = msg.Serialize();
         foreach (var session in otherSessions) {

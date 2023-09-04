@@ -31,6 +31,7 @@ Slop Crew can sync:
 - Player position, including across maps
 - Boostpack/friction effects
 - Animations & dancing
+- Real time 1v1 score battles
 
 ## Connecting to a server
 

@@ -4,6 +4,8 @@ using HarmonyLib;
 using SlopCrew.API;
 using System.Linq;
 using System.Threading;
+using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.UI.Phone;
 using UnityEngine;
 
 namespace SlopCrew.Plugin;
@@ -18,6 +20,8 @@ public class Plugin : BaseUnityPlugin {
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
+    public static SlopEncounter? CurrentEncounter;
+    public static PhoneInitializer PhoneInitializer = null!;
 
     private static int _shouldIgnoreInput = 0;
 
@@ -39,6 +43,7 @@ public class Plugin : BaseUnityPlugin {
 
         NetworkConnection = new();
         PlayerManager = new();
+        PhoneInitializer = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
     }

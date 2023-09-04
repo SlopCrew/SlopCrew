@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Ignore Include="res\**" />
-        <EmbeddedResource Include="res\**" />
+        <Ignore Include="res\**"/>
+        <EmbeddedResource Include="res\**"/>
     </ItemGroup>
 
     <ItemGroup>

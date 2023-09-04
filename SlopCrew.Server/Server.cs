@@ -1,9 +1,10 @@
-using EmbedIO;
-using EmbedIO.WebApi;
+using System.Net.WebSockets;
 using Serilog;
 using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
+using EmbedIO;
+using EmbedIO.WebApi;
 using SlopCrew.Server.Race;
 using Constants = SlopCrew.Common.Constants;
 
@@ -26,7 +27,15 @@ public class Server {
         Log.Logger = Logger;
 
         this.config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
-        if (this.config.Debug) logger.MinimumLevel.Verbose();
+
+        // Thanks Serilog
+        if (this.config.Debug) {
+            var newLogger = new LoggerConfiguration().WriteTo.Console()
+                .MinimumLevel.Verbose()
+                .CreateLogger();
+            Logger = newLogger;
+            Log.Logger = Logger;
+        }
 
         this.Metrics = new Metrics(this.config);
         this.Module = new SlopWebSocketModule();
@@ -52,9 +61,9 @@ public class Server {
 
         // my editorconfig sucks and indents it a lot so let's do this on a separate statement
         this.WebServer = this.WebServer
-                             // API goes before websocket or it gets eaten
-                             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
-                             .WithModule(this.Module);
+            // API goes before websocket or it gets eaten
+            .WithWebApi("/api", m => m.WithController<SlopAPIController>())
+            .WithModule(this.Module);
     }
 
     public void Start() {
@@ -112,6 +121,13 @@ public class Server {
     }
 
     private void RunTick() {
+        // Clean out dead connections
+        var deadConnections = this.GetConnections()
+            .Where(x => x.Context.WebSocket.State is WebSocketState.Closed or WebSocketState.None);
+        foreach (var conn in deadConnections) {
+            this.Module.FuckingObliterate(conn.Context);
+        }
+
         // Go through each connection and run their respective ticks.
         foreach (var connection in this.GetConnections()) {
             connection.RunTick();
@@ -177,21 +193,31 @@ public class Server {
 
         // Don't bother untracking someone we never tracked in the first place
         if (player is null) return;
+        
+        var connections = this.GetConnections()
+            .Where(x => x.Player?.Stage == player.Stage)
+            .ToList();
 
-        // Contains checks just in case we get into this state somehow
+        // Precalculate this outside the loop and filter out null players
+        var allPlayersInStage = connections.Select(c => c.Player)
+            .Where(p => p != null)
+            .Cast<Player>()
+            .ToList();
+        this.Metrics.UpdatePopulation(player.Stage, allPlayersInStage.Count);
+
         this.BroadcastNewPlayers(player.Stage, conn);
     }
 
     private void BroadcastNewPlayers(int stage, ConnectionState? exclude = null) {
         var connections = this.GetConnections()
-                              .Where(x => x.Player?.Stage == stage)
-                              .ToList();
+            .Where(x => x.Player?.Stage == stage)
+            .ToList();
 
         // Precalculate this outside the loop and filter out null players
         var allPlayersInStage = connections.Select(c => c.Player)
-                                           .Where(p => p != null)
-                                           .Cast<Player>()
-                                           .ToList();
+            .Where(p => p != null)
+            .Cast<Player>()
+            .ToList();
 
         this.Metrics.UpdatePopulation(stage, allPlayersInStage.Count);
 
@@ -199,8 +225,8 @@ public class Server {
             if (connection != exclude) {
                 // This will be a list of all players except for the current one
                 var playersToSend = allPlayersInStage
-                                    .Where(p => p.ID != connection.Player?.ID)
-                                    .ToList();
+                    .Where(p => p.ID != connection.Player?.ID)
+                    .ToList();
 
                 this.Module.SendToContext(connection.Context, new ClientboundPlayersUpdate {
                     Players = playersToSend

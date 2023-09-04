@@ -42,6 +42,7 @@ var playerTwo = new Player {
 
     Transform = dummyTransform,
 
+    IsDead = false,
     IsDeveloper = true
 };
 
@@ -78,17 +79,21 @@ var packets = new List<NetworkPacket> {
     new ClientboundSync {
         ServerTickActual = 1234
     },
-    
+
     new ClientboundPlayerScoreUpdate {
         Multiplier = 3,
         Player = 42069,
         Score = 694201337
     },
-    
+
     new ClientboundPong {
         ID = 42069
     },
-    
+
+    new ClientboundEncounterStart {
+        PlayerID = 42069
+    },
+
     new ServerboundPing {
         ID = 42069
     },
@@ -115,20 +120,27 @@ var packets = new List<NetworkPacket> {
         Spraycan = false,
         Phone = true
     },
-    
+
     new ServerboundScoreUpdate {
         Multiplier = 3,
         Score = 694201337
     },
-    
+
     new ServerboundVersion {
         Version = 130
     },
+
+    new ServerboundEncounterRequest {
+        PlayerID = 42069,
+        EncounterType = EncounterType.ScoreEncounter
+    }
 };
 
 foreach (var packet in packets) {
     TestPacket(packet);
 }
+
+Console.WriteLine("congration : )");
 
 bool MatchesFields(object? a, object? b, int indent = 1) {
     if (a is null || b is null) {
@@ -182,6 +194,7 @@ bool MatchesFields(object? a, object? b, int indent = 1) {
                 var genericType = aObjType.IsGenericType ? aObjType.GetGenericTypeDefinition() : null;
                 var isDict = genericType == typeof(Dictionary<,>);
                 var isList = genericType == typeof(List<>);
+                var isEnum = aObjType.IsEnum;
                 if (isDict) {
                     var aDict = (IDictionary) aObj;
                     var bDict = (IDictionary) bObj;
@@ -213,6 +226,11 @@ bool MatchesFields(object? a, object? b, int indent = 1) {
                             Console.WriteLine($"{failStr} (list): expected {aObj}, got {bObj}");
                             return false;
                         }
+                    }
+                } else if (isEnum) {
+                    if (!aObj.Equals(bObj)) {
+                        Console.WriteLine($"{failStr} (enum): expected {aObj}, got {bObj}");
+                        return false;
                     }
                 } else {
                     if (!MatchesFields(aObj, bObj, indent + 1)) {

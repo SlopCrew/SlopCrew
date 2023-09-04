@@ -3,29 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Reptile;
 using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using UnityEngine;
 using WebSocketSharp;
+using Random = System.Random;
 using WebSocket = WebSocketSharp.WebSocket;
 
 namespace SlopCrew.Plugin;
 
-public class NetworkConnection {
+public class NetworkConnection : IDisposable {
     public event Action<NetworkPacket>? OnMessageReceived;
-
+    public event Action<uint>? OnTick;
 
     public uint ServerTick = 0;
-
     public long LastPingSent = 0;
     public uint? PingID;
     public long ServerLatency = 0;
     public Queue<long> RoundtripTimes = new();
 
-    private Thread? tickThread;
-    private Thread? pingThread;
+    private Task? tickTask;
+    private Task? pingTask;
     private WebSocket socket;
+    private Queue<NetworkPacket> packetQueue = new();
+    private float tickTimer = 0;
 
     [Flags]
     private enum SslProtocolsHack {
@@ -46,35 +50,44 @@ public class NetworkConnection {
             this.socket.SslConfiguration.EnabledSslProtocols = sslProtocolHack;
         }
 
-        SubscribeToSocketEvents();
+        this.SubscribeToSocketEvents();
         this.socket.EnableRedirection = true;
         this.socket.Connect();
 
-        this.tickThread = new Thread(() => {
+        this.tickTask = Task.Run(() => {
             const int tickRate = (int) (Constants.TickRate * 1000);
             while (true) {
                 Thread.Sleep(tickRate);
                 ServerTick++;
+
+                // Send messages in a queue on tick
+                if (this.socket.ReadyState == WebSocketState.Open) {
+                    while (this.packetQueue.Count > 0) {
+                        var packet = this.packetQueue.Dequeue();
+                        var serialized = packet.Serialize();
+                        this.socket.Send(serialized);
+                    }
+                }
             }
         });
-        this.tickThread.Start();
 
-        this.pingThread = new Thread(() => {
+        this.pingTask = Task.Run(() => {
             while (true) {
                 Thread.Sleep(5000);
                 if (this.PingID is not null) {
-                    Plugin.Log.LogWarning("Ping took more than 5s, something is very wrong");
+                    //Plugin.Log.LogWarning("Ping took more than 5s, something is very wrong");
                 }
 
                 this.PingID = (uint) new Random().Next(0, int.MaxValue);
                 this.LastPingSent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-                Plugin.NetworkConnection.SendMessage(new ServerboundPing {
+                this.SendMessage(new ServerboundPing {
                     ID = this.PingID.Value
                 });
             }
         });
-        this.pingThread.Start();
+
+        Core.OnUpdate += this.OnUpdate;
     }
 
     private void SubscribeToSocketEvents() {
@@ -84,6 +97,15 @@ public class NetworkConnection {
         this.socket.OnError += OnSocketError;
     }
 
+    private void OnUpdate() {
+        // Tick logic HAS to be ran on Update or the game will crash
+        this.tickTimer += Time.deltaTime;
+        if (this.tickTimer >= Constants.TickRate) {
+            this.tickTimer -= Constants.TickRate;
+            this.OnTick?.Invoke(this.ServerTick);
+        }
+    }
+
     private void OnSocketOpen(object? sender, EventArgs e) {
         Plugin.API.UpdateConnected(true);
 
@@ -91,6 +113,7 @@ public class NetworkConnection {
             Version = Constants.NetworkVersion
         });
 
+        // 0ms connection lol
         if (Plugin.PlayerManager is not null) {
             Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }
@@ -100,7 +123,6 @@ public class NetworkConnection {
         try {
             var packet = NetworkPacket.Read(args.RawData);
             OnMessageReceived?.Invoke(packet);
-
 
             switch (packet) {
                 case ClientboundPong pong:
@@ -128,19 +150,19 @@ public class NetworkConnection {
 
     private void OnSocketError(object? sender, ErrorEventArgs e) {
         Plugin.Log.LogError($"WebSocket error: {e.Message}");
-        // Handle or recover from the error
+        // TODO handle or recover from the error
     }
 
     public void SendMessage(NetworkPacket packet) {
-        var serialized = packet.Serialize();
-        this.socket.Send(serialized);
+        this.packetQueue.Enqueue(packet);
     }
 
     public void Dispose() {
         UnsubscribeFromSocketEvents();
         this.socket.Close();
-        this.tickThread?.Abort();
-        this.pingThread?.Abort();
+        this.tickTask?.Dispose();
+        this.pingTask?.Dispose();
+        Core.OnUpdate -= this.OnUpdate;
     }
 
     private void UnsubscribeFromSocketEvents() {

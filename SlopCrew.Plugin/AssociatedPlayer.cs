@@ -16,6 +16,7 @@ public class AssociatedPlayer {
     public MapPin? MapPin;
 
     public int Score;
+    public int BaseScore;
     public int Multiplier;
     public bool PhoneOut;
 
@@ -83,6 +84,7 @@ public class AssociatedPlayer {
         var nameplate = new GameObject("SlopCrew_Nameplate");
         var tmp = nameplate.AddComponent<TextMeshPro>();
         tmp.text = this.SlopPlayer.Name;
+        nameplate.AddComponent<TextMeshProFilter>();
 
         // Yoink the font from somewhere else because I guess asset loading is impossible
         var uiManager = Core.Instance.UIManager;
@@ -119,9 +121,9 @@ public class AssociatedPlayer {
         // Configure the container's position
         var bounds = this.ReptilePlayer.interactionCollider.bounds;
         container.transform.position = new Vector3(
-            bounds.center.x,
-            bounds.max.y + 0.125f,
-            bounds.center.z
+            0,
+            bounds.max.y,
+            0
         );
 
         // Rotate it to match the player's head
@@ -129,7 +131,6 @@ public class AssociatedPlayer {
         // and flip it around
         container.transform.Rotate(0, 180, 0);
 
-        container.transform.localPosition = new Vector3(0, 1, 0); // what
         container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
     }
@@ -137,8 +138,8 @@ public class AssociatedPlayer {
     private void SpawnMapPin() {
         var mapController = Mapcontroller.Instance;
         this.MapPin = Traverse.Create(mapController)
-                              .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
-                              .GetValue<MapPin>();
+            .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
+            .GetValue<MapPin>();
 
         this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
         this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
@@ -199,11 +200,8 @@ public class AssociatedPlayer {
     public void InterpolatePosition() {
         var target = this.TargetTransform.Position.ToMentalDeficiency();
 
-        // This should roughly reflect tick rate I think?
-        var timeToTarget = 0.1f;
-
         // Use SmoothDamp to get physics-y interpolation that scales with speed
-        newPos = Vector3.SmoothDamp(this.ReptilePlayer.transform.position, target, ref velocity, timeToTarget);
+        newPos = Vector3.SmoothDamp(this.ReptilePlayer.transform.position, target, ref velocity, this.TimeToTarget);
 
         this.ReptilePlayer.transform.position = newPos;
     }
@@ -214,5 +212,9 @@ public class AssociatedPlayer {
         newRot = Quaternion.RotateTowards(this.ReptilePlayer.transform.rotation, target, 360 * Time.deltaTime);
 
         this.ReptilePlayer.transform.rotation = newRot;
+    }
+
+    public bool IsValid() {
+        return this.ReptilePlayer != null;
     }
 }

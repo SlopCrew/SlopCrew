@@ -120,6 +120,7 @@ resharper_blank_lines_after_block_statements = 0
 resharper_blank_lines_around_single_line_type = 0
 resharper_braces_for_ifelse = required_for_multiline
 resharper_can_use_global_alias = false
+resharper_csharp_align_multiline_calls_chain = false
 resharper_csharp_align_multiline_parameter = true
 resharper_csharp_align_multiple_declaration = true
 resharper_csharp_empty_block_style = together_same_line

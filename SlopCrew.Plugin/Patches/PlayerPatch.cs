@@ -13,6 +13,11 @@ public class PlayerPatch {
     [HarmonyPrefix]
     [HarmonyPatch("ActivateAbility")]
     public static bool ActivateAbility(Player __instance, Ability a) {
+        if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
+            if (a is DieAbility) Plugin.PlayerManager.IsHelloRefreshQueued = true;
+            return true;
+        }
+
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
         return associatedPlayer == null;
     }
@@ -88,6 +93,12 @@ public class PlayerPatch {
                     // Update target and previous target transform
                     associatedPlayer.PrevTarget = associatedPlayer.TargetTransform;
                     associatedPlayer.TargetTransform = transformUpdate;
+
+                    // Calculate time to next target position
+                    var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
+                                   Constants.TickRate;
+                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) / 1000f / 2f;
+                    associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
             }
 
@@ -147,6 +158,20 @@ public class PlayerPatch {
                 anim.SetLayerWeight(3, phoneLayerWeight.Value);
             }
         }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch("Init")]
+    public static void Init(
+        Player __instance,
+        CharacterConstructor characterConstructor,
+        Characters setCharacter = Characters.NONE,
+        int setOutfit = 0,
+        PlayerType setPlayerType = PlayerType.HUMAN,
+        MoveStyle setMoveStyleEquipped = MoveStyle.ON_FOOT,
+        Crew setCrew = Crew.PLAYERS
+    ) {
+        Plugin.PhoneInitializer.InitPhone(__instance);
     }
 
     [HarmonyPrefix]
