@@ -1,16 +1,16 @@
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Common.Race;
 using SlopCrew.Plugin.Extensions;
-using SlopCrew.Plugin.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.Scripts {
-    public class RaceManager : MonoBehaviour {
+    public class RaceManager : MonoBehaviour, IStatefullApp {
         public static RaceManager? Instance;
         private IEnumerable<(string? playerName, float time)> rank = new List<(string? playerName, float time)>();
         private RaceState state;
@@ -20,28 +20,83 @@ namespace SlopCrew.Plugin.Scripts {
         private bool hasAdditionRaceConfigToLoad = false;
         private DateTime showRankTime;
         private const int MAX_TIME_TO_SHOW_RANKING_SECS = 20;
-
         private RaceConfig? currentRaceConfig;
+        public void OnStart() {
+            if (IsInRace()) {
+                Plugin.Log.LogDebug("You are already in a race !");
+                return;
+            }
+
+            Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
+                EncounterType = EncounterType.RaceEncounter
+            });
+
+            state = RaceState.WaitingForRace;
+        }
+
+
+        private void ShowTimer() {
+            var uiManager = Core.Instance.UIManager;
+            var gameplayUI = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+            gameplayUI.challengeGroup.SetActive(true);
+
+            gameplayUI.timeLimitLabel.text = GetTimeFormatted().ToString();
+        }
+
+        private void ShowTimerReverse() {
+            var uiManager = Core.Instance.UIManager;
+            var gameplayUI = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+            gameplayUI.challengeGroup.SetActive(true);
+
+            gameplayUI.timeLimitLabel.text = GetTimeFrom().ToString();
+        }
+
+        public string GetLabel() {
+            switch (state) {
+                case RaceState.None:
+                    return "Press right\nto enter in a race \n";
+                case RaceState.WaitingForRace:
+                    return "Waiting for a race ...";
+                case RaceState.WaitingForPlayers:
+                    return "Waiting for players\n to join race ...";
+                case RaceState.LoadingStage:
+                    return "Loading race stage ...";
+                case RaceState.WaitingForPlayersToBeReady:
+                    return "Ready!\nWaiting for other players\n to be ready ...";
+                case RaceState.Starting:
+                case RaceState.Racing:
+                    return "You definetely\nshouldn't be looking\nat your phone right now...";
+                case RaceState.Finished:
+                case RaceState.WaitingForFullRanking:
+                    return "Waiting for full ranking ...";
+                case RaceState.ShowRanking:
+                    return "Ranking:\n" + string.Join("\n", rank.Select((r, i) => $"{i + 1} - {r.playerName} - {r.time}"));
+                default:
+                    return "";
+            }
+        }
 
         public void Awake() {
             DontDestroyOnLoad(gameObject);
 
             Instance = this;
             state = RaceState.None;
-            this.gameObject.AddComponent<RaceInfos>();
             this.gameObject.AddComponent<RaceVelocityModifier>();
         }
 
         public void Update() {
-            if (BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F5)
-                && !IsInRace()) {
-                Plugin.NetworkConnection.SendMessage(new ServerboundRequestRace());
-
-                state = RaceState.WaitingForRace;
-            }
-
             if (state == RaceState.Racing || state == RaceState.Starting) {
+                var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
+                if (currentPlayer != null) {
+                    Traverse.Create(currentPlayer).Method("UpdateUIIndicatorData").GetValue();
+                }
+
                 time += Time.deltaTime;
+                if (state == RaceState.Racing)
+                    ShowTimer();
+
+                if (state == RaceState.Starting)
+                    ShowTimerReverse();
             }
 
             switch (state) {
@@ -235,8 +290,7 @@ namespace SlopCrew.Plugin.Scripts {
             return (int) time % 60;
         }
 
-        //get time in mm:ss format
-        public float GetTime() {
+        public float GetDeltaTime() {
             return time;
         }
 
@@ -246,6 +300,26 @@ namespace SlopCrew.Plugin.Scripts {
 
         internal RaceState GetState() {
             return state;
+        }
+
+        private string GetTimeFormatted() {
+            var raceManager = RaceManager.Instance;
+
+            var time = GetDeltaTime();
+            var minutes = Mathf.FloorToInt(time / 60);
+            var seconds = Mathf.FloorToInt(time % 60);
+            var fraction = Mathf.FloorToInt((time * 100) % 100);
+
+            return $"{minutes:00}:{seconds:00}:{fraction:00}";
+        }
+
+        private string GetTimeFrom(int from = 4) {
+            var raceManager = RaceManager.Instance;
+
+            var time = GetDeltaTime();
+            var minutes = Mathf.FloorToInt(from - time);
+
+            return $"{minutes:00}";
         }
     }
 }

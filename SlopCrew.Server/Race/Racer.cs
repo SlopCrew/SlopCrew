@@ -14,7 +14,7 @@ namespace SlopCrew.Server.Race {
         public CancellationTokenSource? CancellationTokenSource { get; private set; }
 
         private const int MAX_PLAYERS_IN_RACE = 32; //TODO: Configurable may be 
-        private const int MAX_WAITING_JOINING_TIME_FOR_SECS = 30; //TODO: Configurable may be 
+        private const int MAX_WAITING_JOINING_TIME_FOR_SECS = 5; //TODO: Configurable may be 
         private const int MAX_WAITING_PLAYERS_TO_BE_READY_TIME_SECS = 30; //TODO: Configurable may be 
         private const int MAX_WAITING_PLAYERS_TO_FINISH_TIME_SECS = 183; //TODO: Configurable may be
 
@@ -148,6 +148,11 @@ namespace SlopCrew.Server.Race {
 
             //TODO: may be prevent double ready if it somehow happens
             var race = GetPlayerRace(id);
+
+            if (race.State != RaceState.WaitingForPlayersToBeReady) {
+                Log.Information($"Race is not waiting for players");
+                return;
+            }
 
             race.ConfirmedPlayers += 1;
         }

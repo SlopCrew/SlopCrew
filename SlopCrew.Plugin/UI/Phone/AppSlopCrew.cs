@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Serverbound;
+using SlopCrew.Plugin.Scripts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine.UI;
+using Encounter = SlopCrew.Common.Encounter;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin.UI.Phone;
@@ -16,11 +18,24 @@ namespace SlopCrew.Plugin.UI.Phone;
 public class AppSlopCrew : App {
     public TMP_Text? Label;
     private AssociatedPlayer? nearestPlayer;
-    private EncounterType encounterType = EncounterType.ScoreEncounter;
+    private Encounter encounter = new Encounter {
+        EncounterType = EncounterType.ScoreEncounter,
+        State = null
+    };
 
-    private List<EncounterType> encounterTypes = new() {
-        EncounterType.ScoreEncounter,
-        EncounterType.ComboEncounter
+    private List<Encounter> encounterTypes = new() {
+        new Encounter {
+            EncounterType = EncounterType.ScoreEncounter,
+            State = null
+        },
+        new Encounter {
+            EncounterType = EncounterType.ComboEncounter,
+            State = null
+        },
+        new Encounter {
+            EncounterType = EncounterType.RaceEncounter,
+            State = null
+        }
     };
 
     private bool notifInitialized;
@@ -46,34 +61,65 @@ public class AppSlopCrew : App {
         ourDownArrow.transform.localPosition = new UnityEngine.Vector3(0, -half, 0);
     }
 
+    //TODO: prevent changing if in mode
     public override void OnPressUp() {
-        var nextIndex = this.encounterTypes.IndexOf(this.encounterType) - 1;
+        var nextIndex = this.encounterTypes.IndexOf(this.encounter) - 1;
         if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
-        this.encounterType = this.encounterTypes[nextIndex];
+        this.encounter = this.encounterTypes[nextIndex];
+
+        if (Encounter.IsStatefullEncouter(encounter.EncounterType) && encounter.State == null) {
+            switch (encounter.EncounterType) {
+                case EncounterType.RaceEncounter:
+                    this.encounter.State = RaceManager.Instance;
+                    encounterTypes[nextIndex] = encounter;
+                    break;
+                default:
+                    this.encounter.State = null;
+                    break;
+            }
+        }
     }
 
+    //TODO: prevent changing if in mode
     public override void OnPressDown() {
-        var nextIndex = this.encounterTypes.IndexOf(this.encounterType) + 1;
+        var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
         if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
-        this.encounterType = this.encounterTypes[nextIndex];
+        this.encounter = this.encounterTypes[nextIndex];
+
+        if (Encounter.IsStatefullEncouter(encounter.EncounterType) && encounter.State == null) {
+            switch (encounter.EncounterType) {
+                case EncounterType.RaceEncounter:
+                    this.encounter.State = RaceManager.Instance;
+                    encounterTypes[nextIndex] = encounter;
+                    break;
+                default:
+                    this.encounter.State = null;
+                    break;
+            }
+        }
     }
 
     public override void OnPressRight() {
+        if (encounter.State != null) {
+            encounter.State.OnStart();
+            return;
+        }
+
         if (!this.SendEncounterRequest()) return;
         if (Plugin.CurrentEncounter?.IsBusy() == true) return;
 
         // People wanted an audible sound so you'll get one
         var audioManager = Core.Instance.AudioManager;
         var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
-                                         new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)});
-        playSfx.Invoke(audioManager, new object[] {SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f});
+                                         new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
+        playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
     }
 
     private bool SendEncounterRequest() {
         if (this.nearestPlayer == null) return false;
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
-            EncounterType = this.encounterType
+            EncounterType = this.encounter.EncounterType
         });
         return true;
     }
@@ -82,11 +128,20 @@ public class AppSlopCrew : App {
         var me = WorldHandler.instance.GetCurrentPlayer();
         if (me is null || this.Label is null) return;
 
+        if (this.encounter.State != null) {
+            this.Label.text = this.encounter.State.GetLabel();
+            return;
+        }
+
         if (Plugin.CurrentEncounter?.IsBusy() == true) {
             this.Label.text = "glhf";
             return;
         }
 
+        HandleStatelessEncounter(me);
+    }
+
+    private void HandleStatelessEncounter(Reptile.Player me) {
         if (!this.playerLocked) {
             var position = me.transform.position.FromMentalDeficiency();
             this.nearestPlayer = Plugin.PlayerManager.AssociatedPlayers
@@ -99,14 +154,16 @@ public class AppSlopCrew : App {
                 .FirstOrDefault();
         }
 
+        var modeName = this.encounter.EncounterType switch {
+            EncounterType.ScoreEncounter => "score",
+            EncounterType.ComboEncounter => "combo"
+        };
+
         if (this.nearestPlayer == null) {
             if (this.playerLocked) this.playerLocked = false;
-            this.Label.text = "No players nearby";
+            this.Label.text = $"No players nearby\nfor {modeName} battle";
         } else {
-            var modeName = this.encounterType switch {
-                EncounterType.ScoreEncounter => "score",
-                EncounterType.ComboEncounter => "combo"
-            };
+
 
             var filteredName = PlayerNameFilter.DoFilter(this.nearestPlayer.SlopPlayer.Name);
             var text = $"Press right\nto {modeName} battle\n" + filteredName;
@@ -130,7 +187,10 @@ public class AppSlopCrew : App {
     public override void OpenContent(AUnlockable unlockable, bool appAlreadyOpen) {
         if (Plugin.PhoneInitializer.LastRequest is not null) {
             var request = Plugin.PhoneInitializer.LastRequest;
-            this.encounterType = request.EncounterType;
+            this.encounter = new Encounter {
+                EncounterType = request.EncounterType,
+                State = null,
+            };
 
             if (Plugin.PlayerManager.Players.TryGetValue(request.PlayerID, out var player)) {
                 this.nearestPlayer = player;

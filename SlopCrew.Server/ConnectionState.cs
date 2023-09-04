@@ -35,13 +35,13 @@ public class ConnectionState {
         // These packets get processed when player is null
         switch (msg) {
             case ServerboundVersion version: {
-                if (version.Version != Constants.NetworkVersion) {
-                    this.Context.WebSocket.CloseAsync();
-                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
-                                version.Version, Constants.NetworkVersion);
+                    if (version.Version != Constants.NetworkVersion) {
+                        this.Context.WebSocket.CloseAsync();
+                        Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                    version.Version, Constants.NetworkVersion);
+                    }
+                    return;
                 }
-                return;
-            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
@@ -73,16 +73,16 @@ public class ConnectionState {
             case ServerboundVisualUpdate visualUpdate:
                 this.HandleVisualUpdate(visualUpdate);
                 break;
-            
+
             case ServerboundEncounterRequest encounterRequest:
                 lock (Server.Instance.Module.Connections) {
                     this.HandleEncounterRequest(encounterRequest);
                 }
                 break;
-            
-            case ServerboundRequestRace serverboundRequestRace:
-                this.HandleRequestRace(serverboundRequestRace);
-                break;
+            //TODO: To remove
+            //case ServerboundRequestRace serverboundRequestRace:
+            //    this.HandleRequestRace(serverboundRequestRace);
+            //    break;
             case ServerboundReadyForRace serverboundReadyForRace:
                 this.HandleReadyForRace(serverboundReadyForRace);
                 break;
@@ -174,7 +174,21 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
+        if (Encounter.IsStatefullEncouter(encounterRequest.EncounterType)) {
+            switch (encounterRequest.EncounterType) {
+                case EncounterType.RaceEncounter:
+                    HandleRequestRace();
+                    break;
+                default:
+                    Log.Debug("Encounter type {EncounterType} is not implemented with backend specifity", encounterRequest.EncounterType);
+                    break;
+            }
+
+            return;
+        }
+
         var module = Server.Instance.Module;
+
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
         var otherPlayer = Server.Instance.GetConnections()
@@ -226,7 +240,7 @@ public class ConnectionState {
         });
     }
 
-    private void HandleRequestRace(ServerboundRequestRace serverboundRequestRace) {
+    private void HandleRequestRace() {
         if (Player == null) {
             return;
         }

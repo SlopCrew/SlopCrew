@@ -78,10 +78,6 @@
             <HintPath>$(ManagedPath)/UnityEngine.InputLegacyModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
-                <Reference Include="UnityEngine.IMGUIModule">
-            <HintPath>$(ManagedPath)/UnityEngine.IMGUIModule.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
         <Reference Include="UnityEngine.TextRenderingModule">
             <HintPath>$(ManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath>
             <Private>false</Private>
