@@ -163,18 +163,4 @@ public class PlayerPatch {
             }
         }
     }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("Init")]
-    public static void Init(
-        Player __instance,
-        CharacterConstructor characterConstructor,
-        Characters setCharacter = Characters.NONE,
-        int setOutfit = 0,
-        PlayerType setPlayerType = PlayerType.HUMAN,
-        MoveStyle setMoveStyleEquipped = MoveStyle.ON_FOOT,
-        Crew setCrew = Crew.PLAYERS
-    ) {
-        Plugin.PhoneInitializer.InitPhone(__instance);
-    }
 }
