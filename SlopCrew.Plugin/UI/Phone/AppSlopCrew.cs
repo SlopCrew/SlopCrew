@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BepInEx.Bootstrap;
 using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
@@ -60,7 +61,6 @@ public class AppSlopCrew : App {
 
     public override void OnPressRight() {
         if (!this.SendEncounterRequest()) return;
-        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
 
         // People wanted an audible sound so you'll get one
         var audioManager = Core.Instance.AudioManager;
@@ -71,6 +71,9 @@ public class AppSlopCrew : App {
 
     private bool SendEncounterRequest() {
         if (this.nearestPlayer == null) return false;
+        if (Plugin.CurrentEncounter?.IsBusy() == true) return false;
+        if (this.HasBannedMods()) return false;
+
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
             EncounterType = this.encounterType
@@ -81,6 +84,11 @@ public class AppSlopCrew : App {
     public override void OnAppUpdate() {
         var me = WorldHandler.instance.GetCurrentPlayer();
         if (me is null || this.Label is null) return;
+
+        if (this.HasBannedMods()) {
+            this.Label.text = "Please disable\ntrick mods";
+            return;
+        }
 
         if (Plugin.CurrentEncounter?.IsBusy() == true) {
             this.Label.text = "glhf";
@@ -117,6 +125,11 @@ public class AppSlopCrew : App {
 
             this.Label.text = text;
         }
+    }
+
+    private bool HasBannedMods() {
+        var bannedMods = new List<string> {"us.wallace.plugins.BRC.TiltTricking", "TrickGod"};
+        return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
 
     public void SetNotification(Notification notif) {
