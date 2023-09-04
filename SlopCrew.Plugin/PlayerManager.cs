@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
@@ -5,6 +8,7 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.Scripts;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;

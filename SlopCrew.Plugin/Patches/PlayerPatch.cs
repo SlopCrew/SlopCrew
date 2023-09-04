@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Plugin.Scripts;
 using UnityEngine;
 using Player = Reptile.Player;
