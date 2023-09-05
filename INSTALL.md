@@ -52,6 +52,10 @@ debug = false
 # [graphite]
 # host = "localhost"
 # port = 2003
+
+[encounters]
+score_duration = 90
+combo_duration = 300
 ```
 
 ### Windows
