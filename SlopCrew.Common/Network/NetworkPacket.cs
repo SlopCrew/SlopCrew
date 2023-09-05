@@ -12,6 +12,7 @@ public abstract class NetworkPacket : NetworkSerializable {
 
     delegate NetworkPacket PacketConstructor();
 
+    // TODO(1.5.0): do this with reflection
     static readonly Dictionary<NetworkMessageType, PacketConstructor> PacketConstructors =
         new() {
             {NetworkMessageType.ServerboundVersion, () => new ServerboundVersion()},

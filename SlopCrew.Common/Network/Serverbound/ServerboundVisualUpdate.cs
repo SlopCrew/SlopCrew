@@ -16,7 +16,7 @@ public class ServerboundVisualUpdate : NetworkPacket {
         this.FrictionEffect = br.ReadInt32();
         this.Spraycan = br.ReadBoolean();
         this.Phone = br.ReadBoolean();
-        // backwards compat
+        // TOOD(1.5.0): remove this if statement
         if (br.BaseStream.Position != br.BaseStream.Length) {
             // This doesnt need to be a whole int32 but thats how `enum`s are represented in the CLR ~Sylvie
             this.SpraycanState = br.ReadInt32();
