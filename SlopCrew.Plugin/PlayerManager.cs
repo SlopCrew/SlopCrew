@@ -9,6 +9,7 @@ using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
 using Player = Reptile.Player;
+using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -33,6 +34,8 @@ public class PlayerManager : IDisposable {
 
     private int scoreUpdateCooldown = 10;
     public (int, int, int) LastScoreAndMultiplier = (0, 0, 0);
+
+    private SlopGraffitiEncounter sloppy;
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -82,6 +85,17 @@ public class PlayerManager : IDisposable {
         if (this.IsResetQueued) {
             this.IsResetQueued = false;
             this.Reset();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Y)) {
+            this.sloppy = new SlopGraffitiEncounter();
+            Plugin.CurrentEncounter = this.sloppy;
+            this.sloppy.Start();
+        }
+
+        if (Input.GetKeyDown(KeyCode.U)) {
+            this.sloppy.CleanUp();
+            Plugin.CurrentEncounter = null;
         }
     }
 

@@ -3,5 +3,6 @@
 public enum EncounterType {
     ScoreEncounter,
     ComboEncounter,
-    RaceEncounter
+    RaceEncounter,
+    GraffitiEncounter
 }

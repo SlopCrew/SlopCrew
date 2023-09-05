@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -22,6 +23,9 @@ public class Plugin : BaseUnityPlugin {
     public static SlopCrewAPI API = null!;
     public static SlopEncounter? CurrentEncounter;
     public static PhoneInitializer PhoneInitializer = null!;
+    
+    public static List<SlopGraffitiSpot> SlopGraffitiSpotsAvailable = new();
+    public static SlopGraffitiSpot TargetedGraffitiSpot = null!;
 
     private void Awake() {
         Log = this.Logger;
