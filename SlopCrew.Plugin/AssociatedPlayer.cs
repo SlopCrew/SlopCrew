@@ -19,6 +19,7 @@ public class AssociatedPlayer {
     public int BaseScore;
     public int Multiplier;
     public bool PhoneOut;
+    public Player.SpraycanState SpraycanState;
 
     public Queue<Transform> TransformUpdates = new();
     public Transform TargetTransform;

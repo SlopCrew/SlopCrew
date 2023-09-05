@@ -163,4 +163,19 @@ public class PlayerPatch {
             }
         }
     }
+    
+    [HarmonyPrefix]
+    [HarmonyPatch("SetSpraycanState")]
+    private static bool SetSpraycanState(Player __instance, Player.SpraycanState state) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+        if (associatedPlayer is not null) {
+            return Plugin.PlayerManager.IsSettingVisual;
+        }
+        
+        if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
+            Plugin.PlayerManager.IsVisualRefreshQueued = true;
+        }
+
+        return true;
+    }
 }

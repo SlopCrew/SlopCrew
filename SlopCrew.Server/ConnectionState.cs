@@ -159,7 +159,8 @@ public class ConnectionState {
             BoostpackEffect = visualUpdate.BoostpackEffect,
             FrictionEffect = visualUpdate.FrictionEffect,
             Spraycan = visualUpdate.Spraycan,
-            Phone = visualUpdate.Phone
+            Phone = visualUpdate.Phone,
+            SpraycanState = visualUpdate.SpraycanState
         };
     }
 

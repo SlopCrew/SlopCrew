@@ -8,6 +8,7 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
+using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -187,12 +188,14 @@ public class PlayerManager : IDisposable {
 
         this.IsVisualRefreshQueued = false;
         var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+        var spraycanState = traverse.Field<Player.SpraycanState>("spraycanState").Value;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundVisualUpdate {
             BoostpackEffect = (int) characterVisual.boostpackEffectMode,
             FrictionEffect = (int) characterVisual.frictionEffectMode,
             Spraycan = characterVisual.VFX.spraycan.activeSelf,
-            Phone = characterVisual.VFX.phone.activeSelf
+            Phone = characterVisual.VFX.phone.activeSelf,
+            SpraycanState = (int) spraycanState
         });
     }
 
@@ -364,6 +367,7 @@ public class PlayerManager : IDisposable {
             var frictionEffect = (FrictionEffectMode) playerVisualUpdate.FrictionEffect;
             var spraycan = playerVisualUpdate.Spraycan;
             var phone = playerVisualUpdate.Phone;
+            var spraycanState = (Player.SpraycanState) playerVisualUpdate.SpraycanState;
 
             characterVisual.hasEffects = true;
             characterVisual.hasBoostPack = true;
@@ -374,6 +378,7 @@ public class PlayerManager : IDisposable {
             characterVisual.SetFrictionEffect(frictionEffect);
             characterVisual.SetSpraycan(spraycan);
             characterVisual.SetPhone(phone);
+            associatedPlayer.ReptilePlayer.SetSpraycanState(spraycanState);
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
