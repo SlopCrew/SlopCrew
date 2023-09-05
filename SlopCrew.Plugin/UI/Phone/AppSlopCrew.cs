@@ -128,7 +128,11 @@ public class AppSlopCrew : App {
     }
 
     private bool HasBannedMods() {
-        var bannedMods = new List<string> {"us.wallace.plugins.BRC.TiltTricking", "TrickGod"};
+        var bannedMods = new List<string> {
+            "us.wallace.plugins.BRC.TiltTricking",
+            "TrickGod",
+            "BumperCars"
+        };
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
 
