@@ -362,6 +362,7 @@ public class PlayerManager : IDisposable {
             var reptilePlayer = associatedPlayer.ReptilePlayer;
             var traverse = Traverse.Create(reptilePlayer);
             var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+            var prevSpraycanState = traverse.Field<Player.SpraycanState>("spraycanState").Value;
 
             var boostpackEffect = (BoostpackEffectMode) playerVisualUpdate.BoostpackEffect;
             var frictionEffect = (FrictionEffectMode) playerVisualUpdate.FrictionEffect;
@@ -378,7 +379,11 @@ public class PlayerManager : IDisposable {
             characterVisual.SetFrictionEffect(frictionEffect);
             characterVisual.SetSpraycan(spraycan);
             characterVisual.SetPhone(phone);
-            associatedPlayer.ReptilePlayer.SetSpraycanState(spraycanState);
+
+            if (prevSpraycanState != spraycanState) {
+                associatedPlayer.ReptilePlayer.SetSpraycanState(spraycanState);
+            }
+
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
