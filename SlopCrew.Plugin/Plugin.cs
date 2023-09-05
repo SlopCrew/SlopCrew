@@ -13,6 +13,7 @@ namespace SlopCrew.Plugin;
 [BepInProcess("Bomb Rush Cyberfunk.exe")]
 public class Plugin : BaseUnityPlugin {
     public static ManualLogSource Log = null!;
+    public static DebugLog DebugLog = null!;
     public static Harmony Harmony = null!;
     public static SlopConfigFile SlopConfig = null!;
 
@@ -24,6 +25,7 @@ public class Plugin : BaseUnityPlugin {
 
     private void Awake() {
         Log = this.Logger;
+        DebugLog = new();
         SlopConfig = new(this.Config);
         Application.runInBackground = true;
 
@@ -41,14 +43,15 @@ public class Plugin : BaseUnityPlugin {
 
     private void OnDestroy() {
         PlayerManager.Dispose();
+        DebugLog.Dispose();
     }
 
     private void SetupHarmony() {
         Harmony = new Harmony("SlopCrew.Plugin.Harmony");
 
         var patches = typeof(Plugin).Assembly.GetTypes()
-                                    .Where(m => m.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0)
-                                    .ToArray();
+            .Where(m => m.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0)
+            .ToArray();
 
         foreach (var patch in patches) {
             Harmony.PatchAll(patch);

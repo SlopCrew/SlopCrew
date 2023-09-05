@@ -65,6 +65,7 @@ public class NetworkConnection : IDisposable {
                     while (this.packetQueue.Count > 0) {
                         var packet = this.packetQueue.Dequeue();
                         var serialized = packet.Serialize();
+                        Plugin.DebugLog.LogPacketOutgoing(packet, serialized);
                         this.socket.Send(serialized);
                     }
                 }
@@ -122,6 +123,7 @@ public class NetworkConnection : IDisposable {
     private void OnSocketMessage(object? sender, MessageEventArgs args) {
         try {
             var packet = NetworkPacket.Read(args.RawData);
+            Plugin.DebugLog.LogPacketIncoming(packet, args.RawData);
             OnMessageReceived?.Invoke(packet);
 
             switch (packet) {
