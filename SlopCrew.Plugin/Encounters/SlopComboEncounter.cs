@@ -11,9 +11,8 @@ public class SlopComboEncounter : SlopEncounter {
     private float? lastComboScore;
     private float? opponentLastComboScore;
 
-    public override void Start(uint encounterStartPlayerID) {
-        this.PlayDuration = 300;
-        base.Start(encounterStartPlayerID);
+    public override void Start(uint encounterStartPlayerID, float encounterLength) {
+        base.Start(encounterStartPlayerID, encounterLength);
         this.comboDropped = false;
         this.opponentComboDropped = false;
         this.lastComboScore = 0;

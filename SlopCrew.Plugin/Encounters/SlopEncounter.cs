@@ -36,7 +36,8 @@ public class SlopEncounter {
         StageManager.OnStagePostInitialization += this.Stop;
     }
 
-    public virtual void Start(uint encounterStartPlayerID) {
+    public virtual void Start(uint encounterStartPlayerID, float encounterLength) {
+        this.PlayDuration = encounterLength;
         this.cultureInfo = CultureInfo.CurrentCulture;
 
         if (Plugin.PlayerManager.Players.TryGetValue(encounterStartPlayerID, out var associatedPlayer)) {

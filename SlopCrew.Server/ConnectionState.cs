@@ -190,14 +190,23 @@ public class ConnectionState {
         if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
 
+            var encounterConfig = Server.Instance.Config.Encounters;
+            var length = encounterRequest.EncounterType switch {
+                EncounterType.ScoreEncounter => encounterConfig.ScoreDuration,
+                EncounterType.ComboEncounter => encounterConfig.ComboDuration,
+                _ => 90
+            };
+
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
-                EncounterType = encounterRequest.EncounterType
+                EncounterType = encounterRequest.EncounterType,
+                EncounterLength = length
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID,
-                EncounterType = encounterRequest.EncounterType
+                EncounterType = encounterRequest.EncounterType,
+                EncounterLength = length
             });
 
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);

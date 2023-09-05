@@ -9,6 +9,7 @@ public class Config {
 
     public ConfigCertificates Certificates { get; set; } = new();
     public ConfigGraphite Graphite { get; set; } = new();
+    public ConfigEncounters Encounters { get; set; } = new();
 
     public class ConfigCertificates {
         public string? Path { get; set; } = null;
@@ -18,6 +19,11 @@ public class Config {
     public class ConfigGraphite {
         public string? Host { get; set; } = null;
         public int Port { get; set; } = 2003;
+    }
+
+    public class ConfigEncounters {
+        public float ScoreDuration { get; set;  } = 90f;
+        public float ComboDuration { get; set; } = 300f;
     }
 
     public static Config ResolveConfig(string? filePath) {

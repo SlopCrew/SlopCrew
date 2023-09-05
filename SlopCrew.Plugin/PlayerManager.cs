@@ -228,7 +228,7 @@ public class PlayerManager : IDisposable {
             _ => null
         };
 
-        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID);
+        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterLength);
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
