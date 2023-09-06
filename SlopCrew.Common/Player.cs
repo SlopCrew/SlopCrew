@@ -17,6 +17,8 @@ public class Player : NetworkSerializable {
     public bool IsDead;
     public bool IsDeveloper;
 
+    public CustomCharacterInfo CharacterInfo;
+
     public override void Read(BinaryReader br) {
         this.Name = br.ReadString();
         this.ID = br.ReadUInt32();
@@ -31,6 +33,9 @@ public class Player : NetworkSerializable {
 
         this.IsDead = br.ReadBoolean();
         this.IsDeveloper = br.ReadBoolean();
+
+        this.CharacterInfo = new CustomCharacterInfo();
+        this.CharacterInfo.Read(br);
     }
 
     public override void Write(BinaryWriter bw) {
@@ -46,5 +51,7 @@ public class Player : NetworkSerializable {
 
         bw.Write(this.IsDead);
         bw.Write(this.IsDeveloper);
+
+        this.CharacterInfo.Write(bw);
     }
 }

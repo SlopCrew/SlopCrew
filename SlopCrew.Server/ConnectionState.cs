@@ -112,6 +112,11 @@ public class ConnectionState {
         var hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         this.Player.IsDeveloper = Constants.SecretCodes.Contains(hashString);
 
+        // Someone will do it eventually
+        if (this.Player.CharacterInfo is {Data.Length: > 64}) {
+            this.Player.CharacterInfo.Data = this.Player.CharacterInfo.Data[..64];
+        }
+
         // Syncs player to other players
         lock (Server.Instance.Module.Connections) {
             server.TrackConnection(this);
