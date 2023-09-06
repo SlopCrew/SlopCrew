@@ -7,7 +7,7 @@ public class CharacterInfoManager {
     public CustomCharacterInfo GetCharacterInfo(int character) {
         if (BrcCustomCharactersAPI.Database.IsInitialized &&
             BrcCustomCharactersAPI.Database.GetUserGuidForCharacter(character, out var guid)) {
-            Plugin.Log.LogInfo($"Using BrcCustomCharacters, GUID {guid}");
+            //Plugin.Log.LogInfo($"Using BrcCustomCharacters, GUID {guid}");
 
             return new CustomCharacterInfo {
                 Method = CustomCharacterInfo.CustomCharacterMethod.BrcCustomCharacters,
@@ -25,7 +25,7 @@ public class CharacterInfoManager {
         switch (info.Method) {
             case CustomCharacterInfo.CustomCharacterMethod.BrcCustomCharacters: {
                 var guid = Guid.Parse(info.Data);
-                Plugin.Log.LogInfo($"Overriding with BrcCustomCharacters, GUID {guid}");
+                //Plugin.Log.LogInfo($"Overriding with BrcCustomCharacters, GUID {guid}");
                 BrcCustomCharactersAPI.Database.OverrideNextCharacterLoadedWithGuid(guid);
                 break;
             }
