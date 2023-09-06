@@ -1,8 +1,4 @@
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using BepInEx.Bootstrap;
 using HarmonyLib;
 using Reptile;
@@ -131,16 +127,17 @@ public class AppSlopCrew : App {
             this.Label.text = "Please disable\ntrick mods";
             return;
         }
-      
+
         if (this.encounter.State != null) {
             this.Label.text = this.encounter.State.GetLabel();
 
-        if (Plugin.CurrentEncounter?.IsBusy() == true) {
-            this.Label.text = "glhf";
-            return;
-        }
+            if (Plugin.CurrentEncounter?.IsBusy() == true) {
+                this.Label.text = "glhf";
+                return;
+            }
 
-        HandleStatelessEncounter(me);
+            HandleStatelessEncounter(me);
+        }
     }
 
     private void HandleStatelessEncounter(Reptile.Player me) {
@@ -195,6 +192,7 @@ public class AppSlopCrew : App {
         this.notifInitialized = true;
     }
 
+
     public override void OpenContent(AUnlockable unlockable, bool appAlreadyOpen) {
         if (Plugin.PhoneInitializer.LastRequest is not null) {
             var request = Plugin.PhoneInitializer.LastRequest;
@@ -220,3 +218,4 @@ public class AppSlopCrew : App {
         Plugin.PhoneInitializer.LastRequest = null;
     }
 }
+
