@@ -234,7 +234,11 @@ public class ConnectionState {
             case EncounterType.GraffitiEncounter:
                 encounterRequest.EncounterConfig.PlayDuration = 120;
                 // TODO: Make this actually based on the number of spots in the stage
-                encounterRequest.EncounterConfig.GraffitiSpots = Enumerable.Range(0, 15).OrderBy(x => Guid.NewGuid()).Take(5).ToArray();
+                if (encounterRequest.EncounterConfig is GraffitiEncounterConfig graffitiConfig) {
+                    graffitiConfig.GraffitiSpots =
+                        Enumerable.Range(0, 15).OrderBy(x => Guid.NewGuid()).Take(5).ToArray();
+                    return graffitiConfig;
+                }
                 break;
             case EncounterType.ScoreEncounter:
                 encounterRequest.EncounterConfig.PlayDuration = 180;

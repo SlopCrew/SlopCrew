@@ -6,10 +6,6 @@ namespace SlopCrew.Common;
 public class EncounterConfig : NetworkSerializable {
     public EncounterType Type;
     public int PlayDuration;
-    
-    // Graffiti encounters
-    public int[] GraffitiSpots;
-    
     public static EncounterConfig ReadWithType(BinaryReader br) {
         var type = (EncounterType) br.ReadInt32();
 
@@ -25,7 +21,6 @@ public class EncounterConfig : NetworkSerializable {
     }
 
     public override void Read(BinaryReader br) {
-        this.Type = (EncounterType) br.ReadInt32();
         this.PlayDuration = br.ReadInt32();
     }
 
@@ -35,7 +30,9 @@ public class EncounterConfig : NetworkSerializable {
     }
 }
 
-class GraffitiEncounterConfig : EncounterConfig {
+public class GraffitiEncounterConfig : EncounterConfig {
+    public int[] GraffitiSpots;
+    
     public override void Read(BinaryReader br) {
         base.Read(br);
         this.GraffitiSpots = new int[br.ReadInt32()];
