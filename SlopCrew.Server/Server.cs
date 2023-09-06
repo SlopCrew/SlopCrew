@@ -4,6 +4,7 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
+using EmbedIO.Authentication;
 using EmbedIO.WebApi;
 using Constants = SlopCrew.Common.Constants;
 
@@ -58,9 +59,15 @@ public class Server {
             o.WithMode(HttpListenerMode.EmbedIO);
         });
 
+        var adminAPI = new BasicAuthenticationModule("/api/admin");
+        if (this.Config.AdminPassword is not null) {
+            adminAPI = adminAPI.WithAccount("slop", this.Config.AdminPassword);
+        }
+
         // my editorconfig sucks and indents it a lot so let's do this on a separate statement
         this.WebServer = this.WebServer
             // API goes before websocket or it gets eaten
+            .WithModule(adminAPI)
             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
             .WithModule(this.Module);
     }
@@ -160,7 +167,7 @@ public class Server {
 
         // Don't bother untracking someone we never tracked in the first place
         if (player is null) return;
-        
+
         var connections = this.GetConnections()
             .Where(x => x.Player?.Stage == player.Stage)
             .ToList();
