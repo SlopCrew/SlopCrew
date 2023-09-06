@@ -10,6 +10,7 @@ public class ClientboundPlayerVisualUpdate : NetworkPacket {
     public int FrictionEffect;
     public bool Spraycan;
     public bool Phone;
+    public int SpraycanState;
 
     public override void Read(BinaryReader br) {
         this.Player = br.ReadUInt32();
@@ -17,6 +18,7 @@ public class ClientboundPlayerVisualUpdate : NetworkPacket {
         this.FrictionEffect = br.ReadInt32();
         this.Spraycan = br.ReadBoolean();
         this.Phone = br.ReadBoolean();
+        this.SpraycanState = br.ReadInt32();
     }
 
     public override void Write(BinaryWriter bw) {
@@ -25,5 +27,6 @@ public class ClientboundPlayerVisualUpdate : NetworkPacket {
         bw.Write(this.FrictionEffect);
         bw.Write(this.Spraycan);
         bw.Write(this.Phone);
+        bw.Write(this.SpraycanState);
     }
 }

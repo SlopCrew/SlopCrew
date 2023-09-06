@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using Reptile;
@@ -19,6 +20,7 @@ public class AssociatedPlayer {
     public int BaseScore;
     public int Multiplier;
     public bool PhoneOut;
+    public Player.SpraycanState SpraycanState;
 
     public Queue<Transform> TransformUpdates = new();
     public Transform TargetTransform;
@@ -38,6 +40,12 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
         this.SlopPlayer = slopPlayer;
+
+        try {
+            Plugin.CharacterInfoManager.SetNextCharacterInfo(slopPlayer.CharacterInfo);
+        } catch (Exception e) {
+            Plugin.Log.LogError($"Failed to set character info for {slopPlayer.Name}: {e}");
+        }
 
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,

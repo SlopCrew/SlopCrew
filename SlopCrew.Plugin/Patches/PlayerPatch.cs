@@ -160,19 +160,20 @@ public class PlayerPatch {
             }
         }
     }
-
+    
     [HarmonyPrefix]
-    [HarmonyPatch("Init")]
-    public static void Init(
-        Player __instance,
-        CharacterConstructor characterConstructor,
-        Characters setCharacter = Characters.NONE,
-        int setOutfit = 0,
-        PlayerType setPlayerType = PlayerType.HUMAN,
-        MoveStyle setMoveStyleEquipped = MoveStyle.ON_FOOT,
-        Crew setCrew = Crew.PLAYERS
-    ) {
-        Plugin.PhoneInitializer.InitPhone(__instance);
+    [HarmonyPatch("SetSpraycanState")]
+    private static bool SetSpraycanState(Player __instance, Player.SpraycanState state) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+        if (associatedPlayer is not null) {
+            return Plugin.PlayerManager.IsSettingVisual;
+        }
+        
+        if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
+            Plugin.PlayerManager.IsVisualRefreshQueued = true;
+        }
+
+        return true;
     }
 
     [HarmonyPrefix]

@@ -118,6 +118,11 @@ public class ConnectionState {
         var hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         this.Player.IsDeveloper = Constants.SecretCodes.Contains(hashString);
 
+        // Someone will do it eventually
+        if (this.Player.CharacterInfo is {Data.Length: > 64}) {
+            this.Player.CharacterInfo.Data = this.Player.CharacterInfo.Data[..64];
+        }
+
         // Syncs player to other players
         lock (Server.Instance.Module.Connections) {
             server.TrackConnection(this);
@@ -165,7 +170,8 @@ public class ConnectionState {
             BoostpackEffect = visualUpdate.BoostpackEffect,
             FrictionEffect = visualUpdate.FrictionEffect,
             Spraycan = visualUpdate.Spraycan,
-            Phone = visualUpdate.Phone
+            Phone = visualUpdate.Phone,
+            SpraycanState = visualUpdate.SpraycanState
         };
     }
 
@@ -210,14 +216,23 @@ public class ConnectionState {
         if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
 
+            var encounterConfig = Server.Instance.Config.Encounters;
+            var length = encounterRequest.EncounterType switch {
+                EncounterType.ScoreEncounter => encounterConfig.ScoreDuration,
+                EncounterType.ComboEncounter => encounterConfig.ComboDuration,
+                _ => 90
+            };
+
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
-                EncounterType = encounterRequest.EncounterType
+                EncounterType = encounterRequest.EncounterType,
+                EncounterLength = length
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID,
-                EncounterType = encounterRequest.EncounterType
+                EncounterType = encounterRequest.EncounterType,
+                EncounterLength = length
             });
 
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);

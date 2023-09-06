@@ -8,6 +8,7 @@ using SlopCrew.Plugin.Encounters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -155,6 +156,17 @@ public class PlayerManager : IDisposable {
         var character = traverse.Field<Characters>("character").Value;
         var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
 
+        var characterInfo = new CustomCharacterInfo {
+            Method = CustomCharacterInfo.CustomCharacterMethod.None,
+            Data = string.Empty
+        };
+
+        try {
+            characterInfo = Plugin.CharacterInfoManager.GetCharacterInfo((int) character);
+        } catch (Exception e) {
+            Plugin.Log.LogError($"Failed to get character info: {e}");
+        }
+
         Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
             Player = new() {
                 Name = Plugin.SlopConfig.Username.Value,
@@ -175,7 +187,9 @@ public class PlayerManager : IDisposable {
                 },
 
                 IsDead = me.IsDead(),
-                IsDeveloper = false
+                IsDeveloper = false,
+
+                CharacterInfo = characterInfo
             },
 
             SecretCode = Plugin.SlopConfig.SecretCode.Value
@@ -187,12 +201,14 @@ public class PlayerManager : IDisposable {
 
         this.IsVisualRefreshQueued = false;
         var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+        var spraycanState = traverse.Field<Player.SpraycanState>("spraycanState").Value;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundVisualUpdate {
             BoostpackEffect = (int) characterVisual.boostpackEffectMode,
             FrictionEffect = (int) characterVisual.frictionEffectMode,
             Spraycan = characterVisual.VFX.spraycan.activeSelf,
-            Phone = characterVisual.VFX.phone.activeSelf
+            Phone = characterVisual.VFX.phone.activeSelf,
+            SpraycanState = (int) spraycanState
         });
     }
 
@@ -228,7 +244,7 @@ public class PlayerManager : IDisposable {
             _ => null
         };
 
-        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID);
+        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterLength);
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
@@ -376,11 +392,13 @@ public class PlayerManager : IDisposable {
             var reptilePlayer = associatedPlayer.ReptilePlayer;
             var traverse = Traverse.Create(reptilePlayer);
             var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+            var prevSpraycanState = traverse.Field<Player.SpraycanState>("spraycanState").Value;
 
             var boostpackEffect = (BoostpackEffectMode) playerVisualUpdate.BoostpackEffect;
             var frictionEffect = (FrictionEffectMode) playerVisualUpdate.FrictionEffect;
             var spraycan = playerVisualUpdate.Spraycan;
             var phone = playerVisualUpdate.Phone;
+            var spraycanState = (Player.SpraycanState) playerVisualUpdate.SpraycanState;
 
             characterVisual.hasEffects = true;
             characterVisual.hasBoostPack = true;
@@ -391,6 +409,11 @@ public class PlayerManager : IDisposable {
             characterVisual.SetFrictionEffect(frictionEffect);
             characterVisual.SetSpraycan(spraycan);
             characterVisual.SetPhone(phone);
+
+            if (prevSpraycanState != spraycanState) {
+                associatedPlayer.ReptilePlayer.SetSpraycanState(spraycanState);
+            }
+
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }

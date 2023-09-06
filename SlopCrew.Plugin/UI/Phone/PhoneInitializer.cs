@@ -13,9 +13,8 @@ public class PhoneInitializer {
     public ClientboundEncounterRequest? LastRequest;
 
     // We need to shove our own GameObject with a AppSlopCrew component into the prefab
-    public void InitPhone(Player instance) {
-        var prefab = instance.phonePrefab;
-        var apps = prefab.transform.Find("OpenCanvas/PhoneContainerOpen/MainScreen/Apps");
+    public void InitPhone(GameObject phone) {
+        var apps = phone.transform.Find("OpenCanvas/PhoneContainerOpen/MainScreen/Apps");
 
         var slopAppObj = new GameObject("AppSlopCrew");
         slopAppObj.layer = Layers.Phone;
@@ -41,12 +40,14 @@ public class PhoneInitializer {
 
         app.Label = tmp;
 
-        slopAppObj.transform.SetParent(apps);
-        contentObj.transform.SetParent(slopAppObj.transform);
+        slopAppObj.transform.SetParent(apps, false);
+        contentObj.transform.SetParent(slopAppObj.transform, false);
 
         // why are these zero? idk!
         slopAppObj.transform.localScale = new(1, 1, 1);
         contentObj.transform.localScale = new(1, 1, 1);
+
+        slopAppObj.SetActive(true);
     }
 
     public void ShowNotif(ClientboundEncounterRequest request) {

@@ -7,6 +7,9 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Server.Race;
 using System.Net.WebSockets;
+using EmbedIO;
+using EmbedIO.Authentication;
+using EmbedIO.WebApi;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -16,7 +19,7 @@ public class Server {
     public static Logger Logger = null!;
     public static uint CurrentTick;
 
-    private Config config;
+    public Config Config;
 
     public WebServer WebServer;
     public SlopWebSocketModule Module;
@@ -27,10 +30,10 @@ public class Server {
         Logger = logger.CreateLogger();
         Log.Logger = Logger;
 
-        this.config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
+        this.Config = Config.ResolveConfig(args.Length > 0 ? args[0] : null);
 
         // Thanks Serilog
-        if (this.config.Debug) {
+        if (this.Config.Debug) {
             var newLogger = new LoggerConfiguration().WriteTo.Console()
                 .MinimumLevel.Verbose()
                 .CreateLogger();
@@ -38,37 +41,43 @@ public class Server {
             Log.Logger = Logger;
         }
 
-        this.Metrics = new Metrics(this.config);
+        this.Metrics = new Metrics(this.Config);
         this.Module = new SlopWebSocketModule();
 
         this.WebServer = new WebServer(o => {
-            var certPath = this.config.Certificates.Path;
-            var certPass = this.config.Certificates.Password;
+            var certPath = this.Config.Certificates.Path;
+            var certPass = this.Config.Certificates.Password;
 
-            if (this.config.Interface.StartsWith("https:")) {
+            if (this.Config.Interface.StartsWith("https:")) {
                 if (File.Exists(certPath)) {
                     o.WithCertificate(
                         new System.Security.Cryptography.X509Certificates.X509Certificate2(
                             certPath, certPass));
                 } else {
                     Log.Error("Certificate {Path} does not exist, falling back to HTTP", certPath);
-                    this.config.Interface = this.config.Interface.Replace("https:", "http:");
+                    this.Config.Interface = this.Config.Interface.Replace("https:", "http:");
                 }
             }
 
-            o.WithUrlPrefix(this.config.Interface);
+            o.WithUrlPrefix(this.Config.Interface);
             o.WithMode(HttpListenerMode.EmbedIO);
         });
+
+        var adminAPI = new BasicAuthenticationModule("/api/admin");
+        if (this.Config.AdminPassword is not null) {
+            adminAPI = adminAPI.WithAccount("slop", this.Config.AdminPassword);
+        }
 
         // my editorconfig sucks and indents it a lot so let's do this on a separate statement
         this.WebServer = this.WebServer
             // API goes before websocket or it gets eaten
+            .WithModule(adminAPI)
             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
             .WithModule(this.Module);
     }
 
     public void Start() {
-        Log.Information("Listening on {Interface} - press any key to close", this.config.Interface);
+        Log.Information("Listening on {Interface} - press any key to close", this.Config.Interface);
 
         // ReSharper disable once FunctionNeverReturns
         new Thread(() => {
