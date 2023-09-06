@@ -10,9 +10,7 @@ public class ClientboundEncounterStart : NetworkPacket {
 
     public override void Read(BinaryReader br) {
         this.PlayerID = br.ReadUInt32();
-        var encounterConfig = new EncounterConfig();
-        encounterConfig.Read(br);
-        this.EncounterConfig = encounterConfig;
+        this.EncounterConfig = EncounterConfig.ReadWithType(br);
     }
 
     public override void Write(BinaryWriter bw) {
