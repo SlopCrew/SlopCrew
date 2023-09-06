@@ -1,0 +1,3 @@
+[submodule "libs/BrcCustomCharactersAPI"]
+	path = libs/BrcCustomCharactersAPI
+	url = https://github.com/SGiygas/BrcCustomCharactersAPI.git

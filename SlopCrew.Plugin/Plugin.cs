@@ -17,6 +17,7 @@ public class Plugin : BaseUnityPlugin {
     public static Harmony Harmony = null!;
     public static SlopConfigFile SlopConfig = null!;
 
+    public static CharacterInfoManager CharacterInfoManager = null!;
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
@@ -34,6 +35,7 @@ public class Plugin : BaseUnityPlugin {
         API = new();
         APIManager.RegisterAPI(API);
 
+        CharacterInfoManager = new();
         NetworkConnection = new();
         PlayerManager = new();
         PhoneInitializer = new();

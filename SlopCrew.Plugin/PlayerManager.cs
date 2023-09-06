@@ -156,6 +156,17 @@ public class PlayerManager : IDisposable {
         var character = traverse.Field<Characters>("character").Value;
         var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
 
+        var characterInfo = new CustomCharacterInfo {
+            Method = CustomCharacterInfo.CustomCharacterMethod.None,
+            Data = string.Empty
+        };
+
+        try {
+            characterInfo = Plugin.CharacterInfoManager.GetCharacterInfo((int) character);
+        } catch (Exception e) {
+            Plugin.Log.LogError($"Failed to get character info: {e}");
+        }
+
         Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
             Player = new() {
                 Name = Plugin.SlopConfig.Username.Value,
@@ -176,7 +187,9 @@ public class PlayerManager : IDisposable {
                 },
 
                 IsDead = me.IsDead(),
-                IsDeveloper = false
+                IsDeveloper = false,
+
+                CharacterInfo = characterInfo
             },
 
             SecretCode = Plugin.SlopConfig.SecretCode.Value

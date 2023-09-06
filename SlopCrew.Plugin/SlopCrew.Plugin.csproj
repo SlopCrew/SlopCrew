@@ -85,6 +85,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\libs\BrcCustomCharactersAPI\BrcCustomCharactersAPI.csproj" />
         <ProjectReference Include="..\SlopCrew.API\SlopCrew.API.csproj"/>
         <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
     </ItemGroup>
