@@ -97,9 +97,18 @@ public class Server {
     private void RunTick() {
         // Clean out dead connections
         var deadConnections = this.GetConnections()
-            .Where(x => x.Context.WebSocket.State is WebSocketState.Closed or WebSocketState.None);
+            .Where(x =>
+                       x.Context.WebSocket.State is WebSocketState.CloseReceived
+                           or WebSocketState.CloseSent
+                           or WebSocketState.Closed);
+
+        const int ticksToDisconnect = 10 * 5;
         foreach (var conn in deadConnections) {
-            this.Module.FuckingObliterate(conn.Context);
+            conn.DisconnectTicks++;
+            if (conn.DisconnectTicks >= ticksToDisconnect) {
+                this.Module.FuckingObliterate(conn.Context);
+                conn.Context.WebSocket.CloseAsync();
+            }
         }
 
         // Go through each connection and run their respective ticks.

@@ -13,6 +13,7 @@ namespace SlopCrew.Server;
 public class ConnectionState {
     public Player? Player;
     public int? LastStage = null;
+    public int DisconnectTicks = 0;
 
     public ClientboundPlayerAnimation? QueuedAnimation;
     public Transform? QueuedPositionUpdate;
