@@ -9,13 +9,10 @@ namespace SlopCrew.Plugin.Scripts {
 
         private const int RACE_TRICK_MULTIPLIER = 5;
         private float originalBoostSpeedTarget = 0f;
-        private float originalGrindSpeedMultiplier = 20;
+        private float originalGrindSpeedMultiplier = 10;
 
-        private static float boostSpeedTarget = 0f;
-        private static float grindSpeedTarget = 0f;
-
-        public static float BoostSpeedTarget => boostSpeedTarget;
-        public static float GrindSpeedTarget => grindSpeedTarget;
+        public static float BoostSpeedTarget { get; internal set; } = 0f;
+        public static float GrindSpeedTarget { get; internal set; } = 0f;
 
 
         public void Awake() {
@@ -38,10 +35,10 @@ namespace SlopCrew.Plugin.Scripts {
 
         private void UpdateTargetSpeed() {
             var player = WorldHandler.instance.GetCurrentPlayer();
-            int tricksInCombo = Traverse.Create(player).Field<int>("tricksInCombo").Value;
+            var tricksInCombo = Traverse.Create(player).Field<int>("tricksInCombo").Value;
 
-            grindSpeedTarget = originalGrindSpeedMultiplier + (tricksInCombo / RACE_TRICK_MULTIPLIER);
-            boostSpeedTarget = originalBoostSpeedTarget + (tricksInCombo / RACE_TRICK_MULTIPLIER);
+            GrindSpeedTarget = originalGrindSpeedMultiplier + (tricksInCombo / RACE_TRICK_MULTIPLIER);
+            BoostSpeedTarget = originalBoostSpeedTarget + (tricksInCombo / RACE_TRICK_MULTIPLIER);
         }
     }
 }

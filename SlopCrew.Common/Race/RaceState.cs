@@ -7,8 +7,10 @@ namespace SlopCrew.Common.Race {
         WaitingForPlayersToBeReady,
         Starting,
         Racing,
-        Finished,
         WaitingForFullRanking,
-        ShowRanking
+        ShowRanking,
+        Finished,
+        ForcedFinish,
+        Aborted
     }
 }

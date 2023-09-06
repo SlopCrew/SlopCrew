@@ -10,9 +10,7 @@ namespace SlopCrew.Plugin.Patches {
         [HarmonyPostfix]
         [HarmonyPatch("SetupStage")]
         private static void SetupStage() {
-            if (RaceManager.Instance == null) {
-                UnityEngine.Object.Instantiate<GameObject>(new GameObject("Racer")).AddComponent<RaceManager>();
-            }
+            UnityEngine.Object.Instantiate<GameObject>(new GameObject("Racer")).AddComponent<RaceVelocityModifier>();
         }
     }
 }

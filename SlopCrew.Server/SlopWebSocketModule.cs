@@ -2,7 +2,6 @@ using EmbedIO.WebSockets;
 using Serilog;
 using SlopCrew.Common.Network;
 using SlopCrew.Server.Race;
-using System.Collections.Concurrent;
 
 namespace SlopCrew.Server;
 
@@ -31,7 +30,7 @@ public class SlopWebSocketModule : WebSocketModule {
         if (this.Connections.TryGetValue(context, out var state)) {
             this.Connections.Remove(context);
             Server.Instance.UntrackConnection(state);
-            Racer.Instance.RemovePlayerIfRacing(state.Player);
+            RacerManager.Instance.RemovePlayerIfRacing(state.Player); //TODO: investigate alt+f4
         }
 
         Server.Instance.Metrics.UpdateConnections(this.Connections.Count);

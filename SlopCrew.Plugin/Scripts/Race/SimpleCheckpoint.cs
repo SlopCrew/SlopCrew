@@ -3,25 +3,22 @@ using UnityEngine;
 
 namespace SlopCrew.Plugin.Scripts {
     internal class SimpleCheckpoint : MonoBehaviour {
-        private BoxCollider _collider;
-        private bool _isTriggered;
-        private MapPin _mapPin;
+        private BoxCollider? collider;
+        private bool? isTriggered;
+        private MapPin? mapPin;
 
         private void Start() {
-            //transform.position = Pos;
-            _isTriggered = false;
+            isTriggered = false;
 
-            _collider = gameObject.AddComponent<BoxCollider>();
-            _collider.isTrigger = true;
-            _collider.size = new Vector3(3.5f, 100.5f, 3.5f);
-
-            Plugin.Log.LogInfo("New CP");
+            collider = gameObject.AddComponent<BoxCollider>();
+            collider.isTrigger = true;
+            collider.size = new Vector3(15.5f, 100.5f, 15.5f); //TODO: fix Y size
         }
 
         private void OnTriggerEnter(Collider other) {
 
             //Dont trigger if race hasn't started
-            if (!RaceManager.Instance.HasStarted()) {
+            if (!Plugin.RaceManager!.HasStarted()) {
                 return;
             }
 
@@ -31,15 +28,15 @@ namespace SlopCrew.Plugin.Scripts {
             }
 
             //Dont trigger if already triggered
-            if (_isTriggered) {
+            if (isTriggered.HasValue && isTriggered.Value) {
                 return;
             }
 
             Plugin.Log.LogInfo($"Checkpoint reached {other.name}");
 
-            var res = RaceManager.Instance.OnCheckpointReached(_mapPin);
+            var res = Plugin.RaceManager.OnCheckpointReached(mapPin);
             if (res) {
-                _isTriggered = true;
+                isTriggered = true;
             }
         }
 
@@ -48,7 +45,7 @@ namespace SlopCrew.Plugin.Scripts {
         }
 
         public void SetMapPin(MapPin mapPin) {
-            _mapPin = mapPin;
+            this.mapPin = mapPin;
         }
     }
 }

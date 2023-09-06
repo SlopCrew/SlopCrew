@@ -79,10 +79,6 @@ public class ConnectionState {
                     this.HandleEncounterRequest(encounterRequest);
                 }
                 break;
-            //TODO: To remove
-            //case ServerboundRequestRace serverboundRequestRace:
-            //    this.HandleRequestRace(serverboundRequestRace);
-            //    break;
             case ServerboundReadyForRace serverboundReadyForRace:
                 this.HandleReadyForRace(serverboundReadyForRace);
                 break;
@@ -174,7 +170,7 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
-        if (Encounter.IsStatefullEncouter(encounterRequest.EncounterType)) {
+        if (Encounter.IsStatefullEncounter(encounterRequest.EncounterType)) {
             switch (encounterRequest.EncounterType) {
                 case EncounterType.RaceEncounter:
                     HandleRequestRace();
@@ -247,12 +243,19 @@ public class ConnectionState {
 
         Log.Information($"New race request from {Player.ID}");
 
-        var newRaceConf = Racer.Instance.GetARace(Player);
+        (var initializedTime, var newRaceConf) = RacerManager.Instance.GetARace(Player);
 
         if (newRaceConf != null) {
             Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
                 Response = true,
-                RaceConfig = newRaceConf
+                RaceConfig = newRaceConf,
+                InitializedTime = initializedTime.ToString()
+            });
+        } else {
+            Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
+                Response = false,
+                RaceConfig = new Common.Race.RaceConfig(),
+                InitializedTime = ""
             });
         }
     }
@@ -264,7 +267,7 @@ public class ConnectionState {
 
         Log.Information($"Player {Player.ID} ready for his race");
 
-        Racer.Instance.MarkPlayerReady(Player.ID);
+        RacerManager.Instance.MarkPlayerReady(Player.ID);
     }
 
     private void HandleFinishedRace(ServerboundFinishedRace serverboundFinishedRace) {
@@ -272,9 +275,9 @@ public class ConnectionState {
             return;
         }
 
-        Log.Information($"{Player.ID} finished his race with a time {serverboundFinishedRace.Time}");
+        RacerManager.Instance.AddPlayerTime(Player.ID, serverboundFinishedRace.Time);
 
-        Racer.Instance.AddPlayerTime(Player.ID, serverboundFinishedRace.Time);
+        Log.Information($"{Player.ID} finished his race with a time {serverboundFinishedRace.Time}");
     }
 
     public string DebugName() {

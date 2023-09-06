@@ -7,15 +7,18 @@ namespace SlopCrew.Common.Network.Clientbound {
 
         public bool Response;
         public RaceConfig RaceConfig { get; set; } = new RaceConfig();
+        public string InitializedTime { get; set; } = "";
 
         public override void Read(BinaryReader br) {
             Response = br.ReadBoolean();
             RaceConfig.Read(br);
+            InitializedTime = br.ReadString();
         }
 
         public override void Write(BinaryWriter bw) {
             bw.Write(Response);
             RaceConfig.Write(bw);
+            bw.Write(InitializedTime);
         }
     }
 }

@@ -3,6 +3,7 @@ using SlopCrew.Common.Race;
 
 namespace SlopCrew.Server.Race {
     internal class Race {
+        public string Name { get; set; } = "";
 
         public RaceState State { get; set; } = RaceState.None;
 
@@ -17,7 +18,6 @@ namespace SlopCrew.Server.Race {
         public DateTime Racing;
 
         public int ConfirmedPlayers { get; set; } = 0;
-
 
         public Dictionary<uint, float> Ranking { get; set; } = new Dictionary<uint, float>();
 

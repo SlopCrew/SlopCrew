@@ -1,8 +1,8 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SlopCrew.Common.Network;
@@ -25,11 +25,12 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
             {NetworkMessageType.ClientboundEncounterRequest, () => new ClientboundEncounterRequest()},
             {NetworkMessageType.ClientboundEncounterStart, () => new ClientboundEncounterStart()},
-            
             {NetworkMessageType.ClientboundRequestRace, () => new ClientboundRequestRace()},
             {NetworkMessageType.ClientboundRaceInitialize, () => new ClientboundRaceInitialize()},
             {NetworkMessageType.ClientboundRaceStart, () => new ClientboundRaceStart()},
             {NetworkMessageType.ClientboundRaceRank, () => new ClientboundRaceRank()},
+            {NetworkMessageType.ClientboundRaceAborted, () => new ClientboundRaceAborted()},
+            {NetworkMessageType.ClientboundRaceForcedToFinish, () => new ClientboundRaceForcedToFinish()},
 
             {NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation()},
             {NetworkMessageType.ServerboundPing, () => new ServerboundPing()},
@@ -38,8 +39,6 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ServerboundScoreUpdate, () => new ServerboundScoreUpdate()},
             {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
             {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()},
-            
-            {NetworkMessageType.ServerboundRequestRace, () =>  new ServerboundRequestRace()},
             {NetworkMessageType.ServerboundReadyForRace, () => new ServerboundReadyForRace()},
             {NetworkMessageType.ServerboundFinishedRace, () => new ServerboundFinishedRace()}
         };

@@ -12,7 +12,7 @@ public struct Encounter {
     public EncounterType EncounterType;
     public IStatefullApp? State;
 
-    public static bool IsStatefullEncouter(EncounterType type) {
+    public static bool IsStatefullEncounter(EncounterType type) {
         return type switch {
             EncounterType.ScoreEncounter => false,
             EncounterType.ComboEncounter => false,

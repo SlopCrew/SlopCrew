@@ -2,29 +2,30 @@ using Serilog;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Race;
+using SlopCrew.Server.Extensions;
 using Swan;
 using System.Collections.Concurrent;
-using System.Numerics;
+using System.Text.Json;
 
 namespace SlopCrew.Server.Race {
-    public class Racer {
-        private static Racer? instance;
+    public class RacerManager {
+        private static RacerManager? instance;
 
         public CancellationToken CancellationToken { get; private set; }
         public CancellationTokenSource? CancellationTokenSource { get; private set; }
 
         private const int MAX_PLAYERS_IN_RACE = 32; //TODO: Configurable may be 
-        private const int MAX_WAITING_JOINING_TIME_FOR_SECS = 5; //TODO: Configurable may be 
-        private const int MAX_WAITING_PLAYERS_TO_BE_READY_TIME_SECS = 30; //TODO: Configurable may be 
-        private const int MAX_WAITING_PLAYERS_TO_FINISH_TIME_SECS = 183; //TODO: Configurable may be
+        private const int MAX_WAITING_JOINING_TIME_FOR_SECS = 20; //TODO: Configurable may be 
+        private const int MAX_WAITING_PLAYERS_TO_BE_READY_TIME_SECS = 20; //TODO: Configurable may be 
+        private const int MAX_WAITING_PLAYERS_TO_FINISH_TIME_SECS = 603; //TODO: Configurable may be
 
         private readonly ConcurrentDictionary<Guid, Race> races = new();
 
-        public static Racer Instance { get => GetInstance(); }
+        public static RacerManager Instance { get => GetInstance(); }
 
-        private static Racer GetInstance() {
+        private static RacerManager GetInstance() {
             if (instance == null) {
-                instance = new Racer();
+                instance = new RacerManager();
             }
             return instance;
         }
@@ -38,15 +39,15 @@ namespace SlopCrew.Server.Race {
                     case RaceState.WaitingForPlayers:
                         var remainingTime = DateTime.UtcNow - race.Initialized;
 
-                        Log.Information($"Remaining {MAX_WAITING_JOINING_TIME_FOR_SECS - remainingTime.Seconds} before trying to start race {raceId}");
-
                         if (remainingTime > TimeSpan.FromSeconds(MAX_WAITING_JOINING_TIME_FOR_SECS)) {
-                            //if (v.Player.Count() < 2) {
-                            //    Log.Information($"Race {k} has 1 player. Aborting race...");
-                            //    v.State = RaceState.None;
-                            //    return;
-                            //}
-                            race.State = RaceState.Starting;
+                            if (race.Players.Count() < 2) {
+                                Log.Information($"Race {raceId} has 1 player. Aborting race...");
+
+                                res.RaceAbortedRequests.Add((race!.GetPlayersId(), new ClientboundRaceAborted()));
+                                race.State = RaceState.Aborted;
+                            } else {
+                                race.State = RaceState.Starting;
+                            }
                         }
 
                         break;
@@ -61,30 +62,28 @@ namespace SlopCrew.Server.Race {
                     case RaceState.WaitingForPlayersToBeReady:
                         var remainingWaitingTime = DateTime.UtcNow - race.Started;
 
-                        Log.Information($" {race.ConfirmedPlayers}/{race.Players.Count} Remaining {MAX_WAITING_PLAYERS_TO_BE_READY_TIME_SECS - remainingWaitingTime.Seconds} before trying to actually start race {raceId}");
-
                         if (remainingWaitingTime > TimeSpan.FromSeconds(MAX_WAITING_PLAYERS_TO_BE_READY_TIME_SECS)
                             || race.ConfirmedPlayers == race.Players.Count) {
 
-                            //if (v.Player.Count() < 2) {
-                            //    Log.Information($"Race {k} has 1 player. Aborting race...");
-                            //    v.State = RaceState.None;
-                            //    return;
-                            //}
+                            if (race.Players.Count() < 2) {
+                                Log.Information($"Race {raceId} has 1 player. Aborting race...");
 
-                            var clientBoundRaceStart = new ClientboundRaceStart();
-                            res.RaceStartRequests.Add((race.GetPlayersId(), clientBoundRaceStart));
+                                res.RaceAbortedRequests.Add((race!.GetPlayersId(), new ClientboundRaceAborted()));
+                                race.State = RaceState.Aborted;
+                            } else {
+                                var clientBoundRaceStart = new ClientboundRaceStart();
+                                res.RaceStartRequests.Add((race.GetPlayersId(), clientBoundRaceStart));
 
-                            race.Racing = DateTime.UtcNow;
-                            race.State = RaceState.Racing;
+                                race.Racing = DateTime.UtcNow;
+                                race.State = RaceState.Racing;
 
-                            Log.Information($"race {raceId} started at {race.Racing}");
+                                Log.Information($"race {raceId} started at {race.Racing}");
+                            }
                         }
 
                         break;
                     case RaceState.Racing:
                         var remainingWaitingBeforeFinishingTime = DateTime.UtcNow - race.Racing;
-
 
                         if (remainingWaitingBeforeFinishingTime > TimeSpan.FromSeconds(MAX_WAITING_PLAYERS_TO_FINISH_TIME_SECS)
                             || race.Ranking.Count == race.Players.Count) {
@@ -98,15 +97,21 @@ namespace SlopCrew.Server.Race {
                                 return (playerName, kv.Value);
                             }).ToList();
 
-                            Log.Information($"Ranking: {rank.Count}");
+                            if (race.Ranking.Count == race.Players.Count) {
+                                res.RaceRankRequests.Add((race.GetPlayersId(), new ClientboundRaceRank {
+                                    Rank = rank
+                                }));
 
-                            res.RaceRankRequests.Add((race.GetPlayersId(), new ClientboundRaceRank {
-                                Rank = rank
-                            }));
+                                race.State = RaceState.Finished;
+                            } else {
+                                res.RaceForcedToFinishRequests.Add((race.GetPlayersId(), new ClientboundRaceForcedToFinish {
+                                    Rank = rank
+                                }));
+
+                                race.State = RaceState.ForcedFinish;
+                            }
 
                             Log.Information($"race {raceId} finished at {DateTime.UtcNow}");
-
-                            race.State = RaceState.Finished;
                         }
 
                         break;
@@ -124,7 +129,7 @@ namespace SlopCrew.Server.Race {
 
             int removed = 0;
 
-            races.Where(entry => entry.Value.State == RaceState.Finished)
+            races.Where(entry => entry.Value.State >= RaceState.Finished)
                  .Select(entry => entry.Key)
                  .ToList()
                  .ForEach(key => {
@@ -134,7 +139,7 @@ namespace SlopCrew.Server.Race {
                  });
 
             if (removed > 0) {
-                Log.Information($"{removed} race where remove");
+                Log.Information($"{DateTime.UtcNow} : {removed} race where removed");
             }
 
             return res;
@@ -195,48 +200,74 @@ namespace SlopCrew.Server.Race {
             race.Players.Remove(player);
         }
 
-        public RaceConfig? GetARace(Player player) {
+        public (DateTime, RaceConfig?) GetARace(Player player) {
             if (IsPlayerAlreadyRacing(player.ID)) {
-                return null;
+                return (DateTime.MinValue, null);
             }
 
             var availableRace = races.FirstOrDefault(kv =>
                 kv.Value.State == RaceState.WaitingForPlayers
                 && kv.Value.Players.Count() < MAX_PLAYERS_IN_RACE);
 
-            var raceConf = GetANewRaceConf();
-
             if (availableRace.Key != Guid.Empty) {
                 availableRace.Value.Players.Add(player);
-                return raceConf;
+                return (availableRace.Value.Initialized.AddSeconds(MAX_WAITING_JOINING_TIME_FOR_SECS), availableRace.Value.Config);
             }
 
-            var res = races.TryAdd(Guid.NewGuid(), new Race {
-                Config = raceConf,
+            (var name, var raceConf) = GetANewRaceConf();
+
+            if (raceConf == null) {
+                return (DateTime.MinValue, null);
+            }
+
+            var newRace = new Race {
+                Config = raceConf!,
                 Players = new List<Player> { player },
                 State = RaceState.WaitingForPlayers,
-                Initialized = DateTime.UtcNow
-            });
+                Initialized = DateTime.UtcNow,
+                Name = name
+            };
 
-            if (res) {
-                return raceConf;
+            var success = races.TryAdd(Guid.NewGuid(), newRace);
+
+            if (success) {
+                return (newRace.Initialized.AddSeconds(MAX_WAITING_JOINING_TIME_FOR_SECS), raceConf);
             }
 
             Log.Error("Failed to get a new race");
 
-            return null;
+            return (DateTime.MinValue, null);
         }
 
-        private RaceConfig GetANewRaceConf() {
-            return new RaceConfig {
-                Stage = 9,
-                StartPosition = new Vector3(-0.94f, 13.70f, 3.71f),
-                MapPins = new List<Vector3>
-               {
-                    new Vector3(-3.12f, 13.63f, -65.70f),
-                    new Vector3(-1.59f, 13.58f, 60.85f),
+        private (string, RaceConfig?) GetANewRaceConf() {
+            return Task.Run(async () => {
+                try {
+                    var gh = new GitHubDownloader();
+
+                    var races = await gh.DownloadFilesFromDirectory("SlopCrew", "race-config");
+
+                    var sortedRaces = races.ToList();
+                    sortedRaces.Shuffle();
+                    var raceConf = sortedRaces.FirstOrDefault();
+
+                    if (string.IsNullOrEmpty(raceConf.Key) || string.IsNullOrEmpty(raceConf.Value)) {
+                        return ("", null);
+                    }
+
+                    RaceConfig desRaceConf = null;
+
+                    try {
+                        desRaceConf = JsonSerializer.Deserialize<RaceConfig>(raceConf.Value);
+                    } catch (Exception ex) {
+                        Log.Error("Couldn't deserialize race : ", ex);
+                    }
+
+                    return (raceConf.Key, desRaceConf);
+                } catch (Exception e) {
+                    Log.Error("Couldn't get a new race conf : ", e);
+                    return ("", null);
                 }
-            };
+            }).GetAwaiter().GetResult();
         }
 
         private Race GetPlayerRace(uint id) {

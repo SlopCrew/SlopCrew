@@ -1,11 +1,12 @@
-using System.Net.WebSockets;
+using EmbedIO;
+using EmbedIO.WebApi;
 using Serilog;
 using Serilog.Core;
 using SlopCrew.Common;
+using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
-using EmbedIO;
-using EmbedIO.WebApi;
 using SlopCrew.Server.Race;
+using System.Net.WebSockets;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -86,7 +87,7 @@ public class Server {
         }).Start();
 
         Task.Run(() => {
-            var racer = Racer.Instance;
+            var racer = RacerManager.Instance;
 
             while (!racer.CancellationToken.IsCancellationRequested) {
                 var queued = racer.Update();
@@ -94,30 +95,29 @@ public class Server {
                 var queuedInitialize = queued.RaceInitializeRequests;
                 var queuedRaceStart = queued.RaceStartRequests;
                 var queuedRaceRank = queued.RaceRankRequests;
+                var queuedRaceAborted = queued.RaceAbortedRequests;
+                var queuedRaceForcedFinish = queued.RaceForcedToFinishRequests;
 
-                foreach (var (ids, msg) in queuedInitialize) {
-                    if (ids.Any() && msg != null) {
-                        Server.Instance.Module.SendToTheConcerned(ids, msg);
-                    }
-                }
+                ProcessRaceMsg(queuedInitialize);
+                ProcessRaceMsg(queuedRaceStart);
+                ProcessRaceMsg(queuedRaceRank);
+                ProcessRaceMsg(queuedRaceAborted);
+                ProcessRaceMsg(queuedRaceForcedFinish);
 
-                foreach (var (ids, msg) in queuedRaceStart) {
-                    if (ids.Any() && msg != null) {
-                        Server.Instance.Module.SendToTheConcerned(ids, msg);
-                    }
-                }
-
-                foreach (var (ids, msg) in queuedRaceRank) {
-                    if (ids.Any() && msg != null) {
-                        Server.Instance.Module.SendToTheConcerned(ids, msg);
-                    }
-                }
-
-                Task.Delay((int) Constants.TickRate * 1000);
+                Task.Delay((int) (Constants.TickRate * 1000));
             }
-        }, Racer.Instance.CancellationToken);
+        }, RacerManager.Instance.CancellationToken);
 
         this.WebServer.Start();
+    }
+
+
+    private void ProcessRaceMsg<T>(ICollection<(IEnumerable<uint> ids, T packet)> queue) where T : NetworkPacket {
+        foreach (var (ids, msg) in queue) {
+            if (ids.Any() && msg != null) {
+                Server.Instance.Module.SendToTheConcerned(ids, msg);
+            }
+        }
     }
 
     private void RunTick() {
@@ -193,7 +193,7 @@ public class Server {
 
         // Don't bother untracking someone we never tracked in the first place
         if (player is null) return;
-        
+
         var connections = this.GetConnections()
             .Where(x => x.Player?.Stage == player.Stage)
             .ToList();

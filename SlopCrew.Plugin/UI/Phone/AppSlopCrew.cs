@@ -3,7 +3,6 @@ using Reptile;
 using Reptile.Phone;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Serverbound;
-using SlopCrew.Plugin.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +33,7 @@ public class AppSlopCrew : App {
         },
         new Encounter {
             EncounterType = EncounterType.RaceEncounter,
-            State = null
+            State = Plugin.RaceManager
         }
     };
 
@@ -44,6 +43,13 @@ public class AppSlopCrew : App {
     public override void Awake() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
         base.Awake();
+
+        if (Plugin.RaceManager.IsInRace()) {
+            encounter = new Encounter {
+                State = Plugin.RaceManager,
+                EncounterType = EncounterType.RaceEncounter
+            };
+        }
     }
 
     protected override void OnAppInit() {
@@ -61,50 +67,35 @@ public class AppSlopCrew : App {
         ourDownArrow.transform.localPosition = new UnityEngine.Vector3(0, -half, 0);
     }
 
-    //TODO: prevent changing if in mode
     public override void OnPressUp() {
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) - 1;
         if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
-        this.encounter = this.encounterTypes[nextIndex];
 
-        if (Encounter.IsStatefullEncouter(encounter.EncounterType) && encounter.State == null) {
-            switch (encounter.EncounterType) {
-                case EncounterType.RaceEncounter:
-                    this.encounter.State = RaceManager.Instance;
-                    encounterTypes[nextIndex] = encounter;
-                    break;
-                default:
-                    this.encounter.State = null;
-                    break;
-            }
-        }
-    }
-
-    //TODO: prevent changing if in mode
-    public override void OnPressDown() {
-        var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
-        if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
-        this.encounter = this.encounterTypes[nextIndex];
-
-        if (Encounter.IsStatefullEncouter(encounter.EncounterType) && encounter.State == null) {
-            switch (encounter.EncounterType) {
-                case EncounterType.RaceEncounter:
-                    this.encounter.State = RaceManager.Instance;
-                    encounterTypes[nextIndex] = encounter;
-                    break;
-                default:
-                    this.encounter.State = null;
-                    break;
-            }
-        }
-    }
-
-    public override void OnPressRight() {
-        if (encounter.State != null) {
-            encounter.State.OnStart();
+        var nextEncounter = encounterTypes[nextIndex];
+        if (Plugin.CurrentEncounter != null && Plugin.CurrentEncounter.IsBusy() || encounter.State != null && encounter.State.IsBusy()) {
             return;
         }
 
+        this.encounter = nextEncounter;
+    }
+
+    public override void OnPressDown() {
+        var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
+        if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
+
+        var nextEncounter = encounterTypes[nextIndex];
+        if (Plugin.CurrentEncounter != null && Plugin.CurrentEncounter.IsBusy() || encounter.State != null && encounter.State.IsBusy()) {
+            return;
+        }
+
+        this.encounter = nextEncounter;
+    }
+
+    public override void OnPressRight() {
+        if (encounter.State != null && !encounter.State.IsBusy()) {
+            encounter.State.OnStart();
+            return;
+        }
         if (!this.SendEncounterRequest()) return;
         if (Plugin.CurrentEncounter?.IsBusy() == true) return;
 

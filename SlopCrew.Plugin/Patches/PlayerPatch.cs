@@ -179,7 +179,7 @@ public class PlayerPatch {
     [HarmonyPatch("FixedUpdatePlayer")]
     public static void FixedUpdatePlayerPrefix(Player __instance) {
         var currentPlayer = WorldHandler.instance?.GetCurrentPlayer();
-        if (__instance.name == currentPlayer?.name && RaceManager.Instance!.IsInRace()) {
+        if (__instance.name == currentPlayer?.name && Plugin.RaceManager.IsInRace()) {
             GrindAbility grindAbility = Traverse.Create(__instance).Field<GrindAbility>("grindAbility").Value;
 
             grindAbility.speedTarget = RaceVelocityModifier.GrindSpeedTarget;
