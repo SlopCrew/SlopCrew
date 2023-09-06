@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace SlopCrew.Common.Network.Serverbound;
 
@@ -6,15 +7,17 @@ public class ServerboundEncounterRequest : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ServerboundEncounterRequest;
 
     public uint PlayerID;
-    public EncounterType EncounterType;
+    public EncounterConfig EncounterConfig;
 
     public override void Read(BinaryReader br) {
         this.PlayerID = br.ReadUInt32();
-        this.EncounterType = (EncounterType) br.ReadInt32();
+        var encounterConfig = new EncounterConfig();
+        encounterConfig.Read(br);
+        this.EncounterConfig = encounterConfig;
     }
 
     public override void Write(BinaryWriter bw) {
         bw.Write(this.PlayerID);
-        bw.Write((int) this.EncounterType);
+        this.EncounterConfig.Write(bw);
     }
 }

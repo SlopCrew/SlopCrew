@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Network.Clientbound;
 
 namespace SlopCrew.Plugin.Encounters;
 
@@ -36,11 +36,11 @@ public class SlopEncounter {
         StageManager.OnStagePostInitialization += this.Stop;
     }
 
-    public virtual void Start(uint encounterStartPlayerID, float encounterLength) {
-        this.PlayDuration = encounterLength;
+    public virtual void Start(ClientboundEncounterStart encounterStart) {
+        this.PlayDuration = encounterStart.EncounterConfig.PlayDuration;
         this.cultureInfo = CultureInfo.CurrentCulture;
 
-        if (Plugin.PlayerManager.Players.TryGetValue(encounterStartPlayerID, out var associatedPlayer)) {
+        if (Plugin.PlayerManager.Players.TryGetValue(encounterStart.PlayerID, out var associatedPlayer)) {
             this.Opponent = associatedPlayer;
             this.slopEncounterState = SlopEncounterState.Start;
             this.ResetPlayerScore();

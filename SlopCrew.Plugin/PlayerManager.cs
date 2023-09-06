@@ -239,13 +239,14 @@ public class PlayerManager : IDisposable {
 
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
         if (Plugin.CurrentEncounter?.IsBusy() == true) return;
-        Plugin.CurrentEncounter = encounterStart.EncounterType switch {
+        Plugin.CurrentEncounter = encounterStart.EncounterConfig.Type switch {
             EncounterType.ComboEncounter => new SlopComboEncounter(),
             EncounterType.ScoreEncounter => new SlopScoreEncounter(),
+            EncounterType.GraffitiEncounter => new SlopGraffitiEncounter(),
             _ => null
         };
 
-        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterLength);
+        Plugin.CurrentEncounter?.Start(encounterStart);
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {

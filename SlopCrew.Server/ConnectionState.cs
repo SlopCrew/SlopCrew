@@ -165,6 +165,7 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
+        EncounterType encounterType = encounterRequest.EncounterConfig.Type;
         var module = Server.Instance.Module;
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
@@ -176,54 +177,74 @@ public class ConnectionState {
 
         Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
 
-        if (!otherPlayer.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType] = new();
-        if (!this.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
-            this.EncounterRequests[encounterRequest.EncounterType] = new();
+        if (!otherPlayer.EncounterRequests.ContainsKey(encounterType))
+            otherPlayer.EncounterRequests[encounterType] = new();
+        if (!this.EncounterRequests.ContainsKey(encounterType))
+            this.EncounterRequests[encounterType] = new();
 
         var canSendNotif = false;
-        if (!otherPlayer.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Add(this.Player!.ID);
+        if (!otherPlayer.EncounterRequests[encounterType].Contains(otherPlayer.Player.ID)) {
+            otherPlayer.EncounterRequests[encounterType].Add(this.Player!.ID);
             // Only let people send it once every 5s
             canSendNotif = true;
         }
 
-        if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
+        if (this.EncounterRequests[encounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
 
-            var encounterConfig = Server.Instance.Config.Encounters;
-            var length = encounterRequest.EncounterType switch {
+            /*var encounterConfig = Server.Instance.Config.Encounters;
+            var length = encounterType switch {
                 EncounterType.ScoreEncounter => encounterConfig.ScoreDuration,
                 EncounterType.ComboEncounter => encounterConfig.ComboDuration,
                 _ => 90
-            };
+            };*/
+            
+            var encounterConfig = InitializeEncounter(encounterRequest);
 
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
-                EncounterType = encounterRequest.EncounterType,
-                EncounterLength = length
+                EncounterConfig = encounterConfig
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID,
-                EncounterType = encounterRequest.EncounterType,
-                EncounterLength = length
+                EncounterConfig = encounterConfig
             });
 
-            this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
+            this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         } else if (canSendNotif) {
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
                 PlayerID = this.Player.ID,
-                EncounterType = encounterRequest.EncounterType
+                EncounterConfig = new EncounterConfig() {
+                    Type = encounterType
+                }
             });
         }
 
         Task.Run(async () => {
             await Task.Delay(5000);
-            this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
+            this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         });
+    }
+
+    private EncounterConfig InitializeEncounter(ServerboundEncounterRequest encounterRequest) {
+        switch (encounterRequest.EncounterConfig.Type) {
+            case EncounterType.GraffitiEncounter:
+                encounterRequest.EncounterConfig.PlayDuration = 120;
+                // TODO: Make this actually based on the number of spots in the stage
+                encounterRequest.EncounterConfig.GraffitiSpots = Enumerable.Range(0, 15).OrderBy(x => Guid.NewGuid()).Take(5).ToArray();
+                break;
+            case EncounterType.ScoreEncounter:
+                encounterRequest.EncounterConfig.PlayDuration = 180;
+                break;
+            case EncounterType.ComboEncounter:
+                encounterRequest.EncounterConfig.PlayDuration = 300;
+                break;
+        }
+
+        return encounterRequest.EncounterConfig;
     }
 
     public string DebugName() {

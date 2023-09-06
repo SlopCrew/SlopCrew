@@ -132,7 +132,7 @@ var packets = new List<NetworkPacket> {
 
     new ServerboundEncounterRequest {
         PlayerID = 42069,
-        EncounterType = EncounterType.ScoreEncounter
+        // encounterType = EncounterType.ScoreEncounter (This needs to be changed but idk how)
     }
 };
 
