@@ -1,5 +1,5 @@
 namespace SlopCrew.Common {
-    public interface IStatefullApp {
+    public interface IStatefulApp {
         string GetLabel();
         void OnStart();
         bool IsBusy();

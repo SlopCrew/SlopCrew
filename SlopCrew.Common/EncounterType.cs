@@ -10,7 +10,7 @@ public enum EncounterType {
 
 public struct Encounter {
     public EncounterType EncounterType;
-    public IStatefullApp? State;
+    public IStatefulApp? State;
 
     public static bool IsStatefullEncounter(EncounterType type) {
         return type switch {

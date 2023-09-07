@@ -10,7 +10,7 @@ using System.Linq;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.Scripts.Race {
-    public class RaceManager : IStatefullApp {
+    public class RaceManager : IStatefulApp {
         private const int MAX_TIME_TO_SHOW_RANKING_SECS = 20;
 
         private IEnumerable<(string? playerName, float time)> rank = new List<(string? playerName, float time)>();
@@ -137,6 +137,7 @@ namespace SlopCrew.Plugin.Scripts.Race {
             var player = WorldHandler.instance.GetCurrentPlayer();
             player.tf.position = currentRaceConfig.StartPosition.ToVector3().ToMentalDeficiency();
             player.motor.SetVelocityTotal(Vector3.zero, Vector3.zero, Vector3.zero);
+            player.StopCurrentAbility();
             player.boostCharge = 0;
 
             ////Respawn all boost pickups

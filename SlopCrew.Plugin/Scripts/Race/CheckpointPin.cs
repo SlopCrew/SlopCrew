@@ -8,7 +8,7 @@ namespace SlopCrew.Plugin.Scripts.Race {
         public MapPin Pin { get; set; } = new MapPin();
         public UIIndicatorData UIIndicator { get; set; } = new UIIndicatorData();
 
-        private readonly float mAX_DISTANCE = 5000f;
+        private readonly float MAX_DISTANCE = 5000f;
 
         public void UpdateUIIndicator() {
             if (UIIndicator is null || !UIIndicator.isActive) {
@@ -25,7 +25,7 @@ namespace SlopCrew.Plugin.Scripts.Race {
 
                 var camPosition = realTf.position;
                 var direction = uIIndicatorPos - camPosition;
-                if (Physics.Raycast(camPosition, direction, out var hitInfo, mAX_DISTANCE, currentPlayer.uiIndicatorOcclusionLayerMask, QueryTriggerInteraction.Collide)) {
+                if (Physics.Raycast(camPosition, direction, out var hitInfo, MAX_DISTANCE, currentPlayer.uiIndicatorOcclusionLayerMask, QueryTriggerInteraction.Collide)) {
                     UIIndicator.isOccluded = hitInfo.collider.transform != UIIndicator.trans;
                 }
 
