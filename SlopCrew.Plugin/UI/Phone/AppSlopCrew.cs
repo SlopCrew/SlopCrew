@@ -74,7 +74,7 @@ public class AppSlopCrew : App {
         if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
 
         var nextEncounter = encounterTypes[nextIndex];
-        if (Plugin.CurrentEncounter != null && Plugin.CurrentEncounter.IsBusy() || encounter.State != null && encounter.State.IsBusy()) {
+        if ((Plugin.CurrentEncounter != null && Plugin.CurrentEncounter.IsBusy()) || (encounter.State != null && encounter.State.IsBusy())) {
             return;
         }
 
@@ -86,7 +86,8 @@ public class AppSlopCrew : App {
         if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
 
         var nextEncounter = encounterTypes[nextIndex];
-        if (Plugin.CurrentEncounter != null && Plugin.CurrentEncounter.IsBusy() || encounter.State != null && encounter.State.IsBusy()) {
+
+        if ((Plugin.CurrentEncounter != null && Plugin.CurrentEncounter.IsBusy()) || (encounter.State != null && encounter.State.IsBusy())) {
             return;
         }
 
@@ -130,14 +131,15 @@ public class AppSlopCrew : App {
 
         if (this.encounter.State != null) {
             this.Label.text = this.encounter.State.GetLabel();
-
-            if (Plugin.CurrentEncounter?.IsBusy() == true) {
-                this.Label.text = "glhf";
-                return;
-            }
-
-            HandleStatelessEncounter(me);
+            return;
         }
+
+        if (Plugin.CurrentEncounter?.IsBusy() == true) {
+            this.Label.text = "glhf";
+            return;
+        }
+
+        HandleStatelessEncounter(me);
     }
 
     private void HandleStatelessEncounter(Reptile.Player me) {
