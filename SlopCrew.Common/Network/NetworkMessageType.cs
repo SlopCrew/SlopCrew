@@ -22,5 +22,7 @@ public enum NetworkMessageType {
     ServerboundEncounterRequest,
     
     // down here rn to have backwards-compat
-    ClientboundEncounterRequest
+    ClientboundEncounterRequest,
+    ServerboundGraffitiPaint,
+    ClientboundGraffitiPaint
 }

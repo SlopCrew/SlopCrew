@@ -9,6 +9,7 @@ using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
 using Player = Reptile.Player;
+using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
@@ -33,6 +34,7 @@ public class PlayerManager : IDisposable {
 
     private int scoreUpdateCooldown = 10;
     public (int, int, int) LastScoreAndMultiplier = (0, 0, 0);
+    public int GraffitiCount = 0;
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -229,16 +231,18 @@ public class PlayerManager : IDisposable {
 
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
         if (Plugin.CurrentEncounter?.IsBusy() == true) return;
-        Plugin.CurrentEncounter = encounterStart.EncounterType switch {
+        Plugin.CurrentEncounter = encounterStart.EncounterConfig.Type switch {
             EncounterType.ComboEncounter => new SlopComboEncounter(),
             EncounterType.ScoreEncounter => new SlopScoreEncounter(),
+            EncounterType.GraffitiEncounter => new SlopGraffitiEncounter(),
             _ => null
         };
 
-        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterLength);
+        Plugin.CurrentEncounter?.Start(encounterStart);
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
+        Plugin.Log.LogInfo("Received encounter request...");
         Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
 

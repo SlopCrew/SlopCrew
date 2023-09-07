@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Reptile;
+using Reptile.Phone;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using UnityEngine;
@@ -81,6 +82,36 @@ public class PlayerPatch {
     }
 
     [HarmonyPostfix]
+    [HarmonyPatch("FixedUpdatePlayer")]
+    public static void FixedUpdatePlayer(Player __instance) {
+        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+
+        if (associatedPlayer is null) {
+            float num = float.MaxValue;
+            SlopGraffitiSpot? graffitiSpot1 = null;
+            foreach (SlopGraffitiSpot graffitiSpot2 in Plugin.SlopGraffitiSpotsAvailable)
+            {
+                if (graffitiSpot2 != null)
+                {
+                    float magnitude = (__instance.transform.position - graffitiSpot2.transform.position).magnitude;
+
+                    if (magnitude < num)
+                    {
+                        num = magnitude;
+                        graffitiSpot1 = graffitiSpot2;
+                    }
+                }
+            }
+            if (graffitiSpot1 is null) return;
+            if (__instance.preSprayButtonHeld && !__instance.sprayButtonHeld || __instance.sprayButtonNew) {
+                __instance.StartGraffitiMode(graffitiSpot1.OriginalGraffitiSpot);
+                Plugin.TargetedGraffitiSpot = graffitiSpot1;
+            }
+            Plugin.SlopGraffitiSpotsAvailable.Clear();
+        }
+    }
+    
+    [HarmonyPostfix]
     [HarmonyPatch("UpdatePlayer")]
     public static void UpdatePlayer(Player __instance) {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
@@ -101,7 +132,8 @@ public class PlayerPatch {
                     // Calculate time to next target position
                     var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
                                    Constants.TickRate;
-                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) / 1000f / 2f;
+                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) /
+                                  1000f / 2f;
                     associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
             }
@@ -130,6 +162,20 @@ public class PlayerPatch {
     [HarmonyPatch("OnTriggerStay")]
     public static bool OnTriggerStay(Player __instance, Collider other) {
         var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance);
+        if (associatedPlayer is null) {
+            var slopGraffitiSpot = other.gameObject.GetComponentInParent<SlopGraffitiSpot>();
+
+            if (other.gameObject.CompareTag("GraffitiSpot") && slopGraffitiSpot is not null && slopGraffitiSpot.firstTime) {
+                var uiManager = Core.Instance.UIManager;
+                var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+                var player = Traverse.Create(__instance);
+                
+                player.Field("graffitiContextAvailable").SetValue(10);
+                gameplay.ShowContextLabelUI();
+                Plugin.SlopGraffitiSpotsAvailable.Add(slopGraffitiSpot);
+                return false;
+            }
+        }
         return associatedPlayer == null;
     }
 
@@ -144,7 +190,7 @@ public class PlayerPatch {
             var characterVisual = trPlr.Field<CharacterVisual>("characterVisual").Value;
             var anim = trPlr.Field<Animator>("anim").Value;
 
-            // this is basically copy pasted from a decompile, lol, lmao, etc
+            // __instance is basically copy pasted from a decompile, lol, lmao, etc
             var dt = Core.dt;
 
             if (associatedPlayer.PhoneOut) {

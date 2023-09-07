@@ -7,15 +7,15 @@ public class ClientboundEncounterRequest : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ClientboundEncounterRequest;
 
     public uint PlayerID;
-    public EncounterType EncounterType;
+    public EncounterConfig EncounterConfig;
 
     public override void Read(BinaryReader br) {
         this.PlayerID = br.ReadUInt32();
-        this.EncounterType = (EncounterType) br.ReadInt32();
+        this.EncounterConfig = EncounterConfig.ReadWithType(br);
     }
 
     public override void Write(BinaryWriter bw) {
         bw.Write(this.PlayerID);
-        bw.Write((int) this.EncounterType);
+        this.EncounterConfig.Write(bw);
     }
 }

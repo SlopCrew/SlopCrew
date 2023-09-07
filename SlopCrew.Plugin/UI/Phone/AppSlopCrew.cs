@@ -21,7 +21,8 @@ public class AppSlopCrew : App {
 
     private List<EncounterType> encounterTypes = new() {
         EncounterType.ScoreEncounter,
-        EncounterType.ComboEncounter
+        EncounterType.ComboEncounter,
+        EncounterType.GraffitiEncounter
     };
 
     private bool notifInitialized;
@@ -74,11 +75,23 @@ public class AppSlopCrew : App {
         if (Plugin.CurrentEncounter?.IsBusy() == true) return false;
         if (this.HasBannedMods()) return false;
 
+        Plugin.Log.LogInfo("Sending encounter request " + this.encounterType);
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
-            EncounterType = this.encounterType
+            EncounterConfig = this.encounterType switch {
+                EncounterType.ScoreEncounter => new ScoreEncounterConfig(),
+                EncounterType.ComboEncounter => new ComboEncounterConfig(),
+                EncounterType.GraffitiEncounter => new GraffitiEncounterConfig()
+            }
         });
         return true;
+    }
+
+    private void ConfirmEncounterRequest(EncounterConfig receivedConfig) {
+        Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
+            PlayerID = this.nearestPlayer.SlopPlayer.ID,
+            EncounterConfig = receivedConfig
+        });
     }
 
     public override void OnAppUpdate() {
@@ -113,7 +126,8 @@ public class AppSlopCrew : App {
         } else {
             var modeName = this.encounterType switch {
                 EncounterType.ScoreEncounter => "score",
-                EncounterType.ComboEncounter => "combo"
+                EncounterType.ComboEncounter => "combo",
+                EncounterType.GraffitiEncounter => "graffiti"
             };
 
             var filteredName = PlayerNameFilter.DoFilter(this.nearestPlayer.SlopPlayer.Name);
@@ -147,12 +161,12 @@ public class AppSlopCrew : App {
     public override void OpenContent(AUnlockable unlockable, bool appAlreadyOpen) {
         if (Plugin.PhoneInitializer.LastRequest is not null) {
             var request = Plugin.PhoneInitializer.LastRequest;
-            this.encounterType = request.EncounterType;
+            this.encounterType = request.EncounterConfig.Type;
 
             if (Plugin.PlayerManager.Players.TryGetValue(request.PlayerID, out var player)) {
                 this.nearestPlayer = player;
                 if (Plugin.SlopConfig.StartEncountersOnRequest.Value) {
-                    this.SendEncounterRequest();
+                    this.ConfirmEncounterRequest(request.EncounterConfig);
                 } else {
                     this.playerLocked = true;
                     Task.Run(() => {

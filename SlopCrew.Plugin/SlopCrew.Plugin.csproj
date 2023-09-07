@@ -82,6 +82,10 @@
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="EasyDecal">
+            <HintPath>$(ManagedPath)/EasyDecal.Runtime.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>

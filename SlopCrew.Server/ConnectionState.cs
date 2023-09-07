@@ -82,6 +82,10 @@ public class ConnectionState {
                     this.HandleEncounterRequest(encounterRequest);
                 }
                 break;
+            
+            case ServerboundGraffitiPaint graffitiPaint:
+                this.HandleGraffitiPaint(graffitiPaint);
+                break;
         }
     }
 
@@ -168,6 +172,8 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
+        var encounterType = encounterRequest.EncounterConfig.Type;
+        Log.Information("Received encounter request from {Player} for {EncounterType}", this.DebugName(), encounterType);
         var module = Server.Instance.Module;
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
@@ -179,54 +185,53 @@ public class ConnectionState {
 
         Log.Information("{Player} wants to encounter {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
 
-        if (!otherPlayer.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType] = new();
-        if (!this.EncounterRequests.ContainsKey(encounterRequest.EncounterType))
-            this.EncounterRequests[encounterRequest.EncounterType] = new();
+        if (!otherPlayer.EncounterRequests.ContainsKey(encounterType))
+            otherPlayer.EncounterRequests[encounterType] = new();
+        if (!this.EncounterRequests.ContainsKey(encounterType))
+            this.EncounterRequests[encounterType] = new();
 
         var canSendNotif = false;
-        if (!otherPlayer.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Add(this.Player!.ID);
+        if (!otherPlayer.EncounterRequests[encounterType].Contains(otherPlayer.Player.ID)) {
+            otherPlayer.EncounterRequests[encounterType].Add(this.Player!.ID);
             // Only let people send it once every 5s
             canSendNotif = true;
         }
 
-        if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
+        if (this.EncounterRequests[encounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
-
-            var encounterConfig = Server.Instance.Config.Encounters;
-            var length = encounterRequest.EncounterType switch {
-                EncounterType.ScoreEncounter => encounterConfig.ScoreDuration,
-                EncounterType.ComboEncounter => encounterConfig.ComboDuration,
-                _ => 90
-            };
 
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
-                EncounterType = encounterRequest.EncounterType,
-                EncounterLength = length
+                EncounterConfig = encounterRequest.EncounterConfig
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID,
-                EncounterType = encounterRequest.EncounterType,
-                EncounterLength = length
+                EncounterConfig = encounterRequest.EncounterConfig
             });
 
-            this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
+            this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         } else if (canSendNotif) {
+            Log.Information("Sending encounter notification to: {Player}", this.DebugName());
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
                 PlayerID = this.Player.ID,
-                EncounterType = encounterRequest.EncounterType
+                EncounterConfig = encounterRequest.EncounterConfig
             });
         }
 
         Task.Run(async () => {
             await Task.Delay(5000);
-            this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
-            otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
+            this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
+            otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         });
+    }
+    
+    private void HandleGraffitiPaint(ServerboundGraffitiPaint graffitiPaint) {
+        Log.Information("Received graffiti paint from {Player}", this.DebugName());
+        
+        var module = Server.Instance.Module;
+        
     }
 
     public string DebugName() {
