@@ -20,6 +20,8 @@ public class ConnectionState {
     public ClientboundPlayerScoreUpdate? QueuedScoreUpdate;
     public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
 
+    public ClientboundPlayerScoreUpdate? LastScoreUpdate;
+
     public IWebSocketContext Context;
     public object SendLock;
 
@@ -245,6 +247,7 @@ public class ConnectionState {
 
         if (this.QueuedScoreUpdate is not null) {
             module.BroadcastInStage(this.Context, this.QueuedScoreUpdate);
+            this.LastScoreUpdate = this.QueuedScoreUpdate;
             this.QueuedScoreUpdate = null;
         }
 

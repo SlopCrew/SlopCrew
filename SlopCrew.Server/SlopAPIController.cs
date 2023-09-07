@@ -23,9 +23,18 @@ public class SlopAPIController : WebApiController {
         var result = new List<dynamic>();
         foreach (var connection in connections) {
             var player = connection.Player;
+            var scoreUpdate = connection.LastScoreUpdate;
             result.Add(new {
                 name = player?.Name,
-                stage = player?.Stage
+                id = player?.ID,
+                stage = player?.Stage,
+                score = scoreUpdate is null
+                            ? null
+                            : new {
+                                points = scoreUpdate.Score,
+                                baseScore = scoreUpdate.BaseScore,
+                                multiplier = scoreUpdate.Multiplier
+                            }
             });
         }
 
