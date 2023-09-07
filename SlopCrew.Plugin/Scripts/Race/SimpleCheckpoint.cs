@@ -32,8 +32,6 @@ namespace SlopCrew.Plugin.Scripts {
                 return;
             }
 
-            Plugin.Log.LogInfo($"Checkpoint reached {other.name}");
-
             var res = Plugin.RaceManager.OnCheckpointReached(mapPin);
             if (res) {
                 isTriggered = true;

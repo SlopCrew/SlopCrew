@@ -168,7 +168,6 @@ namespace SlopCrew.Plugin.Scripts.Race {
         public bool OnCheckpointReached(MapPin mapPin) {
             var currentCheckpointPin = checkpointPins.Peek();
             if (currentCheckpointPin.Pin != mapPin) {
-                Plugin.Log.LogInfo("Wrong checkpoint ?");
                 return false;
             }
 
@@ -237,6 +236,8 @@ namespace SlopCrew.Plugin.Scripts.Race {
             gameplayUI.timeLimitLabel.text = "";
 
             Mapcontroller.Instance.UpdateOriginalPins(true);
+            var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
+            currentPlayer.normalBoostSpeed = RaceVelocityModifier.OriginalBoostSpeedTarget;
         }
 
 

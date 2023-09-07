@@ -8,12 +8,13 @@ namespace SlopCrew.Plugin.Scripts {
         //aka how many times the number of trick needed to affect speed
 
         private const int RACE_TRICK_MULTIPLIER = 5;
-        private float originalBoostSpeedTarget = 0f;
+        private static float originalBoostSpeedTarget = 0f;
         private float originalGrindSpeedMultiplier = 10;
 
         public static float BoostSpeedTarget { get; internal set; } = 0f;
         public static float GrindSpeedTarget { get; internal set; } = 0f;
 
+        public static float OriginalBoostSpeedTarget => originalBoostSpeedTarget;
 
         public void Awake() {
             DontDestroyOnLoad(gameObject);
