@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Reptile;
+using UnityEngine;
 
 namespace SlopCrew.Plugin.Patches; 
 
@@ -48,5 +49,18 @@ public class AnimationEventRelayPatch {
     public static bool DeactivateUpperBodyCollider_Patch(AnimationEventRelay __instance) {
         var player = Traverse.Create(__instance).Field("player").GetValue<Player>();
         return player == WorldHandler.instance?.GetCurrentPlayer();
+    }
+
+    // *Don't* only play if this.player == WorldHandler.instance?.GetCurrentPlayer()
+    // because that makes it so that fake-player NPCs don't play sounds and that's not immersive ~Sylvie
+    
+    // This method isn't getting hit! Why??
+    [HarmonyPrefix]
+    [HarmonyPatch("PlaySound")]
+    public static bool PlaySound_Patch(AnimationEventRelay __instance, AnimationEvent animationEvent) {
+        var player = Traverse.Create(__instance).Field("player").GetValue<Player>();
+        var style = Traverse.Create(player).Field("movestyleAudioCurrent").GetValue<MoveStyle>();
+        Plugin.Log.LogDebug($"Player move style is '{style}'.");
+        return true; // TODO: actually fix the bug
     }
 }
