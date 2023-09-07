@@ -79,6 +79,10 @@ public class ConnectionState {
                     this.HandleEncounterRequest(encounterRequest);
                 }
                 break;
+            
+            case ServerboundGraffitiPaint graffitiPaint:
+                this.HandleGraffitiPaint(graffitiPaint);
+                break;
         }
     }
 
@@ -193,13 +197,6 @@ public class ConnectionState {
         if (this.EncounterRequests[encounterType].Contains(otherPlayer.Player.ID)) {
             Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
 
-            /*var encounterConfig = Server.Instance.Config.Encounters;
-            var length = encounterType switch {
-                EncounterType.ScoreEncounter => encounterConfig.ScoreDuration,
-                EncounterType.ComboEncounter => encounterConfig.ComboDuration,
-                _ => 90
-            };*/
-
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
                 EncounterConfig = encounterRequest.EncounterConfig
@@ -225,6 +222,13 @@ public class ConnectionState {
             this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         });
+    }
+    
+    private void HandleGraffitiPaint(ServerboundGraffitiPaint graffitiPaint) {
+        Log.Information("Received graffiti paint from {Player}", this.DebugName());
+        
+        var module = Server.Instance.Module;
+        
     }
 
     public string DebugName() {

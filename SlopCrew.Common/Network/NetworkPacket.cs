@@ -33,7 +33,8 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ServerboundPositionUpdate, () => new ServerboundPositionUpdate()},
             {NetworkMessageType.ServerboundScoreUpdate, () => new ServerboundScoreUpdate()},
             {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
-            {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()}
+            {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()},
+            {NetworkMessageType.ServerboundGraffitiPaint, () => new ServerboundGraffitiPaint()}
         };
 
     public static NetworkPacket Read(byte[] data) {

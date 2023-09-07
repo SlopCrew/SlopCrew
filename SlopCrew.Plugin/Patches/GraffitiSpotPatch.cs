@@ -2,6 +2,7 @@
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
 using UnityEngine;
 using Player = Reptile.Player;
