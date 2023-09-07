@@ -54,6 +54,7 @@ public class SlopEncounter {
         this.TurnOffScoreUI();
         this.Opponent = null;
         this.slopEncounterState = SlopEncounterState.Stopped;
+        this.EncounterCleanUp();
     }
 
     private void Update() {
@@ -137,7 +138,9 @@ public class SlopEncounter {
         this.Stopwatch.Restart();
     }
 
-    public virtual void EncounterUpdate() { }
+    public virtual void EncounterUpdate() {}
+    
+    public virtual void EncounterCleanUp() {}
 
     // Stolen from Reptile code
     private string NiceTimerString(double timer) {

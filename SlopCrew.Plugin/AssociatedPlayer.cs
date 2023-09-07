@@ -20,6 +20,7 @@ public class AssociatedPlayer {
     public int Multiplier;
     public bool PhoneOut;
     public Player.SpraycanState SpraycanState;
+    public int GraffitiCount;
 
     public Queue<Transform> TransformUpdates = new();
     public Transform TargetTransform;

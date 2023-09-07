@@ -165,7 +165,8 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
-        EncounterType encounterType = encounterRequest.EncounterConfig.Type;
+        var encounterType = encounterRequest.EncounterConfig.Type;
+        Log.Information("Received encounter request from {Player} for {EncounterType}", this.DebugName(), encounterType);
         var module = Server.Instance.Module;
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
@@ -198,8 +199,6 @@ public class ConnectionState {
                 EncounterType.ComboEncounter => encounterConfig.ComboDuration,
                 _ => 90
             };*/
-            
-            var encounterConfig = InitializeEncounter(encounterRequest);
 
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
@@ -214,6 +213,7 @@ public class ConnectionState {
             this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         } else if (canSendNotif) {
+            Log.Information("Sending encounter notification to: {Player}", this.DebugName());
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
                 PlayerID = this.Player.ID,
                 EncounterConfig = encounterRequest.EncounterConfig
@@ -225,28 +225,6 @@ public class ConnectionState {
             this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterType].Remove(this.Player.ID);
         });
-    }
-
-    private EncounterConfig InitializeEncounter(ServerboundEncounterRequest encounterRequest) {
-        switch (encounterRequest.EncounterConfig.Type) {
-            case EncounterType.GraffitiEncounter:
-                encounterRequest.EncounterConfig.PlayDuration = 120;
-                // TODO: Make this actually based on the number of spots in the stage
-                if (encounterRequest.EncounterConfig is GraffitiEncounterConfig graffitiConfig) {
-                    graffitiConfig.GraffitiSpots =
-                        Enumerable.Range(0, 15).OrderBy(x => Guid.NewGuid()).Take(5).ToArray();
-                    return graffitiConfig;
-                }
-                break;
-            case EncounterType.ScoreEncounter:
-                encounterRequest.EncounterConfig.PlayDuration = 180;
-                break;
-            case EncounterType.ComboEncounter:
-                encounterRequest.EncounterConfig.PlayDuration = 300;
-                break;
-        }
-
-        return encounterRequest.EncounterConfig;
     }
 
     public string DebugName() {

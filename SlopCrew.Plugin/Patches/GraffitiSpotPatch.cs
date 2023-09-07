@@ -34,4 +34,29 @@ public class GraffitiSpotPatch {
 
         return true;
     }
+    
+    [HarmonyPrefix]
+    [HarmonyPatch("SpawnRep")]
+    public static bool SpawnRep(GraffitiSpot __instance) {
+        if (Plugin.CurrentEncounter is SlopGraffitiEncounter) {
+            
+            Plugin.Log.LogInfo("SKIPPING SPAWNREP BECAUSE WE ARE IN SLOP GRAFFITI ENCOUNTER");
+            return false;
+        }
+
+        return true;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch("SetState")]
+    public static bool SetState(GraffitiSpot __instance, GraffitiState setState) {
+        if (Plugin.CurrentEncounter is SlopGraffitiEncounter) {
+
+            if (setState == GraffitiState.FINISHED)
+                Traverse.Create(__instance).Field<bool>("inGraffitiMode").Value = false;
+            return false;
+        }
+
+        return true;
+    }
 }

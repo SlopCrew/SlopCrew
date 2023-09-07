@@ -165,7 +165,7 @@ public class PlayerPatch {
         if (associatedPlayer is null) {
             var slopGraffitiSpot = other.gameObject.GetComponentInParent<SlopGraffitiSpot>();
 
-            if (other.gameObject.CompareTag("GraffitiSpot") && slopGraffitiSpot is not null) {
+            if (other.gameObject.CompareTag("GraffitiSpot") && slopGraffitiSpot is not null && slopGraffitiSpot.firstTime) {
                 var uiManager = Core.Instance.UIManager;
                 var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
                 var player = Traverse.Create(__instance);

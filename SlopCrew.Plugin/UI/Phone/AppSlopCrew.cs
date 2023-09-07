@@ -75,6 +75,7 @@ public class AppSlopCrew : App {
         if (Plugin.CurrentEncounter?.IsBusy() == true) return false;
         if (this.HasBannedMods()) return false;
 
+        Plugin.Log.LogInfo("Sending encounter request " + this.encounterType);
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
             EncounterConfig = this.encounterType switch {

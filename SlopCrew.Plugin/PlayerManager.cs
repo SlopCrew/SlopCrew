@@ -34,8 +34,7 @@ public class PlayerManager : IDisposable {
 
     private int scoreUpdateCooldown = 10;
     public (int, int, int) LastScoreAndMultiplier = (0, 0, 0);
-
-    private SlopGraffitiEncounter sloppy;
+    public int GraffitiCount = 0;
 
     public PlayerManager() {
         Core.OnUpdate += this.Update;
@@ -85,17 +84,6 @@ public class PlayerManager : IDisposable {
         if (this.IsResetQueued) {
             this.IsResetQueued = false;
             this.Reset();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Y)) {
-            this.sloppy = new SlopGraffitiEncounter();
-            Plugin.CurrentEncounter = this.sloppy;
-            this.sloppy.Start();
-        }
-
-        if (Input.GetKeyDown(KeyCode.U)) {
-            this.sloppy.CleanUp();
-            Plugin.CurrentEncounter = null;
         }
     }
 
@@ -250,6 +238,7 @@ public class PlayerManager : IDisposable {
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
+        Plugin.Log.LogInfo("Received encounter request...");
         Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
 
