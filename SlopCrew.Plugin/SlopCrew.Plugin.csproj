@@ -16,13 +16,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
-        <PackageReference Include="BepInEx.Core" Version="5.*"/>
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all"/>
-        <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.*" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
 
-        <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11"/>
+        <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -78,6 +78,10 @@
             <HintPath>$(ManagedPath)/UnityEngine.InputLegacyModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule">
+            <HintPath>$(ManagedPath)/UnityEngine.TextRenderingModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="DOTween">
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>
@@ -91,15 +95,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Ignore Include="res\**"/>
-        <EmbeddedResource Include="res\**"/>
+        <Ignore Include="res\**" />
+        <EmbeddedResource Include="res\**" />
     </ItemGroup>
 
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec
-            Command="xcopy /Y /I &quot;$(TargetDir)&quot; &quot;$(BRCPath)/BepInEx/plugins/SlopCrew&quot;"
-            Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'"
-        />
+        <Exec Command="xcopy /Y /I &quot;$(TargetDir)&quot; &quot;$(BRCPath)/BepInEx/plugins/SlopCrew&quot;" Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'" />
     </Target>
 </Project>

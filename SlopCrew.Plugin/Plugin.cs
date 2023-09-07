@@ -1,10 +1,12 @@
-﻿using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
 using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.Scripts.Race;
 using SlopCrew.Plugin.UI.Phone;
+using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace SlopCrew.Plugin;
@@ -20,9 +22,18 @@ public class Plugin : BaseUnityPlugin {
     public static CharacterInfoManager CharacterInfoManager = null!;
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
+    public static RaceManager RaceManager = null!;
     public static SlopCrewAPI API = null!;
     public static SlopEncounter? CurrentEncounter;
     public static PhoneInitializer PhoneInitializer = null!;
+
+    private static int shouldIgnoreInput = 0;
+
+    public static bool ShouldIgnoreInput {
+        get => Interlocked.CompareExchange(ref shouldIgnoreInput, 0, 0) == 1;
+        set => Interlocked.Exchange(ref shouldIgnoreInput, value ? 1 : 0);
+    }
+
 
     private void Awake() {
         Log = this.Logger;
@@ -38,6 +49,7 @@ public class Plugin : BaseUnityPlugin {
         CharacterInfoManager = new();
         NetworkConnection = new();
         PlayerManager = new();
+        RaceManager = new();
         PhoneInitializer = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };

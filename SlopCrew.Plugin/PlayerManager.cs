@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
@@ -8,6 +5,9 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
 
@@ -277,12 +277,29 @@ public class PlayerManager : IDisposable {
                 this.HandlePlayerVisualUpdate(playerVisualUpdate);
                 break;
 
+            case ClientboundEncounterRequest encounterRequest:
+                this.HandleEncounterRequest(encounterRequest);
+                break;
             case ClientboundEncounterStart encounterStart:
                 this.HandleEncounterStart(encounterStart);
                 break;
-
-            case ClientboundEncounterRequest encounterRequest:
-                this.HandleEncounterRequest(encounterRequest);
+            case ClientboundRequestRace clientboundRequestRace:
+                this.HandleRequestRace(clientboundRequestRace);
+                break;
+            case ClientboundRaceAborted _:
+                this.HandleRaceAborted();
+                break;
+            case ClientboundRaceInitialize _:
+                this.HandleRaceInitialize(); //TODO: May be sent the race id to match if we got the correct msg
+                break;
+            case ClientboundRaceStart _:
+                this.HandleRaceStart();
+                break;
+            case ClientboundRaceRank clientboundRaceRank:
+                this.HandleRaceRank(clientboundRaceRank);
+                break;
+            case ClientboundRaceForcedToFinish clientboundRaceForcedToFinish:
+                this.HandleRaceForcedToFinish(clientboundRaceForcedToFinish);
                 break;
         }
     }
@@ -400,6 +417,30 @@ public class PlayerManager : IDisposable {
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
+    }
+
+    private void HandleRequestRace(ClientboundRequestRace clientboundRequestRace) {
+        Plugin.RaceManager!.OnRaceRequestResponse(clientboundRequestRace.Response, clientboundRequestRace.RaceConfig, clientboundRequestRace.InitializedTime);
+    }
+
+    private void HandleRaceAborted() {
+        Plugin.RaceManager!.OnRaceAborted();
+    }
+
+    private void HandleRaceInitialize() {
+        Plugin.RaceManager!.OnRaceInitialize();
+    }
+
+    private void HandleRaceStart() {
+        Plugin.RaceManager!.OnRaceStart();
+    }
+
+    private void HandleRaceRank(ClientboundRaceRank clientboundRaceRank) {
+        Plugin.RaceManager!.OnRaceRank(clientboundRaceRank.Rank);
+    }
+
+    private void HandleRaceForcedToFinish(ClientboundRaceForcedToFinish clientboundRaceForcedToFinish) {
+        Plugin.RaceManager!.OnRaceRank(clientboundRaceForcedToFinish.Rank);
     }
 
     public void PlayAnimation(int anim, bool forceOverwrite, bool instant, float atTime) {

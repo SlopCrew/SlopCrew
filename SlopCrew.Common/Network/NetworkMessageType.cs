@@ -11,7 +11,15 @@ public enum NetworkMessageType {
     ClientboundPlayerVisualUpdate,
     ClientboundPong,
     ClientboundSync,
+    ClientboundEncounterRequest,
     ClientboundEncounterStart,
+    ClientboundRequestRace,
+    ClientboundRaceAborted,
+    ClientboundRaceInitialize,
+    ClientboundRaceStart,
+    ClientboundRaceRank,
+    ClientboundRaceForcedToFinish,
+    // will potentially be merged with the encounter packets?
 
     ServerboundAnimation,
     ServerboundPing,
@@ -20,7 +28,7 @@ public enum NetworkMessageType {
     ServerboundScoreUpdate,
     ServerboundVisualUpdate,
     ServerboundEncounterRequest,
-    
-    // down here rn to have backwards-compat
-    ClientboundEncounterRequest
+    ServerboundReadyForRace,
+    ServerboundFinishedRace
+    // will potentially be merged with the encounter packets?
 }

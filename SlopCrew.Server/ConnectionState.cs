@@ -1,12 +1,12 @@
-using System.Net.WebSockets;
+using EmbedIO.WebSockets;
+using Serilog;
 using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using SlopCrew.Server.Race;
 using System.Security.Cryptography;
 using System.Text;
-using EmbedIO.WebSockets;
-using Serilog;
 
 namespace SlopCrew.Server;
 
@@ -35,13 +35,13 @@ public class ConnectionState {
         // These packets get processed when player is null
         switch (msg) {
             case ServerboundVersion version: {
-                if (version.Version != Constants.NetworkVersion) {
-                    this.Context.WebSocket.CloseAsync();
-                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
-                                version.Version, Constants.NetworkVersion);
+                    if (version.Version != Constants.NetworkVersion) {
+                        this.Context.WebSocket.CloseAsync();
+                        Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                    version.Version, Constants.NetworkVersion);
+                    }
+                    return;
                 }
-                return;
-            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
@@ -78,6 +78,12 @@ public class ConnectionState {
                 lock (Server.Instance.Module.Connections) {
                     this.HandleEncounterRequest(encounterRequest);
                 }
+                break;
+            case ServerboundReadyForRace serverboundReadyForRace:
+                this.HandleReadyForRace(serverboundReadyForRace);
+                break;
+            case ServerboundFinishedRace serverboundFinishedRace:
+                this.HandleFinishedRace(serverboundFinishedRace);
                 break;
         }
     }
@@ -170,7 +176,21 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
+        if (Encounter.IsStatefullEncounter(encounterRequest.EncounterType)) {
+            switch (encounterRequest.EncounterType) {
+                case EncounterType.RaceEncounter:
+                    HandleRequestRace();
+                    break;
+                default:
+                    Log.Debug("Encounter type {EncounterType} is not implemented with backend specifity", encounterRequest.EncounterType);
+                    break;
+            }
+
+            return;
+        }
+
         var module = Server.Instance.Module;
+
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
         var otherPlayer = Server.Instance.GetConnections()
@@ -229,6 +249,50 @@ public class ConnectionState {
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
         });
+    }
+
+    private void HandleRequestRace() {
+        if (Player == null) {
+            return;
+        }
+
+        Log.Information($"New race request from {Player.ID}");
+
+        (var initializedTime, var newRaceConf) = RacerManager.Instance.GetARace(Player);
+
+        if (newRaceConf != null) {
+            Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
+                Response = true,
+                RaceConfig = newRaceConf,
+                InitializedTime = initializedTime.ToString()
+            });
+        } else {
+            Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
+                Response = false,
+                RaceConfig = new Common.Race.RaceConfig(),
+                InitializedTime = ""
+            });
+        }
+    }
+
+    private void HandleReadyForRace(ServerboundReadyForRace serverboundReadyForRace) {
+        if (Player == null) {
+            return;
+        }
+
+        Log.Information($"Player {Player.ID} ready for his race");
+
+        RacerManager.Instance.MarkPlayerReady(Player.ID);
+    }
+
+    private void HandleFinishedRace(ServerboundFinishedRace serverboundFinishedRace) {
+        if (Player == null) {
+            return;
+        }
+
+        RacerManager.Instance.AddPlayerTime(Player.ID, serverboundFinishedRace.Time);
+
+        Log.Information($"{Player.ID} finished his race with a time {serverboundFinishedRace.Time}");
     }
 
     public string DebugName() {
