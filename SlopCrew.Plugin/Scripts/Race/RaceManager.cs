@@ -137,7 +137,6 @@ namespace SlopCrew.Plugin.Scripts.Race {
             var player = WorldHandler.instance.GetCurrentPlayer();
             player.tf.position = currentRaceConfig.StartPosition.ToVector3().ToMentalDeficiency();
             player.motor.SetVelocityTotal(Vector3.zero, Vector3.zero, Vector3.zero);
-            player.tf.LookAt(checkpointPins.Peek().Pin.transform);
             player.boostCharge = 0;
 
             ////Respawn all boost pickups
@@ -287,6 +286,18 @@ namespace SlopCrew.Plugin.Scripts.Race {
 
         public bool HasStarted() {
             return state == RaceState.Racing;
+        }
+
+        public bool IsStarting() {
+            return state == RaceState.Starting;
+        }
+
+        public CheckpointPin? GetNextCheckpointPin() {
+            if (checkpointPins == null || checkpointPins.Count == 0) {
+                return null;
+            }
+
+            return checkpointPins.Peek();
         }
 
         public bool ShouldLoadRaceStageASAP() {

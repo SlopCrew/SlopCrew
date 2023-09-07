@@ -20,12 +20,14 @@ namespace SlopCrew.Server.Race {
         private const int MAX_WAITING_PLAYERS_TO_FINISH_TIME_SECS = 603; //TODO: Configurable may be
 
         private readonly ConcurrentDictionary<Guid, Race> races = new();
+        private static bool IsDebug = false;
 
         public static RacerManager Instance { get => GetInstance(); }
 
         private static RacerManager GetInstance() {
             if (instance == null) {
                 instance = new RacerManager();
+                IsDebug = Server.Instance.Config.Debug;
             }
             return instance;
         }
@@ -40,7 +42,7 @@ namespace SlopCrew.Server.Race {
                         var remainingTime = DateTime.UtcNow - race.Initialized;
 
                         if (remainingTime > TimeSpan.FromSeconds(MAX_WAITING_JOINING_TIME_FOR_SECS)) {
-                            if (race.Players.Count() < 2) {
+                            if (race.Players.Count() < 2 && !IsDebug) {
                                 Log.Information($"Race {raceId} has 1 player. Aborting race...");
 
                                 res.RaceAbortedRequests.Add((race!.GetPlayersId(), new ClientboundRaceAborted()));
@@ -65,7 +67,7 @@ namespace SlopCrew.Server.Race {
                         if (remainingWaitingTime > TimeSpan.FromSeconds(MAX_WAITING_PLAYERS_TO_BE_READY_TIME_SECS)
                             || race.ConfirmedPlayers == race.Players.Count) {
 
-                            if (race.Players.Count() < 2) {
+                            if (race.Players.Count() < 2 && !IsDebug) {
                                 Log.Information($"Race {raceId} has 1 player. Aborting race...");
 
                                 res.RaceAbortedRequests.Add((race!.GetPlayersId(), new ClientboundRaceAborted()));
