@@ -77,11 +77,20 @@ public class AppSlopCrew : App {
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer.SlopPlayer.ID,
-            EncounterConfig = new EncounterConfig {
-                Type = this.encounterType
+            EncounterConfig = this.encounterType switch {
+                EncounterType.ScoreEncounter => new ScoreEncounterConfig(),
+                EncounterType.ComboEncounter => new ComboEncounterConfig(),
+                EncounterType.GraffitiEncounter => new GraffitiEncounterConfig()
             }
         });
         return true;
+    }
+
+    private void ConfirmEncounterRequest(EncounterConfig receivedConfig) {
+        Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
+            PlayerID = this.nearestPlayer.SlopPlayer.ID,
+            EncounterConfig = receivedConfig
+        });
     }
 
     public override void OnAppUpdate() {
@@ -156,7 +165,7 @@ public class AppSlopCrew : App {
             if (Plugin.PlayerManager.Players.TryGetValue(request.PlayerID, out var player)) {
                 this.nearestPlayer = player;
                 if (Plugin.SlopConfig.StartEncountersOnRequest.Value) {
-                    this.SendEncounterRequest();
+                    this.ConfirmEncounterRequest(request.EncounterConfig);
                 } else {
                     this.playerLocked = true;
                     Task.Run(() => {

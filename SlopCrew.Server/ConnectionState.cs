@@ -203,12 +203,12 @@ public class ConnectionState {
 
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
-                EncounterConfig = encounterConfig
+                EncounterConfig = encounterRequest.EncounterConfig
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID,
-                EncounterConfig = encounterConfig
+                EncounterConfig = encounterRequest.EncounterConfig
             });
 
             this.EncounterRequests[encounterType].Remove(otherPlayer.Player.ID);
@@ -216,9 +216,7 @@ public class ConnectionState {
         } else if (canSendNotif) {
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterRequest {
                 PlayerID = this.Player.ID,
-                EncounterConfig = new EncounterConfig() {
-                    Type = encounterType
-                }
+                EncounterConfig = encounterRequest.EncounterConfig
             });
         }
 

@@ -91,7 +91,11 @@ var packets = new List<NetworkPacket> {
     },
 
     new ClientboundEncounterStart {
-        PlayerID = 42069
+        PlayerID = 42069,
+        EncounterConfig = new GraffitiEncounterConfig() {
+            PlayDuration = 69,
+            GraffitiSpots = new[] {0, 1, 2, 3, 4}
+        }
     },
 
     new ServerboundPing {
@@ -132,7 +136,10 @@ var packets = new List<NetworkPacket> {
 
     new ServerboundEncounterRequest {
         PlayerID = 42069,
-        // encounterType = EncounterType.ScoreEncounter (This needs to be changed but idk how)
+        EncounterConfig = new GraffitiEncounterConfig() {
+            PlayDuration = 69,
+            GraffitiSpots = new[] {0, 1, 2, 3, 4}
+        }
     }
 };
 

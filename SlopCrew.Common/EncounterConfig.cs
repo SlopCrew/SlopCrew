@@ -3,15 +3,16 @@ using SlopCrew.Common.Network;
 
 namespace SlopCrew.Common; 
 
-public class EncounterConfig : NetworkSerializable {
-    public EncounterType Type;
+public abstract class EncounterConfig : NetworkSerializable {
+    public abstract EncounterType Type { get; }
     public int PlayDuration;
+    
     public static EncounterConfig ReadWithType(BinaryReader br) {
         var type = (EncounterType) br.ReadInt32();
 
-        var config = type switch {
-            EncounterType.ScoreEncounter => new EncounterConfig(),
-            EncounterType.ComboEncounter => new EncounterConfig(),
+        EncounterConfig config = type switch {
+            EncounterType.ScoreEncounter => new ScoreEncounterConfig(),
+            EncounterType.ComboEncounter => new ComboEncounterConfig(),
             EncounterType.GraffitiEncounter => new GraffitiEncounterConfig()
         };
         
@@ -30,8 +31,29 @@ public class EncounterConfig : NetworkSerializable {
     }
 }
 
+public class ScoreEncounterConfig : EncounterConfig {
+    public override EncounterType Type => EncounterType.ScoreEncounter;
+
+    public ScoreEncounterConfig() {
+        this.PlayDuration = 180;
+    }
+}
+
+public class ComboEncounterConfig : EncounterConfig {
+    public override EncounterType Type => EncounterType.ComboEncounter;
+    
+    public ComboEncounterConfig() {
+        this.PlayDuration = 300;
+    }
+}
+
 public class GraffitiEncounterConfig : EncounterConfig {
-    public int[] GraffitiSpots;
+    public override EncounterType Type => EncounterType.GraffitiEncounter;
+    public int[] GraffitiSpots = {0, 1, 2, 3, 4};
+    
+    public GraffitiEncounterConfig() {
+        this.PlayDuration = 120;
+    }
     
     public override void Read(BinaryReader br) {
         base.Read(br);
