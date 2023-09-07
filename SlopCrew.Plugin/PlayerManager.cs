@@ -52,7 +52,9 @@ public class PlayerManager : IDisposable {
 
         this.Players.Values.ToList().ForEach(x => x.FuckingObliterate());
         this.Players.Clear();
-        this.messageQueue.Clear();
+        lock (this.messageQueue) {
+            this.messageQueue.Clear();
+        }
 
         this.lastAnimation = null;
         this.lastPos = Vector3.Zero;
@@ -143,9 +145,11 @@ public class PlayerManager : IDisposable {
     }
 
     private void ProcessMessageQueue() {
-        while (this.messageQueue.Count > 0) {
-            var msg = this.messageQueue.Dequeue();
-            this.OnMessageInternal(msg);
+        lock (this.messageQueue) {
+            while (this.messageQueue.Count > 0) {
+                var msg = this.messageQueue.Dequeue();
+                this.OnMessageInternal(msg);
+            }
         }
     }
 
@@ -239,7 +243,9 @@ public class PlayerManager : IDisposable {
     }
 
     private void OnMessage(NetworkSerializable msg) {
-        this.messageQueue.Enqueue(msg);
+        lock (this.messageQueue) {
+            this.messageQueue.Enqueue(msg);
+        }
     }
 
     private void OnMessageInternal(NetworkSerializable msg) {
