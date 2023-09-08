@@ -231,7 +231,7 @@ public class ConnectionState {
     }
 
     public string DebugName() {
-        var endpoint = this.Context.RemoteEndPoint.ToString();
+        var endpoint = this.Context.Headers.Get("X-Forwarded-For") ?? this.Context.RemoteEndPoint.ToString();
 
         return this.Player != null
                    ? $"{this.Player.Name}({this.Player?.ID})"
@@ -260,12 +260,5 @@ public class ConnectionState {
             module.BroadcastInStage(this.Context, this.QueuedVisualUpdate);
             this.QueuedVisualUpdate = null;
         }
-    }
-
-    public void TonightsBiggestLoser() {
-        var str = this.Player is not null ? this.Player.Name + $" ({this.Player.ID})" : "no player";
-        var ip = this.Context.Headers.Get("X-Forwarded-For") ?? this.Context.RemoteEndPoint.ToString();
-        Log.Information("tonights biggest loser is {PlayerID} {IP}", str, ip);
-        this.Context.WebSocket.CloseAsync();
     }
 }

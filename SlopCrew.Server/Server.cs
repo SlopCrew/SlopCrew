@@ -96,7 +96,7 @@ public class Server {
 
     private void RunTick() {
         // Clean up connections that haven't sent a ping in a long time
-        const int ticksToDisconnect = 10 * 10;
+        const int ticksToDisconnect = 10 * 15;
         var connections = this.GetConnections();
         foreach (var conn in connections) {
             if (conn.DisconnectTicks >= ticksToDisconnect) {
