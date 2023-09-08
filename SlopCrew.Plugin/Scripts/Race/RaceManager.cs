@@ -12,6 +12,9 @@ using UnityEngine;
 namespace SlopCrew.Plugin.Scripts.Race {
     public class RaceManager : IStatefulApp {
         private const int MAX_TIME_TO_SHOW_RANKING_SECS = 20;
+        private const int MAX_TIME_TO_UNFREEZE_PLAYER_INPUT_SECS = 6;
+
+        private int forcedAnimationID = -1;
 
         private IEnumerable<(string? playerName, float time)> rank = new List<(string? playerName, float time)>();
         private RaceState state;
@@ -53,6 +56,10 @@ namespace SlopCrew.Plugin.Scripts.Race {
                         Plugin.ShouldIgnoreInput = false;
                         state = RaceState.Racing;
                         time = 0;
+
+                        var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
+                        Characters character = Traverse.Create(currentPlayer).Field<Characters>("character").Value;
+                        Core.Instance.AudioManager.PlayVoice(character, AudioClipID.VoiceBoostTrick);
                     }
 
                     break;
@@ -65,6 +72,19 @@ namespace SlopCrew.Plugin.Scripts.Race {
                     break;
                 case RaceState.ShowRanking:
                     var remainingTime = DateTime.UtcNow - showRankTime;
+
+                    //This is to force the player to stay in the dance animation for a few seconds
+                    var current = WorldHandler.instance.GetCurrentPlayer();
+                    var currAnim = Traverse.Create(current).Field<int>("curAnim").Value;
+
+                    if (currAnim != forcedAnimationID && forcedAnimationID != -1) {
+                        current.PlayAnim(forcedAnimationID);
+                    }
+
+                    if (remainingTime.Seconds > MAX_TIME_TO_UNFREEZE_PLAYER_INPUT_SECS && Plugin.ShouldIgnoreInput) {
+                        Plugin.ShouldIgnoreInput = false;
+                        forcedAnimationID = -1;
+                    }
 
                     if (remainingTime.Seconds > MAX_TIME_TO_SHOW_RANKING_SECS) {
                         ResetAll();
@@ -88,14 +108,19 @@ namespace SlopCrew.Plugin.Scripts.Race {
                 time = 0;
                 state = RaceState.WaitingForPlayers;
                 willStart = DateTime.Parse(willStartTime);
+
+                Core.Instance.AudioManager.PlaySfx(SfxCollectionID.MenuSfx, AudioClipID.confirm);
             } else {
                 Plugin.Log.LogError("Race request got denied...");
+
+                Core.Instance.AudioManager.PlaySfx(SfxCollectionID.MenuSfx, AudioClipID.cancel);
                 ResetAll();
             }
         }
 
         public void OnRaceAborted() {
             Plugin.Log.LogInfo("Race aborted ! ");
+            Core.Instance.AudioManager.PlaySfx(SfxCollectionID.MenuSfx, AudioClipID.cancel);
 
             ResetAll();
         }
@@ -183,6 +208,8 @@ namespace SlopCrew.Plugin.Scripts.Race {
                     state = RaceState.Finished;
                 }
 
+                Core.Instance.AudioManager.PlaySfx(SfxCollectionID.MenuSfx, AudioClipID.confirm);
+
                 return true;
             }
 
@@ -200,6 +227,27 @@ namespace SlopCrew.Plugin.Scripts.Race {
         public void OnRaceRank(IEnumerable<(string? playerName, float time)> rank) {
             foreach (var (playerName, time) in rank) {
                 Plugin.Log.LogInfo($"{playerName} finished in {time} seconds");
+            }
+
+            (var firstPlayerName, _) = rank.FirstOrDefault();
+            if (!string.IsNullOrEmpty(firstPlayerName)) {
+                var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
+                Characters character = Traverse.Create(currentPlayer).Field<Characters>("character").Value;
+
+                if (firstPlayerName == Plugin.SlopConfig.Username.Value) {
+                    Core.Instance.AudioManager.PlayVoice(character, AudioClipID.VoiceBoostTrick);
+                    forcedAnimationID = currentPlayer.PlayRandomDance();
+                    Plugin.ShouldIgnoreInput = true;
+                    currentPlayer.StopCurrentAbility();
+
+                    //For some reason, using traverse to set the move style doesn't work...
+                    var setMoveStyle = AccessTools.Method("Reptile.Player:SetMoveStyle",
+                                             new[] { typeof(MoveStyle), typeof(bool), typeof(bool), typeof(GameObject) });
+                    setMoveStyle.Invoke(currentPlayer, new object[] { MoveStyle.ON_FOOT, true, true, null });
+
+                } else {
+                    Core.Instance.AudioManager.PlayVoice(character, AudioClipID.VoiceDie);
+                }
             }
 
             this.rank = rank;
