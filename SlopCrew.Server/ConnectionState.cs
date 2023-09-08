@@ -240,7 +240,10 @@ public class ConnectionState {
 
     public void RunTick() {
         var module = Server.Instance.Module;
-        this.DisconnectTicks++;
+
+        if (this.Player is not null) {
+            this.DisconnectTicks++;
+        }
 
         if (this.QueuedAnimation is not null) {
             module.BroadcastInStage(this.Context, this.QueuedAnimation);
