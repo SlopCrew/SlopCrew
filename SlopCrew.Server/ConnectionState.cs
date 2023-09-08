@@ -89,6 +89,7 @@ public class ConnectionState {
         Server.Instance.Module.SendToContext(this.Context, new ClientboundPong {
             ID = ping.ID
         });
+        this.DisconnectTicks = 0;
     }
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {
@@ -239,6 +240,7 @@ public class ConnectionState {
 
     public void RunTick() {
         var module = Server.Instance.Module;
+        this.DisconnectTicks++;
 
         if (this.QueuedAnimation is not null) {
             module.BroadcastInStage(this.Context, this.QueuedAnimation);

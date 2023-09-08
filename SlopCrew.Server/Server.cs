@@ -95,17 +95,12 @@ public class Server {
     }
 
     private void RunTick() {
-        // Clean out dead connections
-        var deadConnections = this.GetConnections()
-            .Where(x =>
-                       x.Context.WebSocket.State is WebSocketState.CloseReceived
-                           or WebSocketState.CloseSent
-                           or WebSocketState.Closed);
-
-        const int ticksToDisconnect = 10 * 5;
-        foreach (var conn in deadConnections) {
-            conn.DisconnectTicks++;
+        // Clean up connections that haven't sent a ping in a long time
+        const int ticksToDisconnect = 10 * 10;
+        var connections = this.GetConnections();
+        foreach (var conn in connections) {
             if (conn.DisconnectTicks >= ticksToDisconnect) {
+                Log.Warning("Disconnecting {Connection} for inactivity", conn.DebugName());
                 this.Module.FuckingObliterate(conn.Context);
                 conn.Context.WebSocket.CloseAsync();
             }
