@@ -30,7 +30,7 @@ public class SlopWebSocketModule : WebSocketModule {
         if (this.Connections.TryGetValue(context, out var state)) {
             this.Connections.Remove(context);
             Server.Instance.UntrackConnection(state);
-            RacerManager.Instance.RemovePlayerIfRacing(state.Player); //TODO: investigate alt+f4
+            RacerManager.Instance.RemovePlayerIfRacing(state.Player?.ID);
         }
 
         Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
