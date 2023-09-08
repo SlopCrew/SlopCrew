@@ -148,7 +148,7 @@ namespace SlopCrew.Server.Race {
         }
 
         public void MarkPlayerReady(uint id) {
-            if (!IsPlayerAlreadyRacing(id)) {
+            if (!IsPlayerRacing(id)) {
                 Log.Information($"Player {id} is not racing");
                 return;
             }
@@ -165,7 +165,7 @@ namespace SlopCrew.Server.Race {
         }
 
         public void AddPlayerTime(uint id, float time) {
-            if (!IsPlayerAlreadyRacing(id)) {
+            if (!IsPlayerRacing(id)) {
                 Log.Information($"Player {id} is not racing");
                 return;
             }
@@ -180,7 +180,7 @@ namespace SlopCrew.Server.Race {
             race.Ranking.Add(id, time);
         }
 
-        public bool IsPlayerAlreadyRacing(uint id) {
+        public bool IsPlayerRacing(uint? id) {
             return races.Any(kv => kv.Value.Players.Any(p => p.ID == id));
         }
 
@@ -188,22 +188,23 @@ namespace SlopCrew.Server.Race {
         /// Useful to remove player on disconnect
         /// </summary>
         /// <param name="player"></param>
-        internal void RemovePlayerIfRacing(Player player) {
-            if (player == null) {
+        internal void RemovePlayerIfRacing(uint? playerID) {
+            if (!IsPlayerRacing(playerID)) {
+                Log.Information($"Player {playerID} is not racing");
                 return;
             }
 
-            if (!IsPlayerAlreadyRacing(player.ID)) {
-                Log.Information($"Player {player.ID} is not racing");
-                return;
-            }
+            var race = GetPlayerRace(playerID);
 
-            var race = GetPlayerRace(player.ID);
-            race.Players.Remove(player);
+            var player = race.Players.FirstOrDefault(p => p.ID == playerID)!;
+
+            if (player != null) {
+                race.Players.Remove(player);
+            }
         }
 
         public (DateTime, RaceConfig?) GetARace(Player player) {
-            if (IsPlayerAlreadyRacing(player.ID)) {
+            if (IsPlayerRacing(player.ID)) {
                 return (DateTime.MinValue, null);
             }
 
@@ -272,7 +273,7 @@ namespace SlopCrew.Server.Race {
             }).GetAwaiter().GetResult();
         }
 
-        private Race GetPlayerRace(uint id) {
+        private Race GetPlayerRace(uint? id) {
             return races.First(kv => kv.Value.Players.Any(
                 player => player.ID == id)).Value;
         }
