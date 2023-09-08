@@ -1,6 +1,8 @@
+using System;
 using HarmonyLib;
 using Reptile;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 
 namespace SlopCrew.Plugin.Patches; 
 
@@ -61,6 +63,11 @@ public class AnimationEventRelayPatch {
         var player = Traverse.Create(__instance).Field("player").GetValue<Player>();
         var style = Traverse.Create(player).Field("movestyleAudioCurrent").GetValue<MoveStyle>();
         Plugin.Log.LogDebug($"Player move style is '{style}'.");
+        
+        // FUCK YOU
+        // This is the most obvious way to get my attention when this fn gets hit
+        Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
+        
         return true; // TODO: actually fix the bug
     }
 }
