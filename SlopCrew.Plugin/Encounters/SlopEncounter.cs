@@ -41,6 +41,10 @@ public class SlopEncounter {
         this.cultureInfo = CultureInfo.CurrentCulture;
 
         if (Plugin.PlayerManager.Players.TryGetValue(encounterStartPlayerID, out var associatedPlayer)) {
+            var us = WorldHandler.instance?.GetCurrentPlayer()!;
+            var maxBoost = Traverse.Create(us).Field<float>("maxBoostCharge").Value;
+            us.AddBoostCharge(maxBoost);
+            
             this.Opponent = associatedPlayer;
             this.slopEncounterState = SlopEncounterState.Start;
             this.ResetPlayerScore();
