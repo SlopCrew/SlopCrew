@@ -45,23 +45,28 @@ public class SlopAPIController : WebApiController {
     }
 
     [Route(HttpVerbs.Post, "/admin/start_tournament_encounter")]
-    public async Task PostAdminStartTournamentEncounter([QueryField] int oneID, [QueryField] int twoID) {
+    public async Task PostAdminStartTournamentEncounter(
+        [QueryField] int oneID,
+        [QueryField] int twoID,
+        [QueryField] float duration) {
         var module = Server.Instance.Module;
         var one = module.Connections.Values.FirstOrDefault(x => x.Player?.ID == oneID);
         var two = module.Connections.Values.FirstOrDefault(x => x.Player?.ID == twoID);
-
+        
         if (one?.Player is null || two?.Player is null) {
+            this.HttpContext.Response.StatusCode = 400;
             await this.HttpContext.SendStringAsync("Player(s) not found", "text/plain", Encoding.UTF8);
             return;
         }
 
         if (one.Player.Stage != two.Player.Stage) {
+            this.HttpContext.Response.StatusCode = 400;
             await this.HttpContext.SendStringAsync("Stage mismatch", "text/plain", Encoding.UTF8);
             return;
         }
 
         const EncounterType encounter = EncounterType.ScoreEncounter;
-        var length = Server.Instance.Config.Encounters.ScoreDuration;
+        var length = duration == 0 ? Server.Instance.Config.Encounters.ScoreDuration : duration;
 
         if (one.EncounterRequests.TryGetValue(encounter, out var value) && value.Contains(two.Player.ID)) {
             one.EncounterRequests[encounter].Remove(two.Player.ID);
