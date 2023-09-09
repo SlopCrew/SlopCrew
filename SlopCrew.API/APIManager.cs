@@ -1,6 +1,6 @@
 using System;
 
-namespace SlopCrew.API; 
+namespace SlopCrew.API;
 
 public class APIManager {
     public static ISlopCrewAPI? API;

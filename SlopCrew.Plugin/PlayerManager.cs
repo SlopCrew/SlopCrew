@@ -160,12 +160,15 @@ public class PlayerManager : IDisposable {
         var character = traverse.Field<Characters>("character").Value;
         var moveStyle = traverse.Field<MoveStyle>("moveStyle").Value;
 
+        var stage = Plugin.API.StageOverride
+                    ?? (int) Core.Instance.BaseModule.CurrentStage;
+
         Plugin.NetworkConnection.SendMessage(new ServerboundPlayerHello {
             Player = new() {
                 Name = Plugin.SlopConfig.Username.Value,
                 ID = 1337, // filled in by the server; could be an int instead of uint but i'd have to change types everywhere
 
-                Stage = (int) Core.Instance.BaseModule.CurrentStage,
+                Stage = stage,
                 Character = (int) character,
                 Outfit = this.CurrentOutfit,
                 MoveStyle = (int) moveStyle,
