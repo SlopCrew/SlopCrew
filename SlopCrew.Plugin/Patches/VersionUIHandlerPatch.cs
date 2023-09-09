@@ -20,7 +20,7 @@ public class VersionUIHandlerPatch {
         obj.alignment = TextAlignmentOptions.BottomLeft;
 
         var username = PlayerNameFilter.DoFilter(Plugin.SlopConfig.Username.Value);
-        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - {username}\n"
+        obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - <color=\"white\">{username}\n"
                    + $"<color=#{hex}>" + verText;
     }
 }
