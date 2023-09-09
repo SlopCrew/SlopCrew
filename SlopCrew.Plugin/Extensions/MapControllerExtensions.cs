@@ -15,6 +15,7 @@ namespace SlopCrew.Plugin.Extensions {
                                   .GetValue<MapPin>();
 
             var cp = new GameObject("SimpleCP");
+            cp.tag = SimpleCheckpoint.TAG;
             cp.transform.position = position.ToMentalDeficiency();
             var compo = UnityEngine.Object.Instantiate<GameObject>(cp).AddComponent<SimpleCheckpoint>();
 

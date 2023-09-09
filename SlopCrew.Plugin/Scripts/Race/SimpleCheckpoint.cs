@@ -6,13 +6,14 @@ namespace SlopCrew.Plugin.Scripts {
         private BoxCollider? collider;
         private bool? isTriggered;
         private MapPin? mapPin;
+        public static string TAG = "Checkpoint";
 
         private void Start() {
             isTriggered = false;
 
             collider = gameObject.AddComponent<BoxCollider>();
             collider.isTrigger = true;
-            collider.size = new Vector3(15.5f, 100.5f, 15.5f); //TODO: fix Y size
+            collider.size = new Vector3(5.5f, 10.5f, 5.5f);
         }
 
         private void OnTriggerEnter(Collider other) {
