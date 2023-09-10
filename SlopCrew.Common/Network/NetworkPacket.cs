@@ -40,7 +40,6 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ServerboundScoreUpdate, () => new ServerboundScoreUpdate()},
             {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
             {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()},
-            {NetworkMessageType.ServerboundReadyForRace, () => new ServerboundReadyForRace()},
             {NetworkMessageType.ServerboundFinishedRace, () => new ServerboundFinishedRace()}
         };
 

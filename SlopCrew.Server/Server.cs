@@ -25,6 +25,12 @@ public class Server {
     public SlopWebSocketModule Module;
     public Metrics Metrics;
 
+    public StatefulEncounterManager EncounterState;
+
+    public bool IsDebug() {
+        return Server.Instance.Config.Debug;
+    }
+
     public Server(string[] args) {
         var logger = new LoggerConfiguration().WriteTo.Console();
         Logger = logger.CreateLogger();
@@ -96,37 +102,14 @@ public class Server {
         }).Start();
 
         Task.Run(() => {
-            var racer = RacerManager.Instance;
-
-            while (!racer.CancellationToken.IsCancellationRequested) {
-                var queued = racer.Update();
-
-                var queuedInitialize = queued.RaceInitializeRequests;
-                var queuedRaceStart = queued.RaceStartRequests;
-                var queuedRaceRank = queued.RaceRankRequests;
-                var queuedRaceAborted = queued.RaceAbortedRequests;
-                var queuedRaceForcedFinish = queued.RaceForcedToFinishRequests;
-
-                ProcessRaceMsg(queuedInitialize);
-                ProcessRaceMsg(queuedRaceStart);
-                ProcessRaceMsg(queuedRaceRank);
-                ProcessRaceMsg(queuedRaceAborted);
-                ProcessRaceMsg(queuedRaceForcedFinish);
+            while (!this.EncounterState.CancellationToken.IsCancellationRequested) {
+                this.EncounterState.Update();
 
                 Task.Delay((int) (Constants.TickRate * 1000));
             }
-        }, RacerManager.Instance.CancellationToken);
+        }, this.EncounterState.CancellationToken);
 
         this.WebServer.Start();
-    }
-
-
-    private void ProcessRaceMsg<T>(ICollection<(IEnumerable<uint> ids, T packet)> queue) where T : NetworkPacket {
-        foreach (var (ids, msg) in queue) {
-            if (ids.Any() && msg != null) {
-                Server.Instance.Module.SendToTheConcerned(ids, msg);
-            }
-        }
     }
 
     private void RunTick() {

@@ -82,11 +82,8 @@ public class ConnectionState {
                     this.HandleEncounterRequest(encounterRequest);
                 }
                 break;
-            case ServerboundReadyForRace serverboundReadyForRace:
-                this.HandleReadyForRace(serverboundReadyForRace);
-                break;
             case ServerboundFinishedRace serverboundFinishedRace:
-                this.HandleFinishedRace(serverboundFinishedRace);
+                Server.Instance.EncounterState.EncounterSpecificPacket(this, serverboundFinishedRace);
                 break;
         }
     }
@@ -277,26 +274,6 @@ public class ConnectionState {
                 InitializedTime = ""
             });
         }
-    }
-
-    private void HandleReadyForRace(ServerboundReadyForRace serverboundReadyForRace) {
-        if (Player == null) {
-            return;
-        }
-
-        Log.Information($"Player {Player.ID} ready for his race");
-
-        RacerManager.Instance.MarkPlayerReady(Player.ID);
-    }
-
-    private void HandleFinishedRace(ServerboundFinishedRace serverboundFinishedRace) {
-        if (Player == null) {
-            return;
-        }
-
-        RacerManager.Instance.AddPlayerTime(Player.ID, serverboundFinishedRace.Time);
-
-        Log.Information($"{Player.ID} finished his race with a time {serverboundFinishedRace.Time}");
     }
 
     public string DebugName() {
