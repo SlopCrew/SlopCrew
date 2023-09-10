@@ -170,7 +170,7 @@ public class PlayerManager : IDisposable {
         } catch (Exception e) {
             Plugin.Log.LogError($"Failed to get character info: {e}");
         }
-        
+
         var stage = Plugin.API.StageOverride
                     ?? (int) Core.Instance.BaseModule.CurrentStage;
 
@@ -248,15 +248,18 @@ public class PlayerManager : IDisposable {
         Plugin.CurrentEncounter = encounterStart.EncounterType switch {
             EncounterType.ComboEncounter => new SlopComboEncounter(),
             EncounterType.ScoreEncounter => new SlopScoreEncounter(),
+            EncounterType.RaceEncounter => new SlopRaceEncounter(),
             _ => null
         };
 
-        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterLength);
+        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterConfigData);
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
         Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
+
+    private void HandleEncounterEnd(ClientboundEncounterEnd encounterEnd) { }
 
     private void OnMessage(NetworkSerializable msg) {
         lock (this.messageQueue) {
@@ -289,26 +292,13 @@ public class PlayerManager : IDisposable {
             case ClientboundEncounterRequest encounterRequest:
                 this.HandleEncounterRequest(encounterRequest);
                 break;
+
             case ClientboundEncounterStart encounterStart:
                 this.HandleEncounterStart(encounterStart);
                 break;
-            case ClientboundRequestRace clientboundRequestRace:
-                this.HandleRequestRace(clientboundRequestRace);
-                break;
-            case ClientboundRaceAborted _:
-                this.HandleRaceAborted();
-                break;
-            case ClientboundRaceInitialize _:
-                this.HandleRaceInitialize(); //TODO: May be sent the race id to match if we got the correct msg
-                break;
-            case ClientboundRaceStart _:
-                this.HandleRaceStart();
-                break;
-            case ClientboundRaceRank clientboundRaceRank:
-                this.HandleRaceRank(clientboundRaceRank);
-                break;
-            case ClientboundRaceForcedToFinish clientboundRaceForcedToFinish:
-                this.HandleRaceForcedToFinish(clientboundRaceForcedToFinish);
+
+            case ClientboundEncounterEnd encounterEnd:
+                this.HandleEncounterEnd(encounterEnd);
                 break;
         }
     }
@@ -426,30 +416,6 @@ public class PlayerManager : IDisposable {
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
-    }
-
-    private void HandleRequestRace(ClientboundRequestRace clientboundRequestRace) {
-        Plugin.RaceManager!.OnRaceRequestResponse(clientboundRequestRace.Response, clientboundRequestRace.RaceConfig, clientboundRequestRace.InitializedTime);
-    }
-
-    private void HandleRaceAborted() {
-        Plugin.RaceManager!.OnRaceAborted();
-    }
-
-    private void HandleRaceInitialize() {
-        Plugin.RaceManager!.OnRaceInitialize();
-    }
-
-    private void HandleRaceStart() {
-        Plugin.RaceManager!.OnRaceStart();
-    }
-
-    private void HandleRaceRank(ClientboundRaceRank clientboundRaceRank) {
-        Plugin.RaceManager!.OnRaceRank(clientboundRaceRank.Rank);
-    }
-
-    private void HandleRaceForcedToFinish(ClientboundRaceForcedToFinish clientboundRaceForcedToFinish) {
-        Plugin.RaceManager!.OnRaceRank(clientboundRaceForcedToFinish.Rank);
     }
 
     public void PlayAnimation(int anim, bool forceOverwrite, bool instant, float atTime) {

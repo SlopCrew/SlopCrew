@@ -5,6 +5,7 @@ using System.Globalization;
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Plugin.Encounters;
 
@@ -36,15 +37,15 @@ public class SlopEncounter {
         StageManager.OnStagePostInitialization += this.Stop;
     }
 
-    public virtual void Start(uint encounterStartPlayerID, float encounterLength) {
-        this.PlayDuration = encounterLength;
+    public virtual void Start(uint encounterStartPlayerID, EncounterConfigData configData) {
+        this.PlayDuration = configData.EncounterLength;
         this.cultureInfo = CultureInfo.CurrentCulture;
 
         if (Plugin.PlayerManager.Players.TryGetValue(encounterStartPlayerID, out var associatedPlayer)) {
             var us = WorldHandler.instance?.GetCurrentPlayer()!;
             var maxBoost = Traverse.Create(us).Field<float>("maxBoostCharge").Value;
             us.AddBoostCharge(maxBoost);
-            
+
             this.Opponent = associatedPlayer;
             this.slopEncounterState = SlopEncounterState.Start;
             this.ResetPlayerScore();

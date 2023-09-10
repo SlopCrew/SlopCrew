@@ -3,13 +3,8 @@ using EmbedIO.WebApi;
 using Serilog;
 using Serilog.Core;
 using SlopCrew.Common;
-using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
-using SlopCrew.Server.Race;
-using System.Net.WebSockets;
-using EmbedIO;
 using EmbedIO.Authentication;
-using EmbedIO.WebApi;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -20,15 +15,13 @@ public class Server {
     public static uint CurrentTick;
 
     public Config Config;
-
     public WebServer WebServer;
     public SlopWebSocketModule Module;
     public Metrics Metrics;
-
-    public StatefulEncounterManager EncounterState;
+    public StatefulEncounterManager StatefulEncounterManager;
 
     public bool IsDebug() {
-        return Server.Instance.Config.Debug;
+        return Instance.Config.Debug;
     }
 
     public Server(string[] args) {
@@ -80,6 +73,8 @@ public class Server {
             .WithModule(adminAPI)
             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
             .WithModule(this.Module);
+
+        this.StatefulEncounterManager = new();
     }
 
     public void Start() {
@@ -100,14 +95,6 @@ public class Server {
                 }
             }
         }).Start();
-
-        Task.Run(() => {
-            while (!this.EncounterState.CancellationToken.IsCancellationRequested) {
-                this.EncounterState.Update();
-
-                Task.Delay((int) (Constants.TickRate * 1000));
-            }
-        }, this.EncounterState.CancellationToken);
 
         this.WebServer.Start();
     }
@@ -155,6 +142,8 @@ public class Server {
                 this.Module.SendToContext(connection.Context, serialized);
             }
         }
+        
+        this.StatefulEncounterManager.Update();
     }
 
     private void SendSyncToAllConnections(uint tick) {

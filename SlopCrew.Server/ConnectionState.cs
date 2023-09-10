@@ -7,6 +7,7 @@ using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Server.Race;
 using System.Security.Cryptography;
 using System.Text;
+using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Server;
 
@@ -38,13 +39,13 @@ public class ConnectionState {
         // These packets get processed when player is null
         switch (msg) {
             case ServerboundVersion version: {
-                    if (version.Version != Constants.NetworkVersion) {
-                        this.Context.WebSocket.CloseAsync();
-                        Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
-                                    version.Version, Constants.NetworkVersion);
-                    }
-                    return;
+                if (version.Version != Constants.NetworkVersion) {
+                    this.Context.WebSocket.CloseAsync();
+                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                version.Version, Constants.NetworkVersion);
                 }
+                return;
+            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
@@ -81,9 +82,6 @@ public class ConnectionState {
                 lock (Server.Instance.Module.Connections) {
                     this.HandleEncounterRequest(encounterRequest);
                 }
-                break;
-            case ServerboundFinishedRace serverboundFinishedRace:
-                Server.Instance.EncounterState.EncounterSpecificPacket(this, serverboundFinishedRace);
                 break;
         }
     }
@@ -177,21 +175,15 @@ public class ConnectionState {
     }
 
     private void HandleEncounterRequest(ServerboundEncounterRequest encounterRequest) {
-        if (Encounter.IsStatefullEncounter(encounterRequest.EncounterType)) {
-            switch (encounterRequest.EncounterType) {
-                case EncounterType.RaceEncounter:
-                    HandleRequestRace();
-                    break;
-                default:
-                    Log.Debug("Encounter type {EncounterType} is not implemented with backend specifity", encounterRequest.EncounterType);
-                    break;
-            }
-
-            return;
+        if (encounterRequest.EncounterType.IsStateful()) {
+            Server.Instance.StatefulEncounterManager.HandleEncounterRequest(this, encounterRequest.EncounterType);
+        } else {
+            this.HandleStatelessEncounterRequest(encounterRequest);
         }
+    }
 
+    private void HandleStatelessEncounterRequest(ServerboundEncounterRequest encounterRequest) {
         var module = Server.Instance.Module;
-
         if (encounterRequest.PlayerID == this.Player!.ID) return;
 
         var otherPlayer = Server.Instance.GetConnections()
@@ -215,7 +207,8 @@ public class ConnectionState {
         }
 
         if (this.EncounterRequests[encounterRequest.EncounterType].Contains(otherPlayer.Player.ID)) {
-            Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(), otherPlayer.DebugName());
+            Log.Information("Starting encounter: {Player} vs {OtherPlayer}", this.DebugName(),
+                            otherPlayer.DebugName());
 
             var encounterConfig = Server.Instance.Config.Encounters;
             var length = encounterRequest.EncounterType switch {
@@ -224,16 +217,21 @@ public class ConnectionState {
                 _ => 90
             };
 
+            var configData = new EncounterConfigData {
+                EncounterLength = length,
+                Guid = Guid.Empty
+            };
+
             module.SendToContext(this.Context, new ClientboundEncounterStart {
                 PlayerID = otherPlayer.Player.ID,
                 EncounterType = encounterRequest.EncounterType,
-                EncounterLength = length
+                EncounterConfigData = configData
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
                 PlayerID = this.Player.ID,
                 EncounterType = encounterRequest.EncounterType,
-                EncounterLength = length
+                EncounterConfigData = configData
             });
 
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
@@ -250,30 +248,6 @@ public class ConnectionState {
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
         });
-    }
-
-    private void HandleRequestRace() {
-        if (Player == null) {
-            return;
-        }
-
-        Log.Information($"New race request from {Player.ID}");
-
-        (var initializedTime, var newRaceConf) = RacerManager.Instance.GetARace(Player);
-
-        if (newRaceConf != null) {
-            Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
-                Response = true,
-                RaceConfig = newRaceConf,
-                InitializedTime = initializedTime.ToString()
-            });
-        } else {
-            Server.Instance.Module.SendToContext(this.Context, new ClientboundRequestRace {
-                Response = false,
-                RaceConfig = new Common.Race.RaceConfig(),
-                InitializedTime = ""
-            });
-        }
     }
 
     public string DebugName() {

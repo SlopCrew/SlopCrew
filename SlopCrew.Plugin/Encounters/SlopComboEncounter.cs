@@ -2,6 +2,7 @@
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Plugin.Encounters;
 
@@ -11,8 +12,8 @@ public class SlopComboEncounter : SlopEncounter {
     private float? lastComboScore;
     private float? opponentLastComboScore;
 
-    public override void Start(uint encounterStartPlayerID, float encounterLength) {
-        base.Start(encounterStartPlayerID, encounterLength);
+    public override void Start(uint encounterStartPlayerID, EncounterConfigData configData) {
+        base.Start(encounterStartPlayerID, configData);
         this.comboDropped = false;
         this.opponentComboDropped = false;
         this.lastComboScore = 0;
