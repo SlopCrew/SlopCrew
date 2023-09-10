@@ -151,6 +151,7 @@ public class SlopEncounter {
     private void ResetPlayerScore() {
         var player = WorldHandler.instance.GetCurrentPlayer();
         var traverse = Traverse.Create(player);
+        player.DropCombo();
         traverse.Field<float>("score").Value = 0f;
         traverse.Field<float>("baseScore").Value = 0f;
         traverse.Field<float>("scoreMultiplier").Value = 1f;
