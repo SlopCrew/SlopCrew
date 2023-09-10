@@ -7,21 +7,54 @@ using Object = UnityEngine.Object;
 namespace SlopCrew.Plugin.Encounters.Race;
 
 public class CheckpointPin : IDisposable {
-    public GameObject GameObject;
     public MapPin Pin;
-    public Player.UIIndicatorData UIIndicator { get; set; } = new();
+    public Player.UIIndicatorData UIIndicator;
 
     private DateTime disableOccludedAt = DateTime.MinValue;
-
     private const float MaxDistance = 5000f;
 
-    public CheckpointPin() {
-        this.GameObject = new GameObject(RaceCheckpoint.Tag);
-        this.Pin = this.GameObject.AddComponent<MapPin>();
+    public CheckpointPin(Vector3 pos) {
+        var mapController = Mapcontroller.Instance;
+
+        var pin = Traverse.Create(mapController)
+            .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
+            .GetValue<MapPin>();
+
+        var checkpoint = new GameObject("RaceCheckpoint");
+        checkpoint.tag = RaceCheckpoint.Tag;
+        checkpoint.transform.position = pos;
+        var compo = Object.Instantiate(checkpoint).AddComponent<RaceCheckpoint>();
+
+        pin.AssignGameplayEvent(checkpoint);
+        pin.InitMapPin(MapPin.PinType.StoryObjectivePin);
+        pin.OnPinEnable();
+
+        compo.SetMapPin(pin);
+        compo.SetPosition(pos);
+
+        var indicatorData = new Player.UIIndicatorData();
+        indicatorData.trans = checkpoint.transform;
+        indicatorData.isActive = false;
+
+        var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
+
+        var phone = Traverse.Create(currentPlayer).Field("phone").GetValue<Reptile.Phone.Phone>();
+        var storySpotUI = Traverse.Create(phone).Field("storySpotUI").GetValue<GameObject>();
+
+        var obj = Object.Instantiate(storySpotUI, phone.dynamicGameplayScreen, false);
+        obj.transform.localScale = Vector2.one;
+        obj.SetActive(false);
+
+        indicatorData.uiObject = obj;
+        indicatorData.SetComponents();
+        indicatorData.timeTillShow = 0f;
+
+        this.Pin = pin;
+        this.UIIndicator = indicatorData;
     }
 
     public void Dispose() {
-        Object.Destroy(this.GameObject);
+        Object.Destroy(this.Pin.gameObject);
     }
 
     public void UpdateUIIndicator() {

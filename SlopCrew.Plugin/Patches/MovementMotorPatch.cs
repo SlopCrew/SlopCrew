@@ -16,9 +16,7 @@ namespace SlopCrew.Plugin.Patches {
             var worldHandler = WorldHandler.instance;
             var currentPlayer = worldHandler.GetCurrentPlayer();
 
-            return Plugin.CurrentEncounter is not SlopRaceEncounter raceEncounter
-                   || !raceEncounter.IsBusy()
-                   || !currentPlayer.CanStartGrind();
+            return Plugin.CurrentEncounter is not SlopRaceEncounter {IsBusy: true} || !currentPlayer.CanStartGrind();
         }
     }
 }

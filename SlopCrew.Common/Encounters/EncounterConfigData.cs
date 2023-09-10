@@ -22,11 +22,26 @@ public class EncounterConfigData : NetworkSerializable {
 
     public static EncounterConfigData Read(EncounterType type, BinaryReader br) {
         var data = type switch {
+            EncounterType.ComboEncounter or EncounterType.ScoreEncounter => new SimpleEncounterConfigData(),
             EncounterType.RaceEncounter => new RaceEncounterConfigData(),
             _ => new EncounterConfigData()
         };
         data.Read(br);
         return data;
+    }
+}
+
+public class SimpleEncounterConfigData : EncounterConfigData {
+    public uint Opponent;
+
+    public override void Read(BinaryReader br) {
+        base.Read(br);
+        this.Opponent = br.ReadUInt32();
+    }
+
+    public override void Write(BinaryWriter bw) {
+        base.Write(bw);
+        bw.Write(this.Opponent);
     }
 }
 

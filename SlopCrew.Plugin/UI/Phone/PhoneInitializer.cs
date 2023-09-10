@@ -52,7 +52,7 @@ public class PhoneInitializer {
 
     public void ShowNotif(ClientboundEncounterRequest request) {
         if (!Plugin.SlopConfig.ReceiveNotifications.Value) return;
-        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
+        if (Plugin.CurrentEncounter?.IsBusy == true) return;
 
         if (Plugin.PlayerManager.Players.TryGetValue(request.PlayerID, out var associatedPlayer)) {
             var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);

@@ -58,7 +58,7 @@ public class Plugin : BaseUnityPlugin {
     }
 
     private void Update() {
-        if (CurrentEncounter?.EncounterState == SlopEncounter.SlopEncounterState.Stopped) {
+        if (CurrentEncounter is {IsBusy: false}) {
             CurrentEncounter.Dispose();
             CurrentEncounter = null;
         }

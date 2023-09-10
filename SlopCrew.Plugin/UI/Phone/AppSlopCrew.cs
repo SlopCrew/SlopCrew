@@ -49,7 +49,7 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressUp() {
-        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
+        if (Plugin.CurrentEncounter?.IsBusy == true) return;
 
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) - 1;
         if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
@@ -60,7 +60,7 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressDown() {
-        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
+        if (Plugin.CurrentEncounter?.IsBusy == true) return;
 
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
         if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
@@ -82,14 +82,14 @@ public class AppSlopCrew : App {
 
     private bool SendEncounterRequest() {
         if (!this.encounter.IsStateful() && this.nearestPlayer == null) return false;
-        if (Plugin.CurrentEncounter?.IsBusy() == true) return false;
+        if (Plugin.CurrentEncounter?.IsBusy == true) return false;
         if (this.HasBannedMods()) return false;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer?.SlopPlayer.ID ?? uint.MaxValue,
             EncounterType = this.encounter
         });
-        
+
         return true;
     }
 
@@ -102,7 +102,7 @@ public class AppSlopCrew : App {
             return;
         }
 
-        if (Plugin.CurrentEncounter?.IsBusy() == true) {
+        if (Plugin.CurrentEncounter?.IsBusy == true) {
             this.Label.text = "glhf";
             return;
         }

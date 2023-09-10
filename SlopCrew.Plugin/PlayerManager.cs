@@ -8,6 +8,7 @@ using SlopCrew.Plugin.Encounters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SlopCrew.Common.Encounters;
 using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
 
@@ -244,15 +245,18 @@ public class PlayerManager : IDisposable {
     }
 
     private void HandleEncounterStart(ClientboundEncounterStart encounterStart) {
-        if (Plugin.CurrentEncounter?.IsBusy() == true) return;
+        if (Plugin.CurrentEncounter?.IsBusy == true) return;
+
         Plugin.CurrentEncounter = encounterStart.EncounterType switch {
-            EncounterType.ComboEncounter => new SlopComboEncounter(),
-            EncounterType.ScoreEncounter => new SlopScoreEncounter(),
-            EncounterType.RaceEncounter => new SlopRaceEncounter(),
+            EncounterType.ScoreEncounter => new SlopScoreEncounter(
+                (SimpleEncounterConfigData) encounterStart.EncounterConfigData),
+            EncounterType.ComboEncounter => new SlopComboEncounter(
+                (SimpleEncounterConfigData) encounterStart.EncounterConfigData),
+            EncounterType.RaceEncounter => new SlopRaceEncounter(
+                (RaceEncounterConfigData) encounterStart.EncounterConfigData
+            ),
             _ => null
         };
-
-        Plugin.CurrentEncounter?.Start(encounterStart.PlayerID, encounterStart.EncounterConfigData);
     }
 
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
