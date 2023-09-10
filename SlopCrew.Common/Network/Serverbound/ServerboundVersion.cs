@@ -6,13 +6,15 @@ public class ServerboundVersion : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ServerboundVersion;
 
     public uint Version;
-    // TODO(1.5.0): add a plugin version field
+    public string PluginVersion;
 
     public override void Read(BinaryReader br) {
         this.Version = br.ReadUInt32();
+        this.PluginVersion = br.ReadString();
     }
 
     public override void Write(BinaryWriter bw) {
         bw.Write(this.Version);
+        bw.Write(this.PluginVersion);
     }
 }
