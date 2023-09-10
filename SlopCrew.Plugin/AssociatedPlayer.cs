@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using Reptile;
@@ -40,13 +41,19 @@ public class AssociatedPlayer {
         this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
         this.SlopPlayer = slopPlayer;
 
+        try {
+            Plugin.CharacterInfoManager.SetNextCharacterInfo(slopPlayer.CharacterInfo);
+        } catch (Exception e) {
+            Plugin.Log.LogError($"Failed to set character info for {slopPlayer.Name}: {e}");
+        }
+        
         var moveStyle = (MoveStyle) slopPlayer.MoveStyle;
         
         // SPECIAL_SKATEBOARD makes people error out ~Sylvie
         // It's also blocked server-side
         if (moveStyle == MoveStyle.SPECIAL_SKATEBOARD)
             moveStyle = MoveStyle.SKATEBOARD;
-
+        
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,
             (Characters) slopPlayer.Character,

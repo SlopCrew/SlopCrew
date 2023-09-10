@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.API", "SlopCrew.AP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.NetworkTests", "SlopCrew.NetworkTests\SlopCrew.NetworkTests.csproj", "{AC7AACCA-428C-415E-BF2C-5F9DE1011217}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{A05EECEC-AA53-429F-8E12-CF2B549671DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrcCustomCharactersAPI", "libs\BrcCustomCharactersAPI\BrcCustomCharactersAPI.csproj", "{5E39F48F-3D7B-4876-836B-24D62366DE0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,12 @@ Global
 		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E39F48F-3D7B-4876-836B-24D62366DE0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E39F48F-3D7B-4876-836B-24D62366DE0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E39F48F-3D7B-4876-836B-24D62366DE0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E39F48F-3D7B-4876-836B-24D62366DE0D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5E39F48F-3D7B-4876-836B-24D62366DE0D} = {A05EECEC-AA53-429F-8E12-CF2B549671DB}
 	EndGlobalSection
 EndGlobal
