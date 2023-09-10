@@ -127,7 +127,8 @@ var packets = new List<NetworkPacket> {
     },
 
     new ServerboundVersion {
-        Version = 130
+        Version = 130,
+        PluginVersion = "1.5.0"
     },
 
     new ServerboundEncounterRequest {

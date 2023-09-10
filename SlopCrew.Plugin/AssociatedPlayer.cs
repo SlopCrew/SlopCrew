@@ -46,13 +46,20 @@ public class AssociatedPlayer {
         } catch (Exception e) {
             Plugin.Log.LogError($"Failed to set character info for {slopPlayer.Name}: {e}");
         }
-
+        
+        var moveStyle = (MoveStyle) slopPlayer.MoveStyle;
+        
+        // SPECIAL_SKATEBOARD makes people error out ~Sylvie
+        // It's also blocked server-side
+        if (moveStyle == MoveStyle.SPECIAL_SKATEBOARD)
+            moveStyle = MoveStyle.SKATEBOARD;
+        
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,
             (Characters) slopPlayer.Character,
             PlayerType.NONE,
             outfit: slopPlayer.Outfit,
-            moveStyleEquipped: (MoveStyle) slopPlayer.MoveStyle
+            moveStyleEquipped: moveStyle
         );
 
         player.motor.gravity = 0;

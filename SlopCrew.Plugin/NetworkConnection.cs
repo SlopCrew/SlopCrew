@@ -111,7 +111,8 @@ public class NetworkConnection : IDisposable {
         Plugin.API.UpdateConnected(true);
 
         this.SendMessage(new ServerboundVersion {
-            Version = Constants.NetworkVersion
+            Version = Constants.NetworkVersion,
+            PluginVersion = PluginInfo.PLUGIN_VERSION
         });
 
         // 0ms connection lol

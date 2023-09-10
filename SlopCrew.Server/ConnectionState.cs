@@ -100,14 +100,19 @@ public class ConnectionState {
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {
         // Temporary solution to CharacterAPI players crashing other players
-        var isInvalid = enter.Player.Character is < -1 or > 26
-                        || enter.Player.Outfit is < 0 or > 3
-                        || enter.Player.MoveStyle is < 0 or > 5;
-        if (isInvalid) {
-            enter.Player.Character = 3; // Red
+        if (enter.Player.Character is < 0 or > 25)
+            enter.Player.Character = 3;
+
+        if (enter.Player.Character is < 0 or > 3)
             enter.Player.Outfit = 0;
+
+        if (enter.Player.MoveStyle is < 0 or > 4)
             enter.Player.MoveStyle = 0;
-        }
+
+        // SPECIAL_SKATEBOARD causes issues so stop it from syncing ~Sylvie
+        // It's also blocked client-side
+        if (enter.Player.MoveStyle == 4) // SPECIAL_SKATEBOARD
+            enter.Player.MoveStyle = 2;  // SKATEBOARD
 
         // Assign a unique ID on first hello
         // Subsequent hellos keep the originally assigned ID
