@@ -103,6 +103,11 @@ public class ConnectionState {
             enter.Player.MoveStyle = 0;
         }
 
+        // SPECIAL_SKATEBOARD causes issues so stop it from syncing ~Sylvie
+        // It's also blocked client-side
+        if (enter.Player.MoveStyle == 4) // SPECIAL_SKATEBOARD
+            enter.Player.MoveStyle = 2;  // SKATEBOARD
+
         // Assign a unique ID on first hello
         // Subsequent hellos keep the originally assigned ID
         enter.Player.ID = this.Player?.ID ?? server.GetNextID();
