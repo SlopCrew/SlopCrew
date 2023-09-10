@@ -10,11 +10,13 @@ public class ServerboundVersion : NetworkPacket {
 
     public override void Read(BinaryReader br) {
         this.Version = br.ReadUInt32();
-        this.PluginVersion = br.ReadString();
+        if (this.Version > 3)
+            this.PluginVersion = br.ReadString();
     }
 
     public override void Write(BinaryWriter bw) {
         bw.Write(this.Version);
-        bw.Write(this.PluginVersion);
+        if (this.Version > 3)
+            bw.Write(this.PluginVersion);
     }
 }
