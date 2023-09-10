@@ -13,11 +13,14 @@ namespace SlopCrew.Server;
 public class ConnectionState {
     public Player? Player;
     public int? LastStage = null;
+    public int DisconnectTicks = 0;
 
     public ClientboundPlayerAnimation? QueuedAnimation;
     public Transform? QueuedPositionUpdate;
     public ClientboundPlayerScoreUpdate? QueuedScoreUpdate;
     public ClientboundPlayerVisualUpdate? QueuedVisualUpdate;
+
+    public ClientboundPlayerScoreUpdate? LastScoreUpdate;
 
     public IWebSocketContext Context;
     public object SendLock;
@@ -86,18 +89,24 @@ public class ConnectionState {
         Server.Instance.Module.SendToContext(this.Context, new ClientboundPong {
             ID = ping.ID
         });
+        this.DisconnectTicks = 0;
     }
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {
         // Temporary solution to CharacterAPI players crashing other players
-        var isInvalid = enter.Player.Character is < -1 or > 26
-                        || enter.Player.Outfit is < 0 or > 3
-                        || enter.Player.MoveStyle is < 0 or > 5;
-        if (isInvalid) {
-            enter.Player.Character = 3; // Red
+        if (enter.Player.Character is < 0 or > 25)
+            enter.Player.Character = 3;
+
+        if (enter.Player.Character is < 0 or > 3)
             enter.Player.Outfit = 0;
+
+        if (enter.Player.MoveStyle is < 0 or > 4)
             enter.Player.MoveStyle = 0;
-        }
+
+        // SPECIAL_SKATEBOARD causes issues so stop it from syncing ~Sylvie
+        // It's also blocked client-side
+        if (enter.Player.MoveStyle == 4) // SPECIAL_SKATEBOARD
+            enter.Player.MoveStyle = 2;  // SKATEBOARD
 
         // Assign a unique ID on first hello
         // Subsequent hellos keep the originally assigned ID
@@ -227,7 +236,7 @@ public class ConnectionState {
     }
 
     public string DebugName() {
-        var endpoint = this.Context.RemoteEndPoint.ToString();
+        var endpoint = this.Context.Headers.Get("X-Forwarded-For") ?? this.Context.RemoteEndPoint.ToString();
 
         return this.Player != null
                    ? $"{this.Player.Name}({this.Player?.ID})"
@@ -237,6 +246,10 @@ public class ConnectionState {
     public void RunTick() {
         var module = Server.Instance.Module;
 
+        if (this.Player is not null) {
+            this.DisconnectTicks++;
+        }
+
         if (this.QueuedAnimation is not null) {
             module.BroadcastInStage(this.Context, this.QueuedAnimation);
             this.QueuedAnimation = null;
@@ -244,6 +257,7 @@ public class ConnectionState {
 
         if (this.QueuedScoreUpdate is not null) {
             module.BroadcastInStage(this.Context, this.QueuedScoreUpdate);
+            this.LastScoreUpdate = this.QueuedScoreUpdate;
             this.QueuedScoreUpdate = null;
         }
 
@@ -251,12 +265,5 @@ public class ConnectionState {
             module.BroadcastInStage(this.Context, this.QueuedVisualUpdate);
             this.QueuedVisualUpdate = null;
         }
-    }
-
-    public void TonightsBiggestLoser() {
-        var str = this.Player is not null ? this.Player.Name + $" ({this.Player.ID})" : "no player";
-        var ip = this.Context.Headers.Get("X-Forwarded-For") ?? this.Context.RemoteEndPoint.ToString();
-        Log.Information("tonights biggest loser is {PlayerID} {IP}", str, ip);
-        this.Context.WebSocket.CloseAsync();
     }
 }

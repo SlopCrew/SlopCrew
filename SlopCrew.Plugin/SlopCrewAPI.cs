@@ -8,6 +8,16 @@ public class SlopCrewAPI : ISlopCrewAPI {
     public string ServerAddress { get; set; } = Plugin.SlopConfig.Address.Value;
     public bool Connected { get; set; }
 
+    private int? stageOverride;
+
+    public int? StageOverride {
+        get => this.stageOverride;
+        set {
+            this.stageOverride = value;
+            Plugin.PlayerManager.IsHelloRefreshQueued = true;
+        }
+    }
+
     public event Action<int>? OnPlayerCountChanged;
     public event Action? OnConnected;
     public event Action? OnDisconnected;

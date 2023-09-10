@@ -4,6 +4,7 @@ using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
 using EmbedIO;
+using EmbedIO.Authentication;
 using EmbedIO.WebApi;
 using Constants = SlopCrew.Common.Constants;
 
@@ -58,9 +59,15 @@ public class Server {
             o.WithMode(HttpListenerMode.EmbedIO);
         });
 
+        var adminAPI = new BasicAuthenticationModule("/api/admin");
+        if (this.Config.AdminPassword is not null) {
+            adminAPI = adminAPI.WithAccount("slop", this.Config.AdminPassword);
+        }
+
         // my editorconfig sucks and indents it a lot so let's do this on a separate statement
         this.WebServer = this.WebServer
             // API goes before websocket or it gets eaten
+            .WithModule(adminAPI)
             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
             .WithModule(this.Module);
     }
@@ -88,11 +95,15 @@ public class Server {
     }
 
     private void RunTick() {
-        // Clean out dead connections
-        var deadConnections = this.GetConnections()
-            .Where(x => x.Context.WebSocket.State is WebSocketState.Closed or WebSocketState.None);
-        foreach (var conn in deadConnections) {
-            this.Module.FuckingObliterate(conn.Context);
+        // Clean up connections that haven't sent a ping in a long time
+        const int ticksToDisconnect = 10 * 15;
+        var connections = this.GetConnections();
+        foreach (var conn in connections) {
+            if (conn.DisconnectTicks >= ticksToDisconnect) {
+                Log.Warning("Disconnecting {Connection} for inactivity", conn.DebugName());
+                this.Module.FuckingObliterate(conn.Context);
+                conn.Context.WebSocket.CloseAsync();
+            }
         }
 
         // Go through each connection and run their respective ticks.
@@ -160,7 +171,7 @@ public class Server {
 
         // Don't bother untracking someone we never tracked in the first place
         if (player is null) return;
-        
+
         var connections = this.GetConnections()
             .Where(x => x.Player?.Stage == player.Stage)
             .ToList();
