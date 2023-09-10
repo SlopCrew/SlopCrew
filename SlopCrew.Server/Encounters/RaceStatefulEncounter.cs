@@ -11,8 +11,10 @@ public class RaceStatefulEncounter : StatefulEncounter {
     public RaceConfig ConfigData;
     public Dictionary<uint, float> Ranking { get; set; } = new();
 
-    public RaceStatefulEncounter() {
-        var pool = Server.Instance.StatefulEncounterManager.RaceConfigs;
+    public RaceStatefulEncounter(int stage) {
+        var pool = Server.Instance.StatefulEncounterManager.RaceConfigs
+            .Where(x => x.Stage == stage)
+            .ToList();
         var random = new Random();
         var index = random.Next(0, pool.Count);
         this.ConfigData = pool[index];

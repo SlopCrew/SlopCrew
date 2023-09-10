@@ -9,7 +9,7 @@ using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Plugin.Encounters;
 
-public class SlopEncounter {
+public class SlopEncounter : IDisposable {
     protected double PlayDuration;
     protected float MyScore;
     protected string? MyScoreMessage;
@@ -23,7 +23,7 @@ public class SlopEncounter {
     private CultureInfo cultureInfo = null!;
 
     protected Stopwatch Stopwatch = new();
-    private SlopEncounterState slopEncounterState = SlopEncounterState.Stopped;
+    public SlopEncounterState EncounterState = SlopEncounterState.Stopped;
 
     public enum SlopEncounterState {
         Stopped,
@@ -47,22 +47,22 @@ public class SlopEncounter {
             us.AddBoostCharge(maxBoost);
 
             this.Opponent = associatedPlayer;
-            this.slopEncounterState = SlopEncounterState.Start;
+            this.EncounterState = SlopEncounterState.Start;
             this.ResetPlayerScore();
             this.Stopwatch.Restart();
         }
     }
 
-    public bool IsBusy() => this.slopEncounterState != SlopEncounterState.Stopped;
+    public bool IsBusy() => this.EncounterState != SlopEncounterState.Stopped;
 
     private void Stop() {
         this.TurnOffScoreUI();
         this.Opponent = null;
-        this.slopEncounterState = SlopEncounterState.Stopped;
+        this.EncounterState = SlopEncounterState.Stopped;
     }
 
     private void Update() {
-        if (this.Opponent is null || this.slopEncounterState == SlopEncounterState.Stopped) return;
+        if (this.Opponent is null || this.EncounterState == SlopEncounterState.Stopped) return;
         if (!this.Opponent.IsValid()) {
             this.Stop();
             return;
@@ -73,7 +73,7 @@ public class SlopEncounter {
         }
 
         var elapsed = this.Stopwatch.Elapsed.TotalSeconds;
-        switch (this.slopEncounterState) {
+        switch (this.EncounterState) {
             case SlopEncounterState.Start: {
                 if (this.EnsureElapsed(elapsed, SlopEncounterState.Play)) {
                     this.ResetPlayerScore();
@@ -112,7 +112,7 @@ public class SlopEncounter {
     }
 
     private bool EnsureElapsed(double elapsed, SlopEncounterState nextState) {
-        var required = this.slopEncounterState switch {
+        var required = this.EncounterState switch {
             SlopEncounterState.Start => StartDuration,
             SlopEncounterState.Play => PlayDuration,
             SlopEncounterState.Outro => OutroDuration,
@@ -128,7 +128,7 @@ public class SlopEncounter {
     }
 
     public virtual void SetEncounterState(SlopEncounterState nextState) {
-        Plugin.Log.LogInfo($"State change: {this.slopEncounterState} -> {nextState}");
+        Plugin.Log.LogInfo($"State change: {this.EncounterState} -> {nextState}");
 
         // Play a sound at the end of the battle
         if (nextState == SlopEncounterState.Outro) {
@@ -138,7 +138,7 @@ public class SlopEncounter {
             playSfx.Invoke(audioManager, new object[] {SfxCollectionID.EnvironmentSfx, AudioClipID.MascotUnlock, 0f});
         }
 
-        this.slopEncounterState = nextState;
+        this.EncounterState = nextState;
         this.Stopwatch.Restart();
     }
 
@@ -164,7 +164,7 @@ public class SlopEncounter {
     }
 
     protected string FormatPlayerScore(float score) {
-        if (this.slopEncounterState == SlopEncounterState.Start) return string.Empty;
+        if (this.EncounterState == SlopEncounterState.Start) return string.Empty;
         return FormattingUtility.FormatPlayerScore(this.cultureInfo, score);
     }
 
@@ -197,4 +197,6 @@ public class SlopEncounter {
         gameplay.targetScoreTitleLabel.text = "";
         gameplay.totalScoreTitleLabel.text = "";
     }
+
+    public virtual void Dispose() { }
 }

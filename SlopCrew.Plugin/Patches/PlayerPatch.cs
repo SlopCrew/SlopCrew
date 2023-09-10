@@ -1,7 +1,8 @@
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
-using SlopCrew.Plugin.Scripts;
+using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.Encounters.Race;
 using UnityEngine;
 using Player = Reptile.Player;
 
@@ -98,7 +99,8 @@ public class PlayerPatch {
                     // Calculate time to next target position
                     var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
                                    Constants.TickRate;
-                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) / 1000f / 2f;
+                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) /
+                                  1000f / 2f;
                     associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
             }
@@ -180,9 +182,10 @@ public class PlayerPatch {
     [HarmonyPatch("FixedUpdatePlayer")]
     public static void FixedUpdatePlayerPrefix(Player __instance) {
         var currentPlayer = WorldHandler.instance?.GetCurrentPlayer();
-        if (__instance.name == currentPlayer?.name && Plugin.RaceManager.IsInRace()) {
-            GrindAbility grindAbility = Traverse.Create(__instance).Field<GrindAbility>("grindAbility").Value;
-
+        if (__instance.name == currentPlayer?.name
+            && Plugin.CurrentEncounter is SlopRaceEncounter raceEncounter
+            && raceEncounter.IsBusy()) {
+            var grindAbility = Traverse.Create(__instance).Field<GrindAbility>("grindAbility").Value;
             grindAbility.speedTarget = RaceVelocityModifier.GrindSpeedTarget;
             __instance.normalBoostSpeed = RaceVelocityModifier.BoostSpeedTarget;
         }
@@ -191,18 +194,19 @@ public class PlayerPatch {
     [HarmonyPostfix]
     [HarmonyPatch("LateUpdatePlayer")]
     public static void LateUpdatePlayer(Player __instance) {
-        var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
-        if (Plugin.RaceManager.IsStarting() && __instance.name == currentPlayer.name) {
-            var cp = Plugin.RaceManager.GetNextCheckpointPin();
+        if (
+            WorldHandler.instance.GetCurrentPlayer() == __instance
+            && Plugin.CurrentEncounter is SlopRaceEncounter raceEncounter
+            && raceEncounter.IsStarting()
+        ) {
+            var cp = raceEncounter.GetNextCheckpointPin();
 
-            //Shouldn't happen, but just in case
-            if (cp == null) {
-                return;
-            }
+            // Shouldn't happen, but just in case
+            if (cp == null) return;
 
-            //Make the camera look at the next checkpoint before the race starts
-            GameplayCamera cam = Traverse.Create(__instance).Field("cam").GetValue<GameplayCamera>();
-            UnityEngine.Transform realTf = Traverse.Create(cam).Field("realTf").GetValue<UnityEngine.Transform>();
+            // Make the camera look at the next checkpoint before the race starts
+            var cam = Traverse.Create(__instance).Field("cam").GetValue<GameplayCamera>();
+            var realTf = Traverse.Create(cam).Field("realTf").GetValue<UnityEngine.Transform>();
             realTf.transform.LookAt(cp.UIIndicator.trans.position);
         }
     }

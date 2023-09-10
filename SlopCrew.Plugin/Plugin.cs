@@ -57,6 +57,13 @@ public class Plugin : BaseUnityPlugin {
         DebugLog.Dispose();
     }
 
+    private void Update() {
+        if (CurrentEncounter?.EncounterState == SlopEncounter.SlopEncounterState.Stopped) {
+            CurrentEncounter.Dispose();
+            CurrentEncounter = null;
+        }
+    }
+
     private void SetupHarmony() {
         Harmony = new Harmony("SlopCrew.Plugin.Harmony");
 

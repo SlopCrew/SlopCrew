@@ -9,8 +9,8 @@ namespace SlopCrew.Server;
 
 public class StatefulEncounterManager {
     public List<StatefulEncounter> Encounters = new();
-    public Dictionary<EncounterType, List<ConnectionState>> QueuedPlayers = new();
-    private int queueTicks = 0;
+    public Dictionary<int, Dictionary<EncounterType, List<ConnectionState>>> QueuedPlayers = new();
+    private int queueTicks;
 
     public List<RaceConfig> RaceConfigs = new();
 
@@ -62,32 +62,40 @@ public class StatefulEncounterManager {
     }
 
     public void HandleEncounterRequest(ConnectionState conn, EncounterType type) {
-        if (!this.QueuedPlayers.ContainsKey(type)) this.QueuedPlayers[type] = new();
-        this.QueuedPlayers[type].Add(conn);
+        if (conn.Player is null) return;
+        var stage = conn.Player.Stage;
+
+        if (!this.QueuedPlayers.ContainsKey(stage)) this.QueuedPlayers[stage] = new();
+        if (!this.QueuedPlayers[stage].ContainsKey(type)) this.QueuedPlayers[stage][type] = new();
+        if (this.QueuedPlayers[stage][type].Contains(conn)) return;
+
+        this.QueuedPlayers[stage][type].Add(conn);
     }
 
     private void QueuePlayers() {
-        foreach (var (type, players) in this.QueuedPlayers) {
-            var encounter = type switch {
-                EncounterType.RaceEncounter => new RaceStatefulEncounter(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+        foreach (var (stage, queue) in this.QueuedPlayers) {
+            foreach (var (type, players) in queue) {
+                var encounter = type switch {
+                    EncounterType.RaceEncounter => new RaceStatefulEncounter(stage),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
 
-            encounter.Players.AddRange(players);
-            this.Encounters.Add(encounter);
+                encounter.Players.AddRange(players);
+                this.Encounters.Add(encounter);
 
-            Server.Instance.Module.SendToTheConcerned(
-                players.Select(x => x.Player!.ID),
-                new ClientboundEncounterStart {
-                    PlayerID = uint.MaxValue,
-                    EncounterType = type,
-                    EncounterConfigData = new RaceEncounterConfigData {
-                        EncounterLength = RaceStatefulEncounter.MaxRaceTime,
-                        Guid = encounter.EncounterId,
-                        RaceConfig = encounter.ConfigData
+                Server.Instance.Module.SendToTheConcerned(
+                    players.Select(x => x.Player!.ID),
+                    new ClientboundEncounterStart {
+                        PlayerID = uint.MaxValue,
+                        EncounterType = type,
+                        EncounterConfigData = new RaceEncounterConfigData {
+                            EncounterLength = RaceStatefulEncounter.MaxRaceTime,
+                            Guid = encounter.EncounterId,
+                            RaceConfig = encounter.ConfigData
+                        }
                     }
-                }
-            );
+                );
+            }
         }
     }
 }
