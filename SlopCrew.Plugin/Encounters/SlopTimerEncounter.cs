@@ -5,6 +5,7 @@ using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
 using SlopCrew.Common.Encounters;
+using SlopCrew.Plugin.Extensions;
 
 namespace SlopCrew.Plugin.Encounters;
 
@@ -39,7 +40,7 @@ public class SlopTimerEncounter : SlopEncounter {
         }
     }
 
-    private void Update() {
+    protected override void Update() {
         this.IsBusy = this.State != TimerState.Stopped;
 
         if (this.Opponent is null || this.State == TimerState.Stopped) return;
@@ -115,10 +116,10 @@ public class SlopTimerEncounter : SlopEncounter {
 
         // Play a sound at the end of the battle
         if (nextState == TimerState.Outro) {
-            var audioManager = Core.Instance.AudioManager;
-            var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxUI",
-                                             new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)});
-            playSfx.Invoke(audioManager, new object[] {SfxCollectionID.EnvironmentSfx, AudioClipID.MascotUnlock, 0f});
+            Core.Instance.AudioManager.PlaySfx(
+                SfxCollectionID.EnvironmentSfx,
+                AudioClipID.MascotUnlock
+            );
         }
 
         this.State = nextState;
@@ -139,15 +140,6 @@ public class SlopTimerEncounter : SlopEncounter {
         }
 
         return false;
-    }
-
-    // Stolen from Reptile code
-    private string NiceTimerString(double timer) {
-        var str = timer.ToString(this.cultureInfo);
-        var startIndex = ((int) timer).ToString().Length + 3;
-        if (str.Length > startIndex) str = str.Remove(startIndex);
-        if (timer == 0.0) str = "0.00";
-        return str;
     }
 
     protected string FormatPlayerScore(float score) {

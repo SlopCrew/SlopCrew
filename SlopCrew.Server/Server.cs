@@ -142,8 +142,10 @@ public class Server {
                 this.Module.SendToContext(connection.Context, serialized);
             }
         }
-        
-        this.StatefulEncounterManager.Update();
+
+        lock (this.StatefulEncounterManager.Encounters) {
+            this.StatefulEncounterManager.Update();
+        }
     }
 
     private void SendSyncToAllConnections(uint tick) {

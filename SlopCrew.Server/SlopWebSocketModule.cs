@@ -1,4 +1,5 @@
-﻿using EmbedIO.WebSockets;
+﻿using System.Collections;
+using EmbedIO.WebSockets;
 using Serilog;
 using SlopCrew.Common.Network;
 using SlopCrew.Server.Race;
@@ -100,7 +101,7 @@ public class SlopWebSocketModule : WebSocketModule {
         NetworkPacket msg
     ) {
         var otherSessions = this.Connections.ToList()
-            .Where(s => ids.Contains(s.Value.Player!.ID))
+            .Where(s => s.Value.Player is not null && ids.Contains(s.Value.Player.ID))
             .ToList();
 
         var serialized = msg.Serialize();

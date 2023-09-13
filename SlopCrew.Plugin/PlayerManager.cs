@@ -8,6 +8,7 @@ using SlopCrew.Plugin.Encounters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MonoMod.Utils;
 using SlopCrew.Common.Encounters;
 using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
@@ -263,7 +264,9 @@ public class PlayerManager : IDisposable {
         Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
 
-    private void HandleEncounterEnd(ClientboundEncounterEnd encounterEnd) { }
+    private void HandleEncounterEnd(ClientboundEncounterEnd encounterEnd) {
+        Plugin.CurrentEncounter?.HandleEnd(encounterEnd);
+    }
 
     private void OnMessage(NetworkSerializable msg) {
         lock (this.messageQueue) {

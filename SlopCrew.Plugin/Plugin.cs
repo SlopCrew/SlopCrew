@@ -59,6 +59,7 @@ public class Plugin : BaseUnityPlugin {
 
     private void Update() {
         if (CurrentEncounter is {IsBusy: false}) {
+            Log.LogInfo("incinerating CurrentEncounter");
             CurrentEncounter.Dispose();
             CurrentEncounter = null;
         }

@@ -188,24 +188,4 @@ public class PlayerPatch {
             __instance.normalBoostSpeed = RaceVelocityModifier.BoostSpeedTarget;
         }
     }
-
-    [HarmonyPostfix]
-    [HarmonyPatch("LateUpdatePlayer")]
-    public static void LateUpdatePlayer(Player __instance) {
-        if (
-            WorldHandler.instance.GetCurrentPlayer() == __instance
-            && Plugin.CurrentEncounter is SlopRaceEncounter raceEncounter
-            && raceEncounter.IsStarting()
-        ) {
-            var cp = raceEncounter.GetNextCheckpointPin();
-
-            // Shouldn't happen, but just in case
-            if (cp == null) return;
-
-            // Make the camera look at the next checkpoint before the race starts
-            var cam = Traverse.Create(__instance).Field("cam").GetValue<GameplayCamera>();
-            var realTf = Traverse.Create(cam).Field("realTf").GetValue<UnityEngine.Transform>();
-            realTf.transform.LookAt(cp.UIIndicator.trans.position);
-        }
-    }
 }

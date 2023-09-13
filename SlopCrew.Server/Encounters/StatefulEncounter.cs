@@ -16,12 +16,6 @@ public class StatefulEncounter {
 
     public List<ConnectionState> Players = new();
 
-    /*
-     * only replicate players who are in the same lobby
-     * on disconnect ensure cleanup?
-     * functions for adding and removing players
-     */
-
     public void SendToAllPlayers(NetworkPacket msg) {
         var ids = this.Players
             .Select(s => s.Player?.ID)

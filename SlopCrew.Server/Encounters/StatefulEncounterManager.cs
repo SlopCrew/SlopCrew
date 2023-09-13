@@ -14,7 +14,7 @@ public class StatefulEncounterManager {
 
     public List<RaceConfig> RaceConfigs = new();
 
-    private const int TicksPerQueue = Constants.TicksPerSecond * 20;
+    private const int TicksPerQueue = Constants.TicksPerSecond;
 
     public StatefulEncounterManager() {
         Task.Run(this.DownloadRaceConfigs).Wait();
@@ -26,7 +26,9 @@ public class StatefulEncounterManager {
         var races = await gh.DownloadFilesFromDirectory("SlopCrew", "race-config");
 
         foreach (var file in races.Values) {
-            var raceConfig = JsonSerializer.Deserialize<RaceConfig>(file);
+            var raceConfig = JsonSerializer.Deserialize<RaceConfig>(file, new JsonSerializerOptions {
+                IncludeFields = true
+            });
             if (raceConfig != null) this.RaceConfigs.Add(raceConfig);
         }
 
@@ -45,7 +47,8 @@ public class StatefulEncounterManager {
             .ForEach(e => { e.State = EncounterState.Finished; });
 
         var finishedEncounters = this.Encounters
-            .Where(e => e.State == EncounterState.Finished);
+            .Where(e => e.State == EncounterState.Finished)
+            .ToList();
         foreach (var encounter in finishedEncounters) {
             this.Encounters.Remove(encounter);
         }
@@ -75,25 +78,29 @@ public class StatefulEncounterManager {
     private void QueuePlayers() {
         foreach (var (stage, queue) in this.QueuedPlayers) {
             foreach (var (type, players) in queue) {
-                var encounter = type switch {
-                    EncounterType.RaceEncounter => new RaceStatefulEncounter(stage),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                try {
+                    var encounter = type switch {
+                        EncounterType.RaceEncounter => new RaceStatefulEncounter(stage),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
 
-                encounter.Players.AddRange(players);
-                this.Encounters.Add(encounter);
+                    encounter.Players.AddRange(players);
+                    this.Encounters.Add(encounter);
 
-                Server.Instance.Module.SendToTheConcerned(
-                    players.Select(x => x.Player!.ID),
-                    new ClientboundEncounterStart {
-                        EncounterType = type,
-                        EncounterConfigData = new RaceEncounterConfigData {
-                            EncounterLength = RaceStatefulEncounter.MaxRaceTime,
-                            Guid = encounter.EncounterId,
-                            RaceConfig = encounter.ConfigData
+                    Server.Instance.Module.SendToTheConcerned(
+                        players.Select(x => x.Player!.ID).ToList(),
+                        new ClientboundEncounterStart {
+                            EncounterType = type,
+                            EncounterConfigData = new RaceEncounterConfigData {
+                                EncounterLength = RaceStatefulEncounter.MaxRaceTime,
+                                Guid = encounter.EncounterId,
+                                RaceConfig = encounter.ConfigData
+                            }
                         }
-                    }
-                );
+                    );
+                } catch (Exception e) {
+                    Log.Error(e, "Error while creating encounter");
+                }
             }
         }
     }

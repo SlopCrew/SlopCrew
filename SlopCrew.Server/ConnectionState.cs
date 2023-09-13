@@ -83,6 +83,10 @@ public class ConnectionState {
                     this.HandleEncounterRequest(encounterRequest);
                 }
                 break;
+
+            case ServerboundRaceFinish raceFinish:
+                this.HandleRaceFinish(raceFinish);
+                break;
         }
     }
 
@@ -254,6 +258,18 @@ public class ConnectionState {
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
             otherPlayer.EncounterRequests[encounterRequest.EncounterType].Remove(this.Player.ID);
         });
+    }
+
+    private void HandleRaceFinish(ServerboundRaceFinish raceFinish) {
+        lock (Server.Instance.StatefulEncounterManager.Encounters) {
+            var encounters = Server.Instance.StatefulEncounterManager.Encounters;
+            if (encounters.FirstOrDefault(x => x.EncounterId == raceFinish.Guid) is not RaceStatefulEncounter race) {
+                Log.Warning("Received null race for finish {Guid}", raceFinish.Guid);
+                return;
+            }
+
+            race.AddPlayerTime(this.Player!.ID, raceFinish.Time);
+        }
     }
 
     public string DebugName() {
