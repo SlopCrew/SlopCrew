@@ -177,15 +177,4 @@ public class PlayerPatch {
 
         return true;
     }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("FixedUpdatePlayer")]
-    public static void FixedUpdatePlayerPrefix(Player __instance) {
-        var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
-        if (__instance == currentPlayer && Plugin.CurrentEncounter is SlopRaceEncounter {IsBusy: true}) {
-            var grindAbility = Traverse.Create(__instance).Field<GrindAbility>("grindAbility").Value;
-            grindAbility.speedTarget = RaceVelocityModifier.GrindSpeedTarget;
-            __instance.normalBoostSpeed = RaceVelocityModifier.BoostSpeedTarget;
-        }
-    }
 }
