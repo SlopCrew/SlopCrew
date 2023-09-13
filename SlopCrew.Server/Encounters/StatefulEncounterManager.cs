@@ -86,7 +86,6 @@ public class StatefulEncounterManager {
                 Server.Instance.Module.SendToTheConcerned(
                     players.Select(x => x.Player!.ID),
                     new ClientboundEncounterStart {
-                        PlayerID = uint.MaxValue,
                         EncounterType = type,
                         EncounterConfigData = new RaceEncounterConfigData {
                             EncounterLength = RaceStatefulEncounter.MaxRaceTime,

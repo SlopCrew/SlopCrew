@@ -78,21 +78,22 @@ public class SlopAPIController : WebApiController {
             two.EncounterRequests[encounter].Remove(one.Player.ID);
         }
 
-        var configData = new EncounterConfigData {
-            EncounterLength = length,
-            Guid = Guid.Empty
-        };
-
         module.SendToContext(one.Context, new ClientboundEncounterStart {
-            PlayerID = two.Player.ID,
             EncounterType = encounter,
-            EncounterConfigData = configData
+            EncounterConfigData = new SimpleEncounterConfigData {
+                EncounterLength = length,
+                Guid = Guid.Empty,
+                Opponent = two.Player.ID
+            }
         });
 
         module.SendToContext(two.Context, new ClientboundEncounterStart {
-            PlayerID = one.Player.ID,
             EncounterType = encounter,
-            EncounterConfigData = configData
+            EncounterConfigData = new SimpleEncounterConfigData {
+                EncounterLength = length,
+                Guid = Guid.Empty,
+                Opponent = one.Player.ID
+            }
         });
 
         await this.HttpContext.SendStringAsync("OK", "text/plain", Encoding.UTF8);

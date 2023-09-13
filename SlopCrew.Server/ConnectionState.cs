@@ -222,21 +222,22 @@ public class ConnectionState {
                 _ => 90
             };
 
-            var configData = new SimpleEncounterConfigData {
-                EncounterLength = length,
-                Guid = Guid.Empty
-            };
-
             module.SendToContext(this.Context, new ClientboundEncounterStart {
-                PlayerID = otherPlayer.Player.ID,
                 EncounterType = encounterRequest.EncounterType,
-                EncounterConfigData = configData
+                EncounterConfigData = new SimpleEncounterConfigData {
+                    EncounterLength = length,
+                    Guid = Guid.Empty,
+                    Opponent = otherPlayer.Player.ID
+                }
             });
 
             module.SendToContext(otherPlayer.Context, new ClientboundEncounterStart {
-                PlayerID = this.Player.ID,
                 EncounterType = encounterRequest.EncounterType,
-                EncounterConfigData = configData
+                EncounterConfigData = new SimpleEncounterConfigData {
+                    EncounterLength = length,
+                    Guid = Guid.Empty,
+                    Opponent = this.Player.ID
+                }
             });
 
             this.EncounterRequests[encounterRequest.EncounterType].Remove(otherPlayer.Player.ID);
