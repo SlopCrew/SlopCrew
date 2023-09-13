@@ -16,6 +16,12 @@ public class StatefulEncounter {
 
     public List<ConnectionState> Players = new();
 
+    protected int Stage;
+
+    public StatefulEncounter(int stage) {
+        this.Stage = stage;
+    }
+
     public void SendToAllPlayers(NetworkPacket msg) {
         var ids = this.Players
             .Select(s => s.Player?.ID)
@@ -32,5 +38,9 @@ public class StatefulEncounter {
         return this.Players.Select(s => s.Player?.ID).Where(s => s != null).Select(s => s.Value);
     }
 
-    public virtual void Update() { }
+    public virtual void Update() {
+        // Filter disconnected/dead players
+        this.Players = this.Players.Where(x => x.Player?.Stage == this.Stage
+                                               && Server.Instance.Module.Connections.ContainsValue(x)).ToList();
+    }
 }

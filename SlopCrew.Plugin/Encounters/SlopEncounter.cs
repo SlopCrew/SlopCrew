@@ -34,5 +34,8 @@ public class SlopEncounter : IDisposable {
         this.Stop();
     }
 
-    public virtual void Dispose() { }
+    public virtual void Dispose() {
+        Core.OnUpdate -= this.Update;
+        StageManager.OnStageInitialized -= this.Stop;
+    }
 }

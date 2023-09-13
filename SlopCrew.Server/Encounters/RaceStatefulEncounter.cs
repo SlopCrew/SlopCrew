@@ -11,7 +11,7 @@ public class RaceStatefulEncounter : StatefulEncounter {
     public RaceConfig ConfigData;
     public Dictionary<uint, float> Ranking { get; set; } = new();
 
-    public RaceStatefulEncounter(int stage) {
+    public RaceStatefulEncounter(int stage) : base(stage) {
         var pool = Server.Instance.StatefulEncounterManager.RaceConfigs
             .Where(x => x.Stage == stage)
             .ToList();
@@ -23,6 +23,7 @@ public class RaceStatefulEncounter : StatefulEncounter {
     public const int MaxRaceTime = 600;
 
     public override void Update() {
+        base.Update();
         var remainingWaitingBeforeFinishingTime = DateTime.UtcNow - this.StartTime;
 
         if (

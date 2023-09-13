@@ -12,7 +12,6 @@ public class RaceCheckpoint : MonoBehaviour {
     private bool activated;
 
     public BoxCollider Collider = null!;
-    public GameObject CheckpointObject;
     public MapPin Pin;
     public Player.UIIndicatorData UIIndicator;
 
@@ -20,10 +19,6 @@ public class RaceCheckpoint : MonoBehaviour {
         this.Collider = this.gameObject.AddComponent<BoxCollider>();
         this.Collider.isTrigger = true;
         this.Collider.size = new Vector3(5.5f, 10.5f, 5.5f);
-
-        this.CheckpointObject = new GameObject("RaceCheckpoint");
-        this.CheckpointObject.tag = Tag;
-        this.CheckpointObject.transform.position = this.gameObject.transform.position;
 
         this.CreateUIIndicator();
         this.CreateMapPin();
@@ -51,15 +46,9 @@ public class RaceCheckpoint : MonoBehaviour {
             .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
             .GetValue<MapPin>();
 
-        this.Pin.AssignGameplayEvent(this.CheckpointObject);
+        this.Pin.AssignGameplayEvent(this.gameObject);
         this.Pin.InitMapPin(MapPin.PinType.StoryObjectivePin);
         this.Pin.OnPinEnable();
-    }
-
-    public void OnDestroy() {
-        Destroy(this.Pin.gameObject);
-        Destroy(this.UIIndicator.uiObject);
-        Destroy(this.CheckpointObject);
     }
 
     private void Update() {

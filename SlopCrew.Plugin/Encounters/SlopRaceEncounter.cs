@@ -28,6 +28,7 @@ public class SlopRaceEncounter : SlopEncounter {
         var pins = configData.RaceConfig.MapPins
             .Select(x => {
                 var checkpoint = new GameObject("RaceCheckpoint");
+                checkpoint.tag = RaceCheckpoint.Tag;
                 checkpoint.transform.position = x.ToMentalDeficiency();
                 var component = checkpoint.AddComponent<RaceCheckpoint>();
                 return component;
@@ -60,7 +61,8 @@ public class SlopRaceEncounter : SlopEncounter {
     }
 
     protected override void Update() {
-        this.GetNextCheckpoint()?.UpdateUIIndicator();
+        var checkpoint = this.GetNextCheckpoint();
+        if (checkpoint != null) checkpoint.UpdateUIIndicator();
 
         switch (this.state) {
             case RaceState.Start: {
@@ -145,8 +147,12 @@ public class SlopRaceEncounter : SlopEncounter {
     }
 
     public override void Dispose() {
+        base.Dispose();
+        
         foreach (var checkpointPin in this.checkpoints) {
-            UnityEngine.Object.Destroy(checkpointPin.gameObject);
+            if (checkpointPin != null) {
+                UnityEngine.Object.Destroy(checkpointPin.gameObject);
+            }
         }
         this.checkpoints.Clear();
 
