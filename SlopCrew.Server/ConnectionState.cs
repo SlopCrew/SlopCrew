@@ -222,7 +222,7 @@ public class ConnectionState {
                 _ => 90
             };
 
-            var configData = new EncounterConfigData {
+            var configData = new SimpleEncounterConfigData {
                 EncounterLength = length,
                 Guid = Guid.Empty
             };
