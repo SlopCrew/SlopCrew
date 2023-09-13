@@ -14,7 +14,7 @@ public class StatefulEncounterManager {
 
     public List<RaceConfig> RaceConfigs = new();
 
-    private const int TicksPerQueue = Constants.TicksPerSecond;
+    private const int TicksPerQueue = Constants.TicksPerSecond * 20;
 
     public StatefulEncounterManager() {
         Task.Run(this.DownloadRaceConfigs).Wait();
