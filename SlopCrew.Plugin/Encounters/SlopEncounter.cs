@@ -44,6 +44,7 @@ public class SlopEncounter {
             var us = WorldHandler.instance?.GetCurrentPlayer()!;
             var maxBoost = Traverse.Create(us).Field<float>("maxBoostCharge").Value;
             us.AddBoostCharge(maxBoost);
+            WantedManager.instance.StopPlayerWantedStatus(false);
             
             this.Opponent = associatedPlayer;
             this.slopEncounterState = SlopEncounterState.Start;
@@ -55,6 +56,8 @@ public class SlopEncounter {
     public bool IsBusy() => this.slopEncounterState != SlopEncounterState.Stopped;
 
     private void Stop() {
+        WantedManager.instance.StopPlayerWantedStatus(false);
+        
         this.TurnOffScoreUI();
         this.Opponent = null;
         this.slopEncounterState = SlopEncounterState.Stopped;

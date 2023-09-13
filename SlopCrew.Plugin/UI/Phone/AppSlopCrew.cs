@@ -86,7 +86,7 @@ public class AppSlopCrew : App {
         if (me is null || this.Label is null) return;
 
         if (this.HasBannedMods()) {
-            this.Label.text = "Please disable\ntrick mods";
+            this.Label.text = "Please disable mods that could give you an advantage";
             return;
         }
 
@@ -131,7 +131,10 @@ public class AppSlopCrew : App {
         var bannedMods = new List<string> {
             "us.wallace.plugins.BRC.TiltTricking",
             "TrickGod",
-            "BumperCars"
+            "BumperCars",
+            "us.wallace.plugins.BRC.DontSetMySpeedPLS",
+            "QuickGraffiti",
+            "ZenModeAlpha"
         };
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
