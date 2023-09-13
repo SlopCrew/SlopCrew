@@ -68,7 +68,7 @@ public class RaceCheckpoint : MonoBehaviour {
     }
 
     public void UpdateUIIndicator() {
-        this.activated = true;
+        if (!this.activated) this.Activate();
 
         var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
         var uIIndicatorPos = this.UIIndicator.trans.position;
@@ -84,14 +84,20 @@ public class RaceCheckpoint : MonoBehaviour {
     }
 
     public void Activate() {
-        Pin.gameObject.SetActive(true);
+        this.Pin.gameObject.SetActive(true);
+        this.UIIndicator.isActive = true;
+        this.UIIndicator.uiObject.SetActive(true);
+        this.Collider.enabled = true;
+
         this.activated = true;
     }
 
     public void Deactivate() {
-        Pin.gameObject.SetActive(false);
-        UIIndicator.isActive = false;
-        UIIndicator.uiObject.SetActive(false);
+        this.Pin.gameObject.SetActive(false);
+        this.UIIndicator.isActive = false;
+        this.UIIndicator.uiObject.SetActive(false);
+        this.Collider.enabled = false;
+
         this.activated = false;
     }
 

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SlopCrew.Plugin.Encounters;
 using TMPro;
 using UnityEngine.UI;
 using Vector3 = System.Numerics.Vector3;
@@ -15,7 +16,9 @@ using Vector3 = System.Numerics.Vector3;
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class AppSlopCrew : App {
+    [NonSerialized] public string? RaceRankings;
     [NonSerialized] public TMP_Text Label = null!;
+
     private AssociatedPlayer? nearestPlayer;
     private EncounterType encounter = EncounterType.ScoreEncounter;
 
@@ -49,6 +52,10 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressUp() {
+        if (this.RaceRankings is not null) {
+            this.RaceRankings = null;
+            return;
+        }
         if (Plugin.CurrentEncounter?.IsBusy == true) return;
 
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) - 1;
@@ -60,6 +67,10 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressDown() {
+        if (this.RaceRankings is not null) {
+            this.RaceRankings = null;
+            return;
+        }
         if (Plugin.CurrentEncounter?.IsBusy == true) return;
 
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
@@ -71,6 +82,10 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressRight() {
+        if (this.RaceRankings is not null) {
+            this.RaceRankings = null;
+            return;
+        }
         if (!this.SendEncounterRequest()) return;
 
         // People wanted an audible sound so you'll get one
@@ -103,7 +118,16 @@ public class AppSlopCrew : App {
         }
 
         if (Plugin.CurrentEncounter?.IsBusy == true) {
-            this.Label.text = "glhf";
+            if (Plugin.CurrentEncounter is SlopRaceEncounter race && race.IsWaitingForResults()) {
+                this.Label.text = "Waiting for results...";
+            } else {
+                this.Label.text = "glhf";
+            }
+            return;
+        }
+
+        if (this.RaceRankings is not null) {
+            this.Label.text = this.RaceRankings;
             return;
         }
 
@@ -126,7 +150,7 @@ public class AppSlopCrew : App {
         };
 
         if (this.encounter.IsStateful()) {
-            this.Label.text = $"Press right\nto start a\n{modeName} battle";
+            this.Label.text = $"Press right\nto wait for a\n{modeName} battle";
             return;
         }
 
@@ -161,7 +185,6 @@ public class AppSlopCrew : App {
         this.m_Notification.InitNotification(this);
         this.notifInitialized = true;
     }
-
 
     public override void OpenContent(AUnlockable unlockable, bool appAlreadyOpen) {
         if (Plugin.PhoneInitializer.LastRequest is not null) {

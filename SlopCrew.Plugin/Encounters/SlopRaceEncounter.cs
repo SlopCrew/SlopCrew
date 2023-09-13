@@ -5,10 +5,14 @@ using System.Globalization;
 using System.Linq;
 using HarmonyLib;
 using Reptile;
+using Reptile.Phone;
+using SlopCrew.Common;
 using SlopCrew.Common.Encounters;
+using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters.Race;
 using SlopCrew.Plugin.Extensions;
+using SlopCrew.Plugin.UI.Phone;
 using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
@@ -105,6 +109,7 @@ public class SlopRaceEncounter : SlopEncounter {
     private string TimeElapsed() => this.NiceTimerString(this.timer.Elapsed.TotalSeconds);
 
     public bool IsStarting() => this.state == RaceState.Start;
+    public bool IsWaitingForResults() => this.state == RaceState.Finish;
 
     public RaceCheckpoint? GetNextCheckpoint() {
         return this.checkpoints.Count > 0 ? this.checkpoints.Peek() : null;
@@ -147,6 +152,32 @@ public class SlopRaceEncounter : SlopEncounter {
 
         this.SetTimer(null);
         Plugin.ShouldIgnoreInput = false;
+    }
+
+    public override void HandleEnd(ClientboundEncounterEnd encounterEnd) {
+        base.HandleEnd(encounterEnd);
+
+        var player = WorldHandler.instance.GetCurrentPlayer();
+        var phone = Traverse.Create(player).Field("phone").GetValue<Phone>();
+        var app = phone.GetAppInstance<AppSlopCrew>();
+        var endData = encounterEnd.EndData as RaceEncounterEndData;
+
+        var sorted = endData!.Rankings.OrderBy(x => x.Value).ToList();
+
+        var str = "";
+        foreach (var kvp in sorted) {
+            var id = kvp.Key;
+            var timeStr = "<color=white>: " + this.NiceTimerString(kvp.Value) + "\n";
+
+            if (Plugin.PlayerManager.Players.TryGetValue(id, out var associatedPlayer)) {
+                var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
+                str += name + timeStr;
+            } else {
+                // Assume players not in our players list is us
+                str += Plugin.SlopConfig.Username.Value + timeStr;
+            }
+        }
+        app.RaceRankings = str.Trim();
     }
 
     enum RaceState {

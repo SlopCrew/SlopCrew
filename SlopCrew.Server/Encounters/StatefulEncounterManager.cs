@@ -78,17 +78,20 @@ public class StatefulEncounterManager {
     private void QueuePlayers() {
         foreach (var (stage, queue) in this.QueuedPlayers) {
             foreach (var (type, players) in queue) {
+                // Don't queue players who wandered into another stage
+                var playersInStage = players.Where(x => x.Player!.Stage == stage).ToList();
+
                 try {
                     var encounter = type switch {
                         EncounterType.RaceEncounter => new RaceStatefulEncounter(stage),
                         _ => throw new ArgumentOutOfRangeException()
                     };
 
-                    encounter.Players.AddRange(players);
+                    encounter.Players.AddRange(playersInStage);
                     this.Encounters.Add(encounter);
 
                     Server.Instance.Module.SendToTheConcerned(
-                        players.Select(x => x.Player!.ID).ToList(),
+                        playersInStage.Select(x => x.Player!.ID).ToList(),
                         new ClientboundEncounterStart {
                             EncounterType = type,
                             EncounterConfigData = new RaceEncounterConfigData {
