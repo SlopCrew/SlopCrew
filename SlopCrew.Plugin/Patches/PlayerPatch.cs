@@ -1,7 +1,8 @@
 using HarmonyLib;
 using Reptile;
 using SlopCrew.Common;
-using SlopCrew.Plugin.Scripts;
+using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.Encounters.Race;
 using UnityEngine;
 using Player = Reptile.Player;
 
@@ -98,7 +99,8 @@ public class PlayerPatch {
                     // Calculate time to next target position
                     var lerpTime = (associatedPlayer.TargetTransform.Tick - associatedPlayer.PrevTarget.Tick) *
                                    Constants.TickRate;
-                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) / 1000f / 2f;
+                    var latency = (associatedPlayer.TargetTransform.Latency + Plugin.NetworkConnection.ServerLatency) /
+                                  1000f / 2f;
                     associatedPlayer.TimeToTarget = lerpTime + latency;
                 }
             }
@@ -174,36 +176,5 @@ public class PlayerPatch {
         }
 
         return true;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("FixedUpdatePlayer")]
-    public static void FixedUpdatePlayerPrefix(Player __instance) {
-        var currentPlayer = WorldHandler.instance?.GetCurrentPlayer();
-        if (__instance.name == currentPlayer?.name && Plugin.RaceManager.IsInRace()) {
-            GrindAbility grindAbility = Traverse.Create(__instance).Field<GrindAbility>("grindAbility").Value;
-
-            grindAbility.speedTarget = RaceVelocityModifier.GrindSpeedTarget;
-            __instance.normalBoostSpeed = RaceVelocityModifier.BoostSpeedTarget;
-        }
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch("LateUpdatePlayer")]
-    public static void LateUpdatePlayer(Player __instance) {
-        var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
-        if (Plugin.RaceManager.IsStarting() && __instance.name == currentPlayer.name) {
-            var cp = Plugin.RaceManager.GetNextCheckpointPin();
-
-            //Shouldn't happen, but just in case
-            if (cp == null) {
-                return;
-            }
-
-            //Make the camera look at the next checkpoint before the race starts
-            GameplayCamera cam = Traverse.Create(__instance).Field("cam").GetValue<GameplayCamera>();
-            UnityEngine.Transform realTf = Traverse.Create(cam).Field("realTf").GetValue<UnityEngine.Transform>();
-            realTf.transform.LookAt(cp.UIIndicator.trans.position);
-        }
     }
 }

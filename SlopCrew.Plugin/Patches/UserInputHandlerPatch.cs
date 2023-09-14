@@ -2,20 +2,20 @@ using HarmonyLib;
 using Reptile;
 using static Reptile.UserInputHandler;
 
-namespace SlopCrew.Plugin.Patches {
-    [HarmonyPatch(typeof(UserInputHandler))]
-    public class UserInputHandlerPatch {
+namespace SlopCrew.Plugin.Patches; 
 
-        [HarmonyPrefix]
-        [HarmonyPatch("PollInputs")]
-        public static bool PollInputsPrefix(ref InputBuffer __result, ref InputBuffer inputBuffer) {
-            if (Plugin.ShouldIgnoreInput) {
-                __result = new InputBuffer();
-                inputBuffer = new InputBuffer();
-                return false;
-            }
+[HarmonyPatch(typeof(UserInputHandler))]
+public class UserInputHandlerPatch {
 
-            return true;
+    [HarmonyPrefix]
+    [HarmonyPatch("PollInputs")]
+    public static bool PollInputsPrefix(ref InputBuffer __result, ref InputBuffer inputBuffer) {
+        if (Plugin.ShouldIgnoreInput) {
+            __result = new InputBuffer();
+            inputBuffer = new InputBuffer();
+            return false;
         }
+
+        return true;
     }
 }

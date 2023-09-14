@@ -26,12 +26,7 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
             {NetworkMessageType.ClientboundEncounterRequest, () => new ClientboundEncounterRequest()},
             {NetworkMessageType.ClientboundEncounterStart, () => new ClientboundEncounterStart()},
-            {NetworkMessageType.ClientboundRequestRace, () => new ClientboundRequestRace()},
-            {NetworkMessageType.ClientboundRaceInitialize, () => new ClientboundRaceInitialize()},
-            {NetworkMessageType.ClientboundRaceStart, () => new ClientboundRaceStart()},
-            {NetworkMessageType.ClientboundRaceRank, () => new ClientboundRaceRank()},
-            {NetworkMessageType.ClientboundRaceAborted, () => new ClientboundRaceAborted()},
-            {NetworkMessageType.ClientboundRaceForcedToFinish, () => new ClientboundRaceForcedToFinish()},
+            {NetworkMessageType.ClientboundEncounterEnd, () => new ClientboundEncounterEnd()},
 
             {NetworkMessageType.ServerboundAnimation, () => new ServerboundAnimation()},
             {NetworkMessageType.ServerboundPing, () => new ServerboundPing()},
@@ -40,8 +35,7 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ServerboundScoreUpdate, () => new ServerboundScoreUpdate()},
             {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
             {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()},
-            {NetworkMessageType.ServerboundReadyForRace, () => new ServerboundReadyForRace()},
-            {NetworkMessageType.ServerboundFinishedRace, () => new ServerboundFinishedRace()}
+            {NetworkMessageType.ServerboundRaceFinish, () => new ServerboundRaceFinish()}
         };
 
     public static NetworkPacket Read(byte[] data) {

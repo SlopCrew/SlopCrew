@@ -7,14 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EmbedIO" Version="3.5.2" />
-        <PackageReference Include="Graphite.NET" Version="1.1.0" />
-        <PackageReference Include="Serilog" Version="3.0.1" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-        <PackageReference Include="Tomlyn" Version="0.16.2" />
+        <PackageReference Include="EmbedIO" Version="3.5.2"/>
+        <PackageReference Include="Graphite.NET" Version="1.1.0"/>
+        <PackageReference Include="Serilog" Version="3.0.1"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+        <PackageReference Include="Tomlyn" Version="0.16.2"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj" />
+        <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
     </ItemGroup>
 </Project>

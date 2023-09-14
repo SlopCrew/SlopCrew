@@ -90,10 +90,6 @@ var packets = new List<NetworkPacket> {
         ID = 42069
     },
 
-    new ClientboundEncounterStart {
-        PlayerID = 42069
-    },
-
     new ServerboundPing {
         ID = 42069
     },

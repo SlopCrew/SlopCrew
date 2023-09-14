@@ -1,31 +1,22 @@
-﻿using System;
-using HarmonyLib;
-using Reptile;
-using SlopCrew.Common;
+﻿using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Plugin.Encounters;
 
-public class SlopComboEncounter : SlopEncounter {
+public class SlopComboEncounter : SlopTimerEncounter {
     private bool comboDropped = false;
     private bool opponentComboDropped = false;
-    private float? lastComboScore;
-    private float? opponentLastComboScore;
+    private float lastComboScore = 0;
+    private float opponentLastComboScore = 0;
 
-    public override void Start(uint encounterStartPlayerID, float encounterLength) {
-        base.Start(encounterStartPlayerID, encounterLength);
-        this.comboDropped = false;
-        this.opponentComboDropped = false;
-        this.lastComboScore = 0;
-        this.opponentLastComboScore = 0;
-    }
+    public SlopComboEncounter(SimpleEncounterConfigData configData) : base(configData) { }
 
-    public override void EncounterUpdate() {
+    protected override void UpdatePlay() {
         var elapsed = this.Stopwatch.Elapsed.TotalSeconds;
 
         if (elapsed > 15) {
             // If both players dropped their combo, end the encounter
             if (this.comboDropped && this.opponentComboDropped) {
-                this.SetEncounterState(SlopEncounterState.Outro);
+                this.SetEncounterState(TimerState.Outro);
                 return;
             }
 
@@ -47,7 +38,7 @@ public class SlopComboEncounter : SlopEncounter {
         }
 
         if (!this.opponentComboDropped) {
-            var opponentBaseScore = this.Opponent.BaseScore;
+            var opponentBaseScore = this.Opponent!.BaseScore;
             var opponentMultiplier = this.Opponent.Multiplier;
 
             if (elapsed > 15) {
@@ -58,10 +49,10 @@ public class SlopComboEncounter : SlopEncounter {
         }
     }
 
-    public override void SetEncounterState(SlopEncounterState nextState) {
-        if (nextState == SlopEncounterState.Outro) {
-            this.MyScoreMessage = this.FormatPlayerScore(this.lastComboScore ?? this.MyScore);
-            this.TheirScoreMessage = this.FormatPlayerScore(this.opponentLastComboScore ?? this.TheirScore);
+    protected override void SetEncounterState(TimerState nextState) {
+        if (nextState == TimerState.Outro) {
+            this.MyScoreMessage = this.FormatPlayerScore(this.lastComboScore);
+            this.TheirScoreMessage = this.FormatPlayerScore(this.opponentLastComboScore);
         }
 
         base.SetEncounterState(nextState);

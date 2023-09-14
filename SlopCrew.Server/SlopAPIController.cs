@@ -3,6 +3,7 @@ using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using SlopCrew.Common;
+using SlopCrew.Common.Encounters;
 using SlopCrew.Common.Network.Clientbound;
 
 namespace SlopCrew.Server;
@@ -48,11 +49,12 @@ public class SlopAPIController : WebApiController {
     public async Task PostAdminStartTournamentEncounter(
         [QueryField] int oneID,
         [QueryField] int twoID,
-        [QueryField] float duration) {
+        [QueryField] float duration
+    ) {
         var module = Server.Instance.Module;
         var one = module.Connections.Values.FirstOrDefault(x => x.Player?.ID == oneID);
         var two = module.Connections.Values.FirstOrDefault(x => x.Player?.ID == twoID);
-        
+
         if (one?.Player is null || two?.Player is null) {
             this.HttpContext.Response.StatusCode = 400;
             await this.HttpContext.SendStringAsync("Player(s) not found", "text/plain", Encoding.UTF8);
@@ -77,15 +79,21 @@ public class SlopAPIController : WebApiController {
         }
 
         module.SendToContext(one.Context, new ClientboundEncounterStart {
-            PlayerID = two.Player.ID,
             EncounterType = encounter,
-            EncounterLength = length
+            EncounterConfigData = new SimpleEncounterConfigData {
+                EncounterLength = length,
+                Guid = Guid.Empty,
+                Opponent = two.Player.ID
+            }
         });
 
         module.SendToContext(two.Context, new ClientboundEncounterStart {
-            PlayerID = one.Player.ID,
             EncounterType = encounter,
-            EncounterLength = length
+            EncounterConfigData = new SimpleEncounterConfigData {
+                EncounterLength = length,
+                Guid = Guid.Empty,
+                Opponent = one.Player.ID
+            }
         });
 
         await this.HttpContext.SendStringAsync("OK", "text/plain", Encoding.UTF8);

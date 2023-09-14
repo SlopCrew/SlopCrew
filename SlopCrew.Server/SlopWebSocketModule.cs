@@ -1,3 +1,4 @@
+﻿using System.Collections;
 using EmbedIO.WebSockets;
 using Serilog;
 using SlopCrew.Common.Network;
@@ -30,7 +31,6 @@ public class SlopWebSocketModule : WebSocketModule {
         if (this.Connections.TryGetValue(context, out var state)) {
             this.Connections.Remove(context);
             Server.Instance.UntrackConnection(state);
-            RacerManager.Instance.RemovePlayerIfRacing(state.Player?.ID);
         }
 
         Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
@@ -101,8 +101,8 @@ public class SlopWebSocketModule : WebSocketModule {
         NetworkPacket msg
     ) {
         var otherSessions = this.Connections.ToList()
-                                .Where(s => ids.Contains(s.Value.Player!.ID))
-                                .ToList();
+            .Where(s => s.Value.Player is not null && ids.Contains(s.Value.Player.ID))
+            .ToList();
 
         var serialized = msg.Serialize();
 

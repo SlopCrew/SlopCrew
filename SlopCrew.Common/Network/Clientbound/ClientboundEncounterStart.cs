@@ -1,23 +1,21 @@
 ﻿using System.IO;
+using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Common.Network.Clientbound;
 
 public class ClientboundEncounterStart : NetworkPacket {
     public override NetworkMessageType MessageType => NetworkMessageType.ClientboundEncounterStart;
 
-    public uint PlayerID;
     public EncounterType EncounterType;
-    public float EncounterLength;
+    public EncounterConfigData EncounterConfigData;
 
     public override void Read(BinaryReader br) {
-        this.PlayerID = br.ReadUInt32();
         this.EncounterType = (EncounterType) br.ReadInt32();
-        this.EncounterLength = br.ReadSingle();
+        this.EncounterConfigData = EncounterConfigData.Read(this.EncounterType, br);
     }
 
     public override void Write(BinaryWriter bw) {
-        bw.Write(this.PlayerID);
         bw.Write((int) this.EncounterType);
-        bw.Write(this.EncounterLength);
+        this.EncounterConfigData.Write(bw);
     }
 }

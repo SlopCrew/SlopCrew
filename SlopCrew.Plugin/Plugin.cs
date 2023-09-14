@@ -1,9 +1,8 @@
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
 using SlopCrew.Plugin.Encounters;
-using SlopCrew.Plugin.Scripts.Race;
 using SlopCrew.Plugin.UI.Phone;
 using System.Linq;
 using System.Threading;
@@ -22,16 +21,15 @@ public class Plugin : BaseUnityPlugin {
     public static CharacterInfoManager CharacterInfoManager = null!;
     public static NetworkConnection NetworkConnection = null!;
     public static PlayerManager PlayerManager = null!;
-    public static RaceManager RaceManager = null!;
     public static SlopCrewAPI API = null!;
     public static SlopEncounter? CurrentEncounter;
     public static PhoneInitializer PhoneInitializer = null!;
 
-    private static int shouldIgnoreInput = 0;
+    private static int ShouldIgnoreInputInternal = 0;
 
     public static bool ShouldIgnoreInput {
-        get => Interlocked.CompareExchange(ref shouldIgnoreInput, 0, 0) == 1;
-        set => Interlocked.Exchange(ref shouldIgnoreInput, value ? 1 : 0);
+        get => Interlocked.CompareExchange(ref ShouldIgnoreInputInternal, 0, 0) == 1;
+        set => Interlocked.Exchange(ref ShouldIgnoreInputInternal, value ? 1 : 0);
     }
 
 
@@ -49,7 +47,6 @@ public class Plugin : BaseUnityPlugin {
         CharacterInfoManager = new();
         NetworkConnection = new();
         PlayerManager = new();
-        RaceManager = new();
         PhoneInitializer = new();
 
         //NetworkExtensions.Log = (msg) => { Log.LogInfo("NetworkExtensions Log " + msg); };
@@ -58,6 +55,13 @@ public class Plugin : BaseUnityPlugin {
     private void OnDestroy() {
         PlayerManager.Dispose();
         DebugLog.Dispose();
+    }
+
+    private void Update() {
+        if (CurrentEncounter is {IsBusy: false}) {
+            CurrentEncounter.Dispose();
+            CurrentEncounter = null;
+        }
     }
 
     private void SetupHarmony() {
