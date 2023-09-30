@@ -1,10 +1,10 @@
-using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
 using SlopCrew.Plugin.Encounters;
 using SlopCrew.Plugin.UI.Phone;
+using System.Linq;
 using UnityEngine;
 
 namespace SlopCrew.Plugin;
