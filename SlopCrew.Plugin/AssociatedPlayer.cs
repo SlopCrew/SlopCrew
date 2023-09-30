@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Plugin.ModCompat;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
@@ -47,9 +48,17 @@ public class AssociatedPlayer {
         if (moveStyle == MoveStyle.SPECIAL_SKATEBOARD)
             moveStyle = MoveStyle.SKATEBOARD;
 
+        Characters newPlayerCharacter = (Characters) slopPlayer.Character;
+
+        if (CharacterAPIModCompat.enabled) {
+            if(CharacterAPIModCompat.ModdedCharacterExists(slopPlayer.CharacterAPIHash, out var characterAPICharacter)) {
+                newPlayerCharacter = characterAPICharacter;
+            }
+        }
+
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,
-            (Characters) slopPlayer.Character,
+            newPlayerCharacter,
             PlayerType.NONE,
             outfit: slopPlayer.Outfit,
             moveStyleEquipped: moveStyle

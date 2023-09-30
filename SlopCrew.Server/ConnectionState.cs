@@ -93,7 +93,8 @@ public class ConnectionState {
     }
 
     private void HandleHello(ServerboundPlayerHello enter, Server server) {
-        // Temporary solution to CharacterAPI players crashing other players
+        // Keeping the check so we don't have to check everywhere on clients
+        // and we can just find if we are modded character on clients via CharacterAPIHash
         if (enter.Player.Character is < 0 or > 25)
             enter.Player.Character = 3;
 

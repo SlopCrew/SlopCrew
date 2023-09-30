@@ -8,6 +8,7 @@ using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.ModCompat;
 using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
 
@@ -183,7 +184,8 @@ public class PlayerManager : IDisposable {
                 },
 
                 IsDead = me.IsDead(),
-                IsDeveloper = false
+                IsDeveloper = false,
+                CharacterAPIHash = GetCharacterAPIHash(character),
             },
 
             SecretCode = Plugin.SlopConfig.SecretCode.Value
@@ -322,8 +324,15 @@ public class PlayerManager : IDisposable {
         var oldPlayer = associatedPlayer.SlopPlayer;
         var reptilePlayer = associatedPlayer.ReptilePlayer;
 
+        int newCharacter = player.Character;
+        if (CharacterAPIModCompat.enabled) {
+            if (CharacterAPIModCompat.ModdedCharacterExists(player.CharacterAPIHash, out var characterAPICharacter)) {
+                newCharacter = (int) characterAPICharacter;
+            }
+        }
+
         // TODO: this kinda sucks
-        var differentCharacter = oldPlayer.Character != player.Character;
+        var differentCharacter = oldPlayer.Character != newCharacter;
         var differentOutfit = oldPlayer.Outfit != player.Outfit;
         var differentMoveStyle = oldPlayer.MoveStyle != player.MoveStyle;
         var isDifferent = differentCharacter || differentOutfit || differentMoveStyle;
@@ -336,7 +345,7 @@ public class PlayerManager : IDisposable {
                 reptilePlayer.SetOutfit(player.Outfit);
             } else if (differentCharacter || differentOutfit) {
                 // New outfit
-                reptilePlayer.SetCharacter((Characters) player.Character, player.Outfit);
+                reptilePlayer.SetCharacter((Characters) newCharacter, player.Outfit);
             }
 
             if (differentMoveStyle) {
@@ -396,6 +405,14 @@ public class PlayerManager : IDisposable {
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
+    }
+
+    private int GetCharacterAPIHash(Characters character) {
+        if(CharacterAPIModCompat.enabled) {
+            return CharacterAPIModCompat.GetModdedCharacterHash(character);
+        }
+
+        return 0;
     }
 
     public void PlayAnimation(int anim, bool forceOverwrite, bool instant, float atTime) {
