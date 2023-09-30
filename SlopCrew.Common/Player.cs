@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using SlopCrew.Common.Network;
 
 namespace SlopCrew.Common;
@@ -17,6 +17,8 @@ public class Player : NetworkSerializable {
     public bool IsDead;
     public bool IsDeveloper;
 
+    public int CharacterAPIHash;
+
     public override void Read(BinaryReader br) {
         this.Name = br.ReadString();
         this.ID = br.ReadUInt32();
@@ -31,6 +33,8 @@ public class Player : NetworkSerializable {
 
         this.IsDead = br.ReadBoolean();
         this.IsDeveloper = br.ReadBoolean();
+
+        this.CharacterAPIHash = br.ReadInt32();
     }
 
     public override void Write(BinaryWriter bw) {
@@ -46,5 +50,7 @@ public class Player : NetworkSerializable {
 
         bw.Write(this.IsDead);
         bw.Write(this.IsDeveloper);
+
+        bw.Write(this.CharacterAPIHash);
     }
 }
