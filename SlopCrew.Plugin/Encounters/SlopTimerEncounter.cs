@@ -37,6 +37,8 @@ public class SlopTimerEncounter : SlopEncounter {
             this.Opponent = associatedPlayer;
             this.ResetPlayerScore();
             this.Stopwatch.Restart();
+
+            this.IsBusy = true;
         }
     }
 
