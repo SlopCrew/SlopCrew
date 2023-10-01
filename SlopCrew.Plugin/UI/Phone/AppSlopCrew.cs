@@ -176,7 +176,6 @@ public class AppSlopCrew : App {
             "BumperCars",
             "us.wallace.plugins.BRC.DontSetMySpeedPLS",
             "QuickGraffiti",
-            "ZenModeAlpha",
             "com.yuril.MovementPlus"
         };
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
