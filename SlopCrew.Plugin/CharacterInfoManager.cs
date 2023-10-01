@@ -5,12 +5,12 @@ namespace SlopCrew.Plugin;
 
 public class CharacterInfoManager {
     public CustomCharacterInfo GetCharacterInfo(int character) {
-        if (BrcCustomCharactersAPI.Database.IsInitialized &&
-            BrcCustomCharactersAPI.Database.GetUserGuidForCharacter(character, out var guid)) {
-            //Plugin.Log.LogInfo($"Using BrcCustomCharacters, GUID {guid}");
+        if (CrewBoomAPI.CrewBoomAPIDatabase.IsInitialized &&
+            CrewBoomAPI.CrewBoomAPIDatabase.GetUserGuidForCharacter(character, out var guid)) {
+            //Plugin.Log.LogInfo($"Using CrewBoom, GUID {guid}");
 
             return new CustomCharacterInfo {
-                Method = CustomCharacterInfo.CustomCharacterMethod.BrcCustomCharacters,
+                Method = CustomCharacterInfo.CustomCharacterMethod.CrewBoom,
                 Data = guid.ToString()
             };
         }
@@ -23,10 +23,10 @@ public class CharacterInfoManager {
 
     public void SetNextCharacterInfo(CustomCharacterInfo info) {
         switch (info.Method) {
-            case CustomCharacterInfo.CustomCharacterMethod.BrcCustomCharacters: {
+            case CustomCharacterInfo.CustomCharacterMethod.CrewBoom: {
                 var guid = Guid.Parse(info.Data);
-                //Plugin.Log.LogInfo($"Overriding with BrcCustomCharacters, GUID {guid}");
-                BrcCustomCharactersAPI.Database.OverrideNextCharacterLoadedWithGuid(guid);
+                //Plugin.Log.LogInfo($"Overriding with CrewBoom, GUID {guid}");
+                CrewBoomAPI.CrewBoomAPIDatabase.OverrideNextCharacterLoadedWithGuid(guid);
                 break;
             }
         }

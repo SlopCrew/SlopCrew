@@ -19,6 +19,6 @@ public class CustomCharacterInfo : NetworkSerializable {
 
     public enum CustomCharacterMethod {
         None,
-        BrcCustomCharacters // https://github.com/SGiygas/BrcCustomCharacters
+        CrewBoom // https://github.com/SGiygas/CrewBoom
     }
 }
