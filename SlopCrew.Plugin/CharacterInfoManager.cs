@@ -1,5 +1,7 @@
-﻿using System;
+using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Plugin.ModCompatability;
+using System;
 
 namespace SlopCrew.Plugin;
 
@@ -13,6 +15,16 @@ public class CharacterInfoManager {
                 Method = CustomCharacterInfo.CustomCharacterMethod.CrewBoom,
                 Data = guid.ToString()
             };
+        }
+
+        if(CharacterAPIModCompat.enabled) {
+            var hash = CharacterAPIModCompat.GetModdedCharacterHash((Characters)character);
+            if(hash != 0) {
+                return new CustomCharacterInfo {
+                    Method = CustomCharacterInfo.CustomCharacterMethod.CharacterAPI,
+                    Data = hash.ToString()
+                };
+            }
         }
 
         return new CustomCharacterInfo {

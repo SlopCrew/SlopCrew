@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Plugin.ModCompatability;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
@@ -53,10 +54,22 @@ public class AssociatedPlayer {
         // It's also blocked server-side
         if (moveStyle == MoveStyle.SPECIAL_SKATEBOARD)
             moveStyle = MoveStyle.SKATEBOARD;
-        
+
+        Characters newPlayerCharacter = (Characters) slopPlayer.Character;
+
+        if(CharacterAPIModCompat.enabled) {
+            if(slopPlayer.CharacterInfo.Method == Common.CustomCharacterInfo.CustomCharacterMethod.CharacterAPI) {
+                if(int.TryParse(slopPlayer.CharacterInfo.Data, out int hash)) {
+                    if(CharacterAPIModCompat.ModdedCharacterExists(hash, out var characterAPICharacter)) {
+                        newPlayerCharacter = characterAPICharacter;
+                    }
+                }
+            }
+        }
+
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,
-            (Characters) slopPlayer.Character,
+            newPlayerCharacter,
             PlayerType.NONE,
             outfit: slopPlayer.Outfit,
             moveStyleEquipped: moveStyle

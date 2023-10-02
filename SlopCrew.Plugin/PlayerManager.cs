@@ -12,6 +12,7 @@ using MonoMod.Utils;
 using SlopCrew.Common.Encounters;
 using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
+using SlopCrew.Plugin.ModCompatability;
 
 namespace SlopCrew.Plugin;
 
@@ -348,6 +349,16 @@ public class PlayerManager : IDisposable {
     private void UpdateAssociatedPlayerIfDifferent(AssociatedPlayer associatedPlayer, Common.Player player) {
         var oldPlayer = associatedPlayer.SlopPlayer;
         var reptilePlayer = associatedPlayer.ReptilePlayer;
+
+        if (CharacterAPIModCompat.enabled) {
+            if (player.CharacterInfo.Method == CustomCharacterInfo.CustomCharacterMethod.CharacterAPI) {
+                if (int.TryParse(player.CharacterInfo.Data, out int hash)) {
+                    if (CharacterAPIModCompat.ModdedCharacterExists(hash, out var characterAPICharacter)) {
+                        player.Character = (int)characterAPICharacter;
+                    }
+                }
+            }
+        }
 
         // TODO: this kinda sucks
         var differentCharacter = oldPlayer.Character != player.Character;

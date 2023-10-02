@@ -30,6 +30,10 @@
             <HintPath>$(ManagedPath)/Assembly-CSharp.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="CharacterAPI">
+          <HintPath>..\libs\CharacterAPI\CharacterAPI.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
         <Reference Include="UnityEngine">
             <HintPath>$(ManagedPath)/UnityEngine.dll</HintPath>
             <Private>false</Private>

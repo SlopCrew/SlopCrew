@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
@@ -12,6 +12,7 @@ namespace SlopCrew.Plugin;
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInProcess("Bomb Rush Cyberfunk.exe")]
+[BepInDependency("com.Viliger.CharacterAPI", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin {
     public static ManualLogSource Log = null!;
     public static DebugLog DebugLog = null!;

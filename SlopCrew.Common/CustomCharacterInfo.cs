@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using SlopCrew.Common.Network;
 
 namespace SlopCrew.Common; 
@@ -19,6 +19,7 @@ public class CustomCharacterInfo : NetworkSerializable {
 
     public enum CustomCharacterMethod {
         None,
-        CrewBoom // https://github.com/SGiygas/CrewBoom
+        CrewBoom, // https://github.com/SGiygas/CrewBoom
+        CharacterAPI //https://github.com/viliger2/BRC_CharacterAPI
     }
 }
