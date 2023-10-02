@@ -102,7 +102,7 @@ public class ConnectionState {
         if (enter.Player.Character is < 0 or > 25)
             enter.Player.Character = 3;
 
-        if (enter.Player.Character is < 0 or > 3)
+        if (enter.Player.Outfit is < 0 or > 3)
             enter.Player.Outfit = 0;
 
         if (enter.Player.MoveStyle is < 0 or > 4)
