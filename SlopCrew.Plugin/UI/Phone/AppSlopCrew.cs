@@ -134,7 +134,6 @@ public class AppSlopCrew : App {
             "BumperCars",
             "us.wallace.plugins.BRC.DontSetMySpeedPLS",
             "QuickGraffiti",
-            "com.yuril.MovementPlus",
             "fr.glomzubuk.plugins.brc.gofast",
             "com.yuril.InfiniteBoost",
             "com.yuril.Shoes"
