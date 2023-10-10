@@ -136,7 +136,8 @@ public class AppSlopCrew : App {
             "QuickGraffiti",
             "com.yuril.MovementPlus",
             "fr.glomzubuk.plugins.brc.gofast",
-            "com.yuril.InfiniteBoost"
+            "com.yuril.InfiniteBoost",
+            "com.yuril.Shoes"
         };
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
