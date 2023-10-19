@@ -134,7 +134,12 @@ public class AppSlopCrew : App {
             "BumperCars",
             "us.wallace.plugins.BRC.DontSetMySpeedPLS",
             "QuickGraffiti",
-            "ZenModeAlpha"
+            "fr.glomzubuk.plugins.brc.gofast",
+            "com.yuril.InfiniteBoost",
+            "com.yuril.Shoes",
+            "com.LazyDuchess.BRC.WallPlant",
+            "Headplant",
+            "com.yuril.MovementPlus"
         };
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
