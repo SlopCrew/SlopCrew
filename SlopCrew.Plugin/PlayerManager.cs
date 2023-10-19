@@ -346,6 +346,7 @@ public class PlayerManager : IDisposable {
                 reptilePlayer.SwitchToEquippedMovestyle(equipped);
             }
 
+            associatedPlayer.visual = reptilePlayer.GetComponentInChildren<CharacterVisual>();
             associatedPlayer.ResetPlayer(player);
         }
     }
@@ -393,6 +394,7 @@ public class PlayerManager : IDisposable {
                 associatedPlayer.ReptilePlayer.SetSpraycanState(spraycanState);
             }
 
+            associatedPlayer.visual = characterVisual;
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
