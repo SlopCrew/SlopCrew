@@ -97,7 +97,7 @@ public class Server {
         }).Start();
 
         this.WebServer.Start();
-        Console.ReadKey();
+        while (true) Thread.Sleep(1000);
     }
 
     private void RunTick() {
