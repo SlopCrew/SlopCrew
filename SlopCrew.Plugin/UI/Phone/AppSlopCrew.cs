@@ -147,7 +147,7 @@ public class AppSlopCrew : App {
         }
 
         if (this.HasBannedMods()) {
-            this.Label.text = "Please disable mods that could give you an advantage";
+            this.Label.text = "Please disable\nadvantageous\nmods";
             return;
         }
 
@@ -204,19 +204,7 @@ public class AppSlopCrew : App {
     }
 
     private bool HasBannedMods() {
-        var bannedMods = new List<string> {
-            "us.wallace.plugins.BRC.TiltTricking",
-            "TrickGod",
-            "BumperCars",
-            "us.wallace.plugins.BRC.DontSetMySpeedPLS",
-            "QuickGraffiti",
-            "com.yuril.MovementPlus",
-            "com.yuril.InfiniteBoost",
-            "com.yuril.Shoes",
-            "fr.glomzubuk.plugins.brc.gofast",
-            "com.LazyDuchess.BRC.WallPlant",
-            "Headplant"
-        };
+        var bannedMods = Plugin.NetworkConnection.ServerConfig?.BannedMods ?? new();
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
 

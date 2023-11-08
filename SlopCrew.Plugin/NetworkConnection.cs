@@ -24,6 +24,7 @@ public class NetworkConnection : IDisposable {
     public uint? PingID;
     public long ServerLatency = 0;
     public Queue<long> RoundtripTimes = new();
+    public ClientboundServerConfig? ServerConfig;
 
     private Task? tickTask;
     private Task? pingTask;
@@ -128,6 +129,10 @@ public class NetworkConnection : IDisposable {
             OnMessageReceived?.Invoke(packet);
 
             switch (packet) {
+                case ClientboundServerConfig serverConfig:
+                    this.ServerConfig = serverConfig;
+                    break;
+
                 case ClientboundPong pong:
                     this.HandlePong(pong);
                     break;

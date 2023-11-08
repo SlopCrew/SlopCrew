@@ -23,8 +23,9 @@ public class Config {
     }
 
     public class ConfigEncounters {
-        public float ScoreDuration { get; set;  } = 90f;
+        public float ScoreDuration { get; set; } = 90f;
         public float ComboDuration { get; set; } = 300f;
+        public List<string> BannedMods { get; set; } = new();
     }
 
     public static Config ResolveConfig(string? filePath) {

@@ -39,13 +39,17 @@ public class ConnectionState {
         // These packets get processed when player is null
         switch (msg) {
             case ServerboundVersion version: {
-                    if (version.Version != Constants.NetworkVersion) {
-                        this.Context.WebSocket.CloseAsync();
-                        Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
-                                    version.Version, Constants.NetworkVersion);
-                    }
-                    return;
+                if (version.Version != Constants.NetworkVersion) {
+                    this.Context.WebSocket.CloseAsync();
+                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                version.Version, Constants.NetworkVersion);
                 }
+                
+                server.Module.SendToContext(this.Context, new ClientboundServerConfig {
+                    BannedMods = server.Config.Encounters.BannedMods
+                });
+                return;
+            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
@@ -133,7 +137,7 @@ public class ConnectionState {
         this.Player.IsDeveloper = Constants.SecretCodes.Contains(hashString);
 
         // Someone will do it eventually
-        if (this.Player.CharacterInfo is { Data.Length: > 64 }) {
+        if (this.Player.CharacterInfo is {Data.Length: > 64}) {
             this.Player.CharacterInfo.Data = this.Player.CharacterInfo.Data[..64];
         }
 

@@ -15,6 +15,7 @@ public enum NetworkMessageType
     ClientboundPlayersUpdate,
     ClientboundPlayerVisualUpdate,
     ClientboundPong,
+    ClientboundServerConfig,
     ClientboundSync,
 
     ServerboundAnimation,

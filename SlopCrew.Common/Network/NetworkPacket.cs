@@ -23,6 +23,7 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ClientboundPlayersUpdate, () => new ClientboundPlayersUpdate()},
             {NetworkMessageType.ClientboundPlayerVisualUpdate, () => new ClientboundPlayerVisualUpdate()},
             {NetworkMessageType.ClientboundPong, () => new ClientboundPong()},
+            {NetworkMessageType.ClientboundServerConfig, () => new ClientboundServerConfig()},
             {NetworkMessageType.ClientboundSync, () => new ClientboundSync()},
             {NetworkMessageType.ClientboundEncounterRequest, () => new ClientboundEncounterRequest()},
             {NetworkMessageType.ClientboundEncounterStart, () => new ClientboundEncounterStart()},
@@ -37,7 +38,7 @@ public abstract class NetworkPacket : NetworkSerializable {
             {NetworkMessageType.ServerboundVisualUpdate, () => new ServerboundVisualUpdate()},
             {NetworkMessageType.ServerboundEncounterRequest, () => new ServerboundEncounterRequest()},
             {NetworkMessageType.ServerboundRaceFinish, () => new ServerboundRaceFinish()},
-            {NetworkMessageType.ServerboundEncounterCancel, () => new ServerboundEncounterCancel() }
+            {NetworkMessageType.ServerboundEncounterCancel, () => new ServerboundEncounterCancel()}
         };
 
     public static NetworkPacket Read(byte[] data) {
