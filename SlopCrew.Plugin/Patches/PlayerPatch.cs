@@ -65,6 +65,12 @@ public class PlayerPatch {
     [HarmonyPatch("SetCharacter")]
     public static void SetCharacter(Player __instance, Characters setChar, int setOutfit = 0) {
         if (__instance == WorldHandler.instance?.GetCurrentPlayer()) {
+            //since the game sets outfit after calling SetCharacter in CharacterSelect.SetPlayerToCharacter
+            //by setting outfit material manually instead of just using outfit parameter, we also have to set it manually
+            var outfit = Reptile.Core.Instance.SaveManager.CurrentSaveSlot.GetCharacterProgress(setChar)?.outfit;
+            if (outfit != null) {
+                Plugin.PlayerManager.CurrentOutfit = (int)outfit;
+            }
             Plugin.PlayerManager.IsHelloRefreshQueued = true;
         }
     }
