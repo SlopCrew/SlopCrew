@@ -98,8 +98,8 @@ public class AppSlopCrew : App {
         // People wanted an audible sound so you'll get one
         var audioManager = Core.Instance.AudioManager;
         var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
-                                         new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
-        playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
+                                         new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)});
+        playSfx.Invoke(audioManager, new object[] {SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f});
 
         if (this.encounter is EncounterType.RaceEncounter && !isWaitingForARace) {
             isWaitingForARace = true;
@@ -210,7 +210,12 @@ public class AppSlopCrew : App {
             "BumperCars",
             "us.wallace.plugins.BRC.DontSetMySpeedPLS",
             "QuickGraffiti",
-            "com.yuril.MovementPlus"
+            "com.yuril.MovementPlus",
+            "com.yuril.InfiniteBoost",
+            "com.yuril.Shoes",
+            "fr.glomzubuk.plugins.brc.gofast",
+            "com.LazyDuchess.BRC.WallPlant",
+            "Headplant"
         };
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
