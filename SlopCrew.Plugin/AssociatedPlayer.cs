@@ -41,12 +41,8 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
         this.SlopPlayer = slopPlayer;
-
-        try {
-            Plugin.CharacterInfoManager.SetNextCharacterInfo(slopPlayer.CharacterInfo);
-        } catch (Exception e) {
-            Plugin.Log.LogError($"Failed to set character info for {slopPlayer.Name}: {e}");
-        }
+        
+        this.SetNextCharacterInfo();
         
         var moveStyle = (MoveStyle) slopPlayer.MoveStyle;
         
@@ -91,6 +87,14 @@ public class AssociatedPlayer {
 
         if (Plugin.SlopConfig.ShowPlayerMapPins.Value) {
             this.SpawnMapPin();
+        }
+    }
+
+    public void SetNextCharacterInfo() {
+        try {
+            Plugin.CharacterInfoManager.SetNextCharacterInfo(this.SlopPlayer.CharacterInfo);
+        } catch (Exception e) {
+            Plugin.Log.LogError($"Failed to set character info for {this.SlopPlayer.Name}: {e}");
         }
     }
 
