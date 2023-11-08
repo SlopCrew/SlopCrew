@@ -34,7 +34,7 @@ $version = (Get-Item "$buildDir/SlopCrew.Plugin.dll").VersionInfo.ProductVersion
 Compress-Archive -Path "$buildDir/*" -DestinationPath "$outDir/SlopCrew.zip" -Force
 
 # Thunderstore release
-Copy-Item "$buildDir/" "$thunderstorePluginDir/" -Recurse -Force
+Copy-Item "$buildDir/*" "$thunderstorePluginDir/" -Recurse -Force
 Copy-Item "$rootDir/README.md" "$thunderstoreDir/README.md"
 
 # Edit the Thunderstore JSON's `version_number` property, using jq
