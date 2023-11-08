@@ -1,13 +1,13 @@
 using EmbedIO.WebSockets;
 using Serilog;
 using SlopCrew.Common;
+using SlopCrew.Common.Encounters;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Server.Race;
 using System.Security.Cryptography;
 using System.Text;
-using SlopCrew.Common.Encounters;
 
 namespace SlopCrew.Server;
 
@@ -39,13 +39,13 @@ public class ConnectionState {
         // These packets get processed when player is null
         switch (msg) {
             case ServerboundVersion version: {
-                if (version.Version != Constants.NetworkVersion) {
-                    this.Context.WebSocket.CloseAsync();
-                    Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
-                                version.Version, Constants.NetworkVersion);
+                    if (version.Version != Constants.NetworkVersion) {
+                        this.Context.WebSocket.CloseAsync();
+                        Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
+                                    version.Version, Constants.NetworkVersion);
+                    }
+                    return;
                 }
-                return;
-            }
 
             case ServerboundPing ping:
                 HandlePing(ping);
@@ -87,6 +87,12 @@ public class ConnectionState {
             case ServerboundRaceFinish raceFinish:
                 this.HandleRaceFinish(raceFinish);
                 break;
+
+            case ServerboundEncounterCancel encounterCancel:
+                lock (Server.Instance.Module.Connections) {
+                    this.HandleEncounterCancel(encounterCancel);
+                }
+                break;
         }
     }
 
@@ -127,7 +133,7 @@ public class ConnectionState {
         this.Player.IsDeveloper = Constants.SecretCodes.Contains(hashString);
 
         // Someone will do it eventually
-        if (this.Player.CharacterInfo is {Data.Length: > 64}) {
+        if (this.Player.CharacterInfo is { Data.Length: > 64 }) {
             this.Player.CharacterInfo.Data = this.Player.CharacterInfo.Data[..64];
         }
 
@@ -189,6 +195,18 @@ public class ConnectionState {
         } else {
             this.HandleStatelessEncounterRequest(encounterRequest);
         }
+    }
+
+    private void HandleEncounterCancel(ServerboundEncounterCancel encounterCancel) {
+        if (encounterCancel.EncounterType.IsStateful()) {
+            if (Server.Instance.StatefulEncounterManager.HandleEncounterCancel(this, encounterCancel.EncounterType)) {
+                Server.Instance.Module.SendToContext(this.Context, new ClientboundEncounterCancel {
+                    EncounterType = encounterCancel.EncounterType
+                });
+            }
+        }
+
+        // Do we need to handle stateless encounter cancellation?
     }
 
     private void HandleStatelessEncounterRequest(ServerboundEncounterRequest encounterRequest) {

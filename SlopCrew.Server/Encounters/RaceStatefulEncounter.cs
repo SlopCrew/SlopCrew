@@ -1,8 +1,6 @@
-using Serilog;
 using SlopCrew.Common;
-using SlopCrew.Common.Network;
-using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Encounters;
+using SlopCrew.Common.Network.Clientbound;
 
 namespace SlopCrew.Server.Race;
 
@@ -18,6 +16,7 @@ public class RaceStatefulEncounter : StatefulEncounter {
         var random = new Random();
         var index = random.Next(0, pool.Count);
         this.ConfigData = pool[index];
+        this.EncounterType = EncounterType.RaceEncounter;
     }
 
     public const int MaxRaceTime = 600;

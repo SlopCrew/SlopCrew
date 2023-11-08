@@ -1,16 +1,17 @@
-using System.Text.Json;
 using Serilog;
 using SlopCrew.Common;
 using SlopCrew.Common.Encounters;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Server.Race;
+using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace SlopCrew.Server;
 
 public class StatefulEncounterManager {
     public List<StatefulEncounter> Encounters = new();
-    public Dictionary<int, Dictionary<EncounterType, List<ConnectionState>>> QueuedPlayers = new();
-    private int queueTicks;
+    public ConcurrentDictionary<int, Dictionary<EncounterType, List<ConnectionState>>> QueuedPlayers = new();
+    private ConcurrentDictionary<int, int> stageTicks = new();
 
     public List<RaceConfig> RaceConfigs = new();
 
@@ -55,12 +56,7 @@ public class StatefulEncounterManager {
 
         var queueIsEmpty = this.QueuedPlayers.Count == 0;
         if (!queueIsEmpty) {
-            this.queueTicks++;
-            if (this.queueTicks >= TicksPerQueue) {
-                this.QueuePlayers();
-                this.queueTicks = 0;
-                this.QueuedPlayers.Clear();
-            }
+            UpdateStageTicks();
         }
     }
 
@@ -75,35 +71,77 @@ public class StatefulEncounterManager {
         this.QueuedPlayers[stage][type].Add(conn);
     }
 
-    private void QueuePlayers() {
-        foreach (var (stage, queue) in this.QueuedPlayers) {
-            foreach (var (type, players) in queue) {
-                // Don't queue players who wandered into another stage
-                var playersInStage = players.Where(x => x.Player!.Stage == stage).ToList();
+    public bool HandleEncounterCancel(ConnectionState conn, EncounterType type) {
+        if (conn.Player is null) return false;
 
-                try {
-                    var encounter = type switch {
-                        EncounterType.RaceEncounter => new RaceStatefulEncounter(stage),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+        switch (type) {
+            case EncounterType.RaceEncounter:
+                var stage = conn.Player.Stage;
 
-                    encounter.Players.AddRange(playersInStage);
-                    this.Encounters.Add(encounter);
+                if (!this.QueuedPlayers.ContainsKey(stage)) return false;
+                if (!this.QueuedPlayers[stage].ContainsKey(type)) return false;
+                if (!this.QueuedPlayers[stage][type].Contains(conn)) return false;
 
-                    Server.Instance.Module.SendToTheConcerned(
-                        playersInStage.Select(x => x.Player!.ID).ToList(),
-                        new ClientboundEncounterStart {
-                            EncounterType = type,
-                            EncounterConfigData = new RaceEncounterConfigData {
-                                EncounterLength = RaceStatefulEncounter.MaxRaceTime,
-                                Guid = encounter.EncounterId,
-                                RaceConfig = encounter.ConfigData
-                            }
-                        }
-                    );
-                } catch (Exception e) {
-                    Log.Error(e, "Error while creating encounter");
+                this.QueuedPlayers[stage][type].Remove(conn);
+
+                if (this.QueuedPlayers[stage][type].Count == 0) {
+                    this.QueuedPlayers[stage].Remove(type);
                 }
+
+                if (this.QueuedPlayers[stage].Count == 0) {
+                    this.QueuedPlayers.Remove(stage, out var _);
+                    this.stageTicks.Remove(stage, out var _);
+                }
+
+                return true;
+            default:
+                Log.Warning("Unknown encounter type {Type} to cancel", type);
+                return false;
+        }
+    }
+
+    private void UpdateStageTicks() {
+        foreach (var (stage, _) in this.QueuedPlayers) {
+            if (!this.stageTicks.ContainsKey(stage)) this.stageTicks[stage] = 0;
+            this.stageTicks[stage]++;
+
+            if (this.stageTicks[stage] >= TicksPerQueue) {
+                this.QueuePlayersInStage(stage);
+                this.stageTicks.Remove(stage, out var _);
+                this.QueuedPlayers.Remove(stage, out var _);
+            }
+        }
+    }
+
+    private void QueuePlayersInStage(int stage) {
+        foreach (var (type, players) in this.QueuedPlayers[stage]) {
+            // Don't queue players who wandered into another stage
+            var playersInStage = players.Where(x => x.Player!.Stage == stage).ToList();
+
+            try {
+                var encounter = type switch {
+                    EncounterType.RaceEncounter => new RaceStatefulEncounter(stage),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                encounter.Players.AddRange(playersInStage);
+                this.Encounters.Add(encounter);
+
+                Log.Debug("Starting encounter {EncounterType} for {Count} players", encounter.EncounterType, playersInStage.Count);
+
+                Server.Instance.Module.SendToTheConcerned(
+                    playersInStage.Select(x => x.Player!.ID).ToList(),
+                    new ClientboundEncounterStart {
+                        EncounterType = type,
+                        EncounterConfigData = new RaceEncounterConfigData {
+                            EncounterLength = RaceStatefulEncounter.MaxRaceTime,
+                            Guid = encounter.EncounterId,
+                            RaceConfig = encounter.ConfigData
+                        }
+                    }
+                );
+            } catch (Exception e) {
+                Log.Error(e, "Error while creating encounter");
             }
         }
     }

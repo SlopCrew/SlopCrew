@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using SlopCrew.API;
@@ -23,6 +23,7 @@ public class Plugin : BaseUnityPlugin {
     public static PlayerManager PlayerManager = null!;
     public static SlopCrewAPI API = null!;
     public static SlopEncounter? CurrentEncounter;
+    public static bool HasEncounterBeenCancelled = false;
     public static PhoneInitializer PhoneInitializer = null!;
 
     private static int ShouldIgnoreInputInternal = 0;
@@ -58,7 +59,7 @@ public class Plugin : BaseUnityPlugin {
     }
 
     private void Update() {
-        if (CurrentEncounter is {IsBusy: false}) {
+        if (CurrentEncounter is { IsBusy: false }) {
             CurrentEncounter.Dispose();
             CurrentEncounter = null;
         }
