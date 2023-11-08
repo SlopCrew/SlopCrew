@@ -364,7 +364,8 @@ public class PlayerManager : IDisposable {
         var reptilePlayer = associatedPlayer.ReptilePlayer;
 
         // TODO: this kinda sucks
-        var differentCharacter = oldPlayer.Character != player.Character;
+        var differentCharacter = oldPlayer.Character != player.Character
+                                 || oldPlayer.CharacterInfo.Data != player.CharacterInfo.Data;
         var differentOutfit = oldPlayer.Outfit != player.Outfit;
         var differentMoveStyle = oldPlayer.MoveStyle != player.MoveStyle;
         var isDifferent = differentCharacter || differentOutfit || differentMoveStyle;
