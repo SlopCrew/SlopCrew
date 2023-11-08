@@ -1,11 +1,13 @@
 namespace SlopCrew.Common.Network;
 
-public enum NetworkMessageType {
+public enum NetworkMessageType
+{
     // Keep this at zero just in case the others shift
     ServerboundVersion,
 
     ClientboundEncounterEnd,
     ClientboundEncounterRequest,
+    ClientboundEncounterCancel,
     ClientboundEncounterStart,
     ClientboundPlayerAnimation,
     ClientboundPlayerPositionUpdate,
@@ -17,6 +19,7 @@ public enum NetworkMessageType {
 
     ServerboundAnimation,
     ServerboundEncounterRequest,
+    ServerboundEncounterCancel,
     ServerboundPing,
     ServerboundPlayerHello,
     ServerboundPositionUpdate,

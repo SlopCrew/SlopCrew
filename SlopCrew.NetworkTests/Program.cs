@@ -1,9 +1,9 @@
-﻿using System.Collections;
-using System.Numerics;
 using SlopCrew.Common;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
+using System.Collections;
+using System.Numerics;
 
 var useEqualsTypes = new List<Type> {
     typeof(string),
@@ -90,6 +90,10 @@ var packets = new List<NetworkPacket> {
         ID = 42069
     },
 
+    new ClientboundEncounterCancel {
+        EncounterType = EncounterType.RaceEncounter
+    },
+
     new ServerboundPing {
         ID = 42069
     },
@@ -130,7 +134,11 @@ var packets = new List<NetworkPacket> {
     new ServerboundEncounterRequest {
         PlayerID = 42069,
         EncounterType = EncounterType.ScoreEncounter
-    }
+    },
+
+    new ServerboundEncounterCancel {
+        EncounterType = EncounterType.RaceEncounter
+    },
 };
 
 foreach (var packet in packets) {

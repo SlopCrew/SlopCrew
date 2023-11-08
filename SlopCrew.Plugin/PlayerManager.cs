@@ -1,6 +1,8 @@
 using HarmonyLib;
+using MonoMod.Utils;
 using Reptile;
 using SlopCrew.Common;
+using SlopCrew.Common.Encounters;
 using SlopCrew.Common.Network;
 using SlopCrew.Common.Network.Clientbound;
 using SlopCrew.Common.Network.Serverbound;
@@ -8,8 +10,6 @@ using SlopCrew.Plugin.Encounters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MonoMod.Utils;
-using SlopCrew.Common.Encounters;
 using Player = Reptile.Player;
 using Vector3 = System.Numerics.Vector3;
 
@@ -260,6 +260,16 @@ public class PlayerManager : IDisposable {
         };
     }
 
+    private void HandleEncounterCancel(ClientboundEncounterCancel encounterCancel) {
+        if (Plugin.HasEncounterBeenCancelled) return;
+
+        switch (encounterCancel.EncounterType) {
+            case EncounterType.RaceEncounter:
+                Plugin.HasEncounterBeenCancelled = true;
+                break;
+        }
+    }
+
     private void HandleEncounterRequest(ClientboundEncounterRequest encounterRequest) {
         Plugin.PhoneInitializer.ShowNotif(encounterRequest);
     }
@@ -306,6 +316,10 @@ public class PlayerManager : IDisposable {
 
             case ClientboundEncounterEnd encounterEnd:
                 this.HandleEncounterEnd(encounterEnd);
+                break;
+
+            case ClientboundEncounterCancel encounterCancel:
+                this.HandleEncounterCancel(encounterCancel);
                 break;
         }
     }

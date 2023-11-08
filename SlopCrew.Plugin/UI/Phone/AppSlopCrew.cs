@@ -1,14 +1,15 @@
-﻿using BepInEx.Bootstrap;
+using BepInEx.Bootstrap;
 using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Serverbound;
+using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SlopCrew.Plugin.Encounters;
 using TMPro;
 using UnityEngine.UI;
 using Vector3 = System.Numerics.Vector3;
@@ -30,6 +31,7 @@ public class AppSlopCrew : App {
 
     private bool notifInitialized;
     private bool playerLocked;
+    private bool isWaitingForARace = false;
 
     public override void Awake() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
@@ -82,6 +84,11 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressRight() {
+        if (isWaitingForARace) {
+            this.SendCancelEncounterRequest();
+            return;
+        }
+
         if (this.RaceRankings is not null) {
             this.RaceRankings = null;
             return;
@@ -91,14 +98,20 @@ public class AppSlopCrew : App {
         // People wanted an audible sound so you'll get one
         var audioManager = Core.Instance.AudioManager;
         var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
-                                         new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)});
-        playSfx.Invoke(audioManager, new object[] {SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f});
+                                         new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
+        playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
+
+        if (this.encounter is EncounterType.RaceEncounter && !isWaitingForARace) {
+            isWaitingForARace = true;
+        }
     }
 
     private bool SendEncounterRequest() {
         if (!this.encounter.IsStateful() && this.nearestPlayer == null) return false;
         if (Plugin.CurrentEncounter?.IsBusy == true) return false;
         if (this.HasBannedMods()) return false;
+
+        Plugin.HasEncounterBeenCancelled = false;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer?.SlopPlayer.ID ?? uint.MaxValue,
@@ -108,9 +121,30 @@ public class AppSlopCrew : App {
         return true;
     }
 
+    private void SendCancelEncounterRequest() {
+        Plugin.NetworkConnection.SendMessage(new ServerboundEncounterCancel {
+            EncounterType = this.encounter
+        });
+    }
+
     public override void OnAppUpdate() {
         var me = WorldHandler.instance.GetCurrentPlayer();
         if (me is null) return;
+
+        if (Plugin.CurrentEncounter is SlopRaceEncounter && isWaitingForARace) {
+            isWaitingForARace = false;
+        }
+
+        if (isWaitingForARace) {
+            if (Plugin.HasEncounterBeenCancelled) {
+                isWaitingForARace = false;
+
+                Core.Instance.AudioManager.PlaySfx(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
+            }
+
+            this.Label.text = "Waiting for a race...\n Press right to cancel";
+            return;
+        }
 
         if (this.HasBannedMods()) {
             this.Label.text = "Please disable mods that could give you an advantage";
