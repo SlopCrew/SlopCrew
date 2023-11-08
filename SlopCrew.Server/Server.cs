@@ -97,6 +97,7 @@ public class Server {
         }).Start();
 
         this.WebServer.Start();
+        Console.ReadKey();
     }
 
     private void RunTick() {
