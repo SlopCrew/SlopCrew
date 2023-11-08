@@ -377,7 +377,7 @@ public class PlayerManager : IDisposable {
                 reptilePlayer.SetOutfit(player.Outfit);
             } else if (differentCharacter || differentOutfit) {
                 // New outfit
-                associatedPlayer.SetNextCharacterInfo();
+                associatedPlayer.SetNextCharacterInfo(player.CharacterInfo);
                 reptilePlayer.SetCharacter((Characters) player.Character, player.Outfit);
             }
 

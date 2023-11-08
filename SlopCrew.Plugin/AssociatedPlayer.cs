@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using Player = Reptile.Player;
 using Transform = SlopCrew.Common.Transform;
 
 namespace SlopCrew.Plugin;
@@ -41,8 +43,8 @@ public class AssociatedPlayer {
     public AssociatedPlayer(Common.Player slopPlayer) {
         this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
         this.SlopPlayer = slopPlayer;
-        
-        this.SetNextCharacterInfo();
+
+        this.SetNextCharacterInfo(slopPlayer.CharacterInfo);
         
         var moveStyle = (MoveStyle) slopPlayer.MoveStyle;
         
@@ -90,9 +92,9 @@ public class AssociatedPlayer {
         }
     }
 
-    public void SetNextCharacterInfo() {
+    public void SetNextCharacterInfo(CustomCharacterInfo characterInfo) {
         try {
-            Plugin.CharacterInfoManager.SetNextCharacterInfo(this.SlopPlayer.CharacterInfo);
+            Plugin.CharacterInfoManager.SetNextCharacterInfo(characterInfo);
         } catch (Exception e) {
             Plugin.Log.LogError($"Failed to set character info for {this.SlopPlayer.Name}: {e}");
         }
