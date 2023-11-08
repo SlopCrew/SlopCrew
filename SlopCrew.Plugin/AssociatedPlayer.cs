@@ -31,7 +31,7 @@ public class AssociatedPlayer {
     public float TimeToTarget;
     public float LerpAmount;
 
-    public CharacterVisual visual;
+    public CharacterVisual Visual;
     private Vector3 newPos;
     private Quaternion newRot;
     private Vector3 velocity;
@@ -75,7 +75,7 @@ public class AssociatedPlayer {
             Latency = 0
         };
 
-        this.visual = player.GetComponentInChildren<CharacterVisual>();
+        this.Visual = player.GetComponentInChildren<CharacterVisual>();
         this.TargetTransform = startTransform;
         this.PrevTarget = startTransform;
         newPos = startTransform.Position.ToMentalDeficiency();
@@ -236,8 +236,8 @@ public class AssociatedPlayer {
 
         // Apply the rotation separately to the visual for upside down grinds.
         // & check for null in case they swap characters and we lose the reference for a moment
-        if(visual != null)
-            this.visual.transform.rotation = newRot;
+        if(this.Visual != null)
+            this.Visual.transform.rotation = newRot;
     }
 
     public bool IsValid() {

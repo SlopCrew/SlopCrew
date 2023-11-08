@@ -369,6 +369,8 @@ public class PlayerManager : IDisposable {
         var differentMoveStyle = oldPlayer.MoveStyle != player.MoveStyle;
         var isDifferent = differentCharacter || differentOutfit || differentMoveStyle;
 
+        associatedPlayer.ResetPlayer(player);
+        
         if (isDifferent) {
             //Plugin.Log.LogInfo("Updating associated player look");
 
@@ -387,10 +389,9 @@ public class PlayerManager : IDisposable {
                 reptilePlayer.SetCurrentMoveStyleEquipped(moveStyle);
                 reptilePlayer.SwitchToEquippedMovestyle(equipped);
             }
-
-            associatedPlayer.visual = reptilePlayer.GetComponentInChildren<CharacterVisual>();
-            associatedPlayer.ResetPlayer(player);
         }
+        
+        associatedPlayer.Visual = reptilePlayer.GetComponentInChildren<CharacterVisual>();
     }
 
     private void HandlePlayerPositionUpdate(ClientboundPlayerPositionUpdate playerPositionUpdate) {
@@ -436,7 +437,7 @@ public class PlayerManager : IDisposable {
                 associatedPlayer.ReptilePlayer.SetSpraycanState(spraycanState);
             }
 
-            associatedPlayer.visual = characterVisual;
+            associatedPlayer.Visual = characterVisual;
             associatedPlayer.PhoneOut = phone;
             this.IsSettingVisual = false;
         }
