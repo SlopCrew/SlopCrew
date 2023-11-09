@@ -20,9 +20,7 @@ public class AppHomeScreenPatch {
         var newArr = new HomeScreenApp[arr.Length + 1];
         for (var i = 0; i < arr.Length; i++) newArr[i] = arr[i];
 
-        var icon = TextureLoader.LoadResourceAsTexture("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
-        var rect = new Rect(0, 0, icon.width, icon.height);
-        var sprite = Sprite.Create(icon, rect, new Vector2(0.5f, 0.5f), 100);
+        var sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
 
         var app = ScriptableObject.CreateInstance<HomeScreenApp>();
         var appTraverse = Traverse.Create(app);
