@@ -62,7 +62,10 @@ public class AppSlopCrew : App {
         title.SetText("Slop Crew");
 
         var overlayHeaderImage = slopOverlay.transform.GetChild(0);
-        overlayHeaderImage.localPosition = Vector2.up * -870.0f;
+        overlayHeaderImage.localPosition = Vector2.up * 870.0f;
+
+        var iconImage = slopOverlay.transform.GetChild(1).GetChild(1).GetComponent<Image>();
+        iconImage.sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
     }
 
     public override void OnPressUp() {
