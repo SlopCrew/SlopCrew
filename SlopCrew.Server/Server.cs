@@ -40,7 +40,7 @@ public class Server {
             Log.Logger = Logger;
         }
 
-        this.Metrics = new Metrics(this.Config);
+        this.Metrics = new Metrics(this, this.Config);
         this.Module = new SlopWebSocketModule();
 
         this.WebServer = new WebServer(o => {

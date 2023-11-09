@@ -15,6 +15,7 @@ public class ConnectionState {
     public Player? Player;
     public int? LastStage = null;
     public int DisconnectTicks = 0;
+    public string? PluginVersion = null;
 
     public ClientboundPlayerAnimation? QueuedAnimation;
     public Transform? QueuedPositionUpdate;
@@ -44,7 +45,9 @@ public class ConnectionState {
                     Log.Verbose("Connected mod version {Version} does not match server version {NetworkVersion}",
                                 version.Version, Constants.NetworkVersion);
                 }
-                
+
+                this.PluginVersion = version.PluginVersion;
+                server.Metrics.UpdatePluginVersion();
                 server.Module.SendToContext(this.Context, new ClientboundServerConfig {
                     BannedMods = server.Config.Encounters.BannedMods
                 });

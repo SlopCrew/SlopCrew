@@ -34,6 +34,7 @@ public class SlopWebSocketModule : WebSocketModule {
         }
 
         Server.Instance.Metrics.UpdateConnections(this.Connections.Count);
+        Server.Instance.Metrics.UpdatePluginVersion();
     }
 
     protected override Task OnMessageReceivedAsync(
