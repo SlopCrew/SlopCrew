@@ -20,18 +20,7 @@ public class AppHomeScreenPatch {
         var newArr = new HomeScreenApp[arr.Length + 1];
         for (var i = 0; i < arr.Length; i++) newArr[i] = arr[i];
 
-        var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SlopCrew.Plugin.res.phone_icon.png");
-        if (stream is null) throw new Exception("Could not load phone icon");
-
-        var bytes = new byte[stream.Length];
-        var read = 0;
-        while (read < bytes.Length) {
-            read += stream.Read(bytes, read, bytes.Length - read);
-        }
-
-        var icon = new Texture2D(128, 128);
-        icon.LoadImage(bytes);
-        icon.Apply();
+        var icon = TextureLoader.LoadResourceAsTexture("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
         var rect = new Rect(0, 0, icon.width, icon.height);
         var sprite = Sprite.Create(icon, rect, new Vector2(0.5f, 0.5f), 100);
 

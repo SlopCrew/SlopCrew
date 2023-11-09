@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 using Vector3 = System.Numerics.Vector3;
 
@@ -39,18 +40,19 @@ public class AppSlopCrew : App {
     }
 
     protected override void OnAppInit() {
-        var homeScreen = this.MyPhone.GetAppInstance<AppHomeScreen>();
-        var scrollView = Traverse.Create(homeScreen).Field<HomescreenScrollView>("m_ScrollView").Value;
-        var traverse = Traverse.Create(scrollView);
-        var upArrow = traverse.Field<Image>("m_ArrowUp").Value;
-        var downArrow = traverse.Field<Image>("m_ArrowDown").Value;
+        //Grabbing some boilerplate UI stuff from graffiti app
+        AppGraffiti graffitiApp = this.MyPhone.GetAppInstance<AppGraffiti>();
 
-        var ourUpArrow = Instantiate(upArrow.gameObject, this.transform);
-        var ourDownArrow = Instantiate(downArrow.gameObject, this.transform);
+        GameObject overlay = graffitiApp.transform.GetChild(1).gameObject;
+        GameObject slopOverlay = Instantiate(overlay, transform);
 
-        var half = (1775 / 2) - 100;
-        ourUpArrow.transform.localPosition = new UnityEngine.Vector3(0, half, 0);
-        ourDownArrow.transform.localPosition = new UnityEngine.Vector3(0, -half, 0);
+        var title = slopOverlay.GetComponentInChildren<TextMeshProUGUI>();
+        Destroy(title.GetComponent<TMProLocalizationAddOn>());
+        Destroy(title.GetComponent<TMProFontLocalizer>());
+        title.SetText("Slop Crew");
+
+        var overlayHeaderImage = slopOverlay.transform.GetChild(0);
+        overlayHeaderImage.localPosition = Vector2.up * -870.0f;
     }
 
     public override void OnPressUp() {
