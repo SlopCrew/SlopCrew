@@ -23,4 +23,10 @@ public class TextureLoader {
 
         return texture;
     }
+
+    public static Sprite LoadResourceAsSprite(string path, int width, int height, float pivotX = 0.5f, float pivotY = 0.5f) {
+        Texture2D texture = LoadResourceAsTexture(path, width, height);
+
+        return Sprite.Create(new Rect(0.0f, 0.0f, texture.width, texture.height), new Vector2(pivotX, pivotY), 100.0f);
+    }
 }

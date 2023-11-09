@@ -34,7 +34,17 @@ public class AppSlopCrew : App {
     private bool playerLocked;
     private bool isWaitingForARace = false;
 
+    private Sprite? buttonSprite;
+    private Sprite? buttonSpriteSelected;
+
+    private void LoadSprites() {
+        buttonSprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_main_button.png", 530, 150);
+        buttonSpriteSelected = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_main_button_selected.png", 530, 150);
+    }
+
     public override void Awake() {
+        LoadSprites();
+
         this.m_Unlockables = Array.Empty<AUnlockable>();
         base.Awake();
     }
