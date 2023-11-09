@@ -1,4 +1,5 @@
 using BepInEx.Bootstrap;
+using BepInEx.Logging;
 using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
@@ -13,13 +14,14 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class AppSlopCrew : App {
     [NonSerialized] public string? RaceRankings;
     [NonSerialized] public TMP_Text Label = null!;
+
+    private SlopCrewScrollView? scrollView;
 
     private AssociatedPlayer? nearestPlayer;
     private EncounterType encounter = EncounterType.ScoreEncounter;
@@ -34,27 +36,29 @@ public class AppSlopCrew : App {
     private bool playerLocked;
     private bool isWaitingForARace = false;
 
-    private Sprite? buttonSprite;
-    private Sprite? buttonSpriteSelected;
-
-    private void LoadSprites() {
-        buttonSprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_main_button.png", 530, 150);
-        buttonSpriteSelected = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_main_button_selected.png", 530, 150);
-    }
-
     public override void Awake() {
-        LoadSprites();
-
         this.m_Unlockables = Array.Empty<AUnlockable>();
         base.Awake();
     }
 
     protected override void OnAppInit() {
-        //Grabbing some boilerplate UI stuff from graffiti app
+        var contentObject = new GameObject("Content");
+        contentObject.layer = Layers.Phone;
+        contentObject.transform.SetParent(transform, false);
+        contentObject.transform.localScale = Vector3.one;
+
+        var content = contentObject.AddComponent<RectTransform>();
+        content.sizeDelta = new(1070, 1775);
+
+        AddScrollView(content);
+        AddOverlay(content);
+    }
+
+    private void AddOverlay(RectTransform content) {
         AppGraffiti graffitiApp = this.MyPhone.GetAppInstance<AppGraffiti>();
 
         GameObject overlay = graffitiApp.transform.GetChild(1).gameObject;
-        GameObject slopOverlay = Instantiate(overlay, transform);
+        GameObject slopOverlay = Instantiate(overlay, content);
 
         var title = slopOverlay.GetComponentInChildren<TextMeshProUGUI>();
         Destroy(title.GetComponent<TMProLocalizationAddOn>());
@@ -68,6 +72,33 @@ public class AppSlopCrew : App {
         iconImage.sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
     }
 
+    private void AddScrollView(RectTransform content) {
+        AppMusicPlayer musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
+
+        // I really just do not want to hack together custom objects for sprites the game already loads anyway
+        var musicTraverse = Traverse.Create(musicApp);
+        var musicList = musicTraverse.Field("m_TrackList").GetValue() as MusicPlayerTrackList;
+        var musicListTraverse = Traverse.Create(musicList);
+        var musicButtonPrefab = musicListTraverse.Field("m_AppButtonPrefab").GetValue() as GameObject;
+
+        var confirmArrow = musicButtonPrefab.transform.Find("PromptArrow");
+        var titleLabel = musicButtonPrefab.transform.Find("TitleLabel").GetComponent<TextMeshProUGUI>();
+
+        var scrollViewObject = new GameObject("Buttons");
+        scrollViewObject.layer = Layers.Phone;
+        var scrollViewRect = scrollViewObject.AddComponent<RectTransform>();
+        scrollViewRect.SetParent(content, false);
+        scrollView = scrollViewObject.AddComponent<SlopCrewScrollView>();
+        scrollView.Initialize(this, confirmArrow.gameObject, titleLabel);
+        scrollView.InitalizeScrollView();
+    }
+
+    public override void OnAppEnable() {
+        base.OnAppEnable();
+
+        scrollView.SetListContent(encounterTypes.Count);
+    }
+
     public override void OnPressUp() {
         if (this.RaceRankings is not null) {
             this.RaceRankings = null;
@@ -77,6 +108,8 @@ public class AppSlopCrew : App {
 
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) - 1;
         if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
+
+        scrollView.Move(PhoneScroll.ScrollDirection.Previous, m_AudioManager);
 
         var nextEncounter = encounterTypes[nextIndex];
 
@@ -93,32 +126,40 @@ public class AppSlopCrew : App {
         var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
         if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
 
+        scrollView.Move(PhoneScroll.ScrollDirection.Next, m_AudioManager);
+
         var nextEncounter = encounterTypes[nextIndex];
 
         this.encounter = nextEncounter;
     }
 
     public override void OnPressRight() {
-        if (isWaitingForARace) {
-            this.SendCancelEncounterRequest();
-            return;
-        }
+        scrollView.HoldAnimationSelectedButton();
 
-        if (this.RaceRankings is not null) {
-            this.RaceRankings = null;
-            return;
-        }
-        if (!this.SendEncounterRequest()) return;
+        //if (isWaitingForARace) {
+        //    this.SendCancelEncounterRequest();
+        //    return;
+        //}
 
-        // People wanted an audible sound so you'll get one
-        var audioManager = Core.Instance.AudioManager;
-        var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
-                                         new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
-        playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
+        //if (this.RaceRankings is not null) {
+        //    this.RaceRankings = null;
+        //    return;
+        //}
+        //if (!this.SendEncounterRequest()) return;
 
-        if (this.encounter is EncounterType.RaceEncounter && !isWaitingForARace) {
-            isWaitingForARace = true;
-        }
+        //// People wanted an audible sound so you'll get one
+        //var audioManager = Core.Instance.AudioManager;
+        //var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
+        //                                 new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
+        //playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
+
+        //if (this.encounter is EncounterType.RaceEncounter && !isWaitingForARace) {
+        //    isWaitingForARace = true;
+        //}
+    }
+
+    public override void OnReleaseRight() {
+        scrollView.ActivateAnimationSelectedButton();
     }
 
     private bool SendEncounterRequest() {
@@ -143,6 +184,8 @@ public class AppSlopCrew : App {
     }
 
     public override void OnAppUpdate() {
+        return;
+
         var me = WorldHandler.instance.GetCurrentPlayer();
         if (me is null) return;
 
@@ -185,7 +228,7 @@ public class AppSlopCrew : App {
             this.nearestPlayer = Plugin.PlayerManager.AssociatedPlayers
                 .Where(x => x.IsValid())
                 .OrderBy(x =>
-                             Vector3.Distance(
+                             System.Numerics.Vector3.Distance(
                                  x.ReptilePlayer.transform.position.FromMentalDeficiency(),
                                  position
                              ))
