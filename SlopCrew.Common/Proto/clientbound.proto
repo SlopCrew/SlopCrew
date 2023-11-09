@@ -1,0 +1,41 @@
+syntax = "proto3";
+package club.sloppers;
+option csharp_namespace = "SlopCrew.Common.Proto";
+
+import "common.proto";
+
+message ClientboundMessage {
+  oneof message {
+    ClientboundHello hello = 1;
+    ClientboundPlayersUpdate players_update = 2;
+    ClientboundPositionUpdate position_update = 3;
+    ClientboundPong pong = 4;
+    ClientboundVisualUpdate visual_update = 5;
+    ClientboundAnimationUpdate animation_update = 6;
+  }
+}
+
+message ClientboundHello {
+  int32 tick_rate = 1;
+  repeated string banned_plugins = 2;
+}
+
+message ClientboundPlayersUpdate {
+  repeated Player players = 1;
+}
+
+message ClientboundPositionUpdate {
+  repeated PositionUpdate updates = 1;
+}
+
+message ClientboundPong {
+  uint32 id = 1;
+}
+
+message ClientboundVisualUpdate {
+  repeated VisualUpdate updates = 1;
+}
+
+message ClientboundAnimationUpdate {
+  repeated AnimationUpdate updates = 1;
+}

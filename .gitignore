@@ -1,6 +1,7 @@
 # Build artifacts
 bin/
 obj/
+vcpkg_installed/
 
 # IDE settings
 .idea/

@@ -1,0 +1,42 @@
+syntax = "proto3";
+package club.sloppers;
+option csharp_namespace = "SlopCrew.Common.Proto";
+
+import "common.proto";
+
+message ServerboundMessage {
+  oneof message {
+    ServerboundVersion version = 1;
+    ServerboundHello hello = 2;
+    ServerboundPositionUpdate position_update = 3;
+    ServerboundPing ping = 4;
+    ServerboundVisualUpdate visual_update = 5;
+  }
+}
+
+message ServerboundVersion {
+  uint32 protocol_version = 1;
+  string plugin_version = 2;
+}
+
+message ServerboundHello {
+  Player player = 1;
+  optional string key = 2;
+  int32 stage = 3;
+}
+
+message ServerboundPositionUpdate {
+  PositionUpdate update = 1;
+}
+
+message ServerboundPing {
+  uint32 id = 1;
+}
+
+message ServerboundVisualUpdate {
+  VisualUpdate update = 1;
+}
+
+message ServerboundAnimationUpdate {
+  AnimationUpdate update = 1;
+}

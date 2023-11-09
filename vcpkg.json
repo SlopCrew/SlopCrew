@@ -1,0 +1,6 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": ["gamenetworkingsockets"],
+  "overrides": [{ "name": "gamenetworkingsockets", "version": "2021-04-26" }],
+  "builtin-baseline": "051b33d36cfdde9e027ff456491d1704159864af"
+}

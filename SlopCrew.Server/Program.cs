@@ -1,4 +1,24 @@
 ﻿using SlopCrew.Server;
+using SlopCrew.Server.Options;
 
-Server.Instance = new(args);
-Server.Instance.Start();
+var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders().AddConsole();
+
+void BindConfig<T>(string name) where T : class, new() {
+    var options = new T();
+    builder.Configuration.Bind(name, options);
+    builder.Services.AddSingleton(options);
+}
+
+BindConfig<ServerOptions>("Server");
+BindConfig<GraphiteOptions>("Graphite");
+
+// This is fucking stupid. I hate MSDI
+builder.Services.AddSingleton<NetworkService>();
+builder.Services.AddHostedService<NetworkService>(p => p.GetRequiredService<NetworkService>());
+
+builder.Services.AddTransient<NetworkClient>();
+builder.Services.AddSingleton<MetricsService>();
+
+var app = builder.Build();
+app.Run();

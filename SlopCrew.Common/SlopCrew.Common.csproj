@@ -11,6 +11,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+        <Content Include="../vcpkg_installed/x64-windows/bin/*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+
+        <Protobuf Include="Proto/*.proto" ProtoRoot="Proto"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.25.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.54.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="MonoMod.Utils" Version="21.12.13.1"/>
     </ItemGroup>
 </Project>

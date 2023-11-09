@@ -33,55 +33,19 @@ Users launching from Steam can insert `WINEDLLOVERRIDES="winhttp=n,b" %command%`
 
 ## Custom servers
 
-Follow the instructions for your operating system below. Afterwards, you will need to enable accessing your server, through one of many means:
-
-- (Suggested for newcomers) Use a VPN like Tailscale, Radmin, or ZeroTier to create a private network between your friends.
-- Port forward the server through your router and share your public IP with your friends.
-- Run the server through a reverse proxy, like NGINX or Caddy (making sure to setup WebSocket support).
-
-The server uses a TOML config file (pass the path to it as an argument to the executable, the `SLOP_CONFIG` environment variable, or place it in the working directory). Here are the default values - commented out values are null by default:
-
-```toml
-interface = "http://+:42069"
-debug = false
-
-# [certificates]
-# path = "./cert/cert.pfx"
-# password = "hunter2"
-
-# [graphite]
-# host = "localhost"
-# port = 2003
-
-[encounters]
-score_duration = 90
-combo_duration = 300
-banned_mods = []
-```
-
-### Windows
-
-- Download the server binaries [from GitHub Actions](https://github.com/SlopCrew/SlopCrew/actions/workflows/server-build.yml?query=branch%3Amain+event%3Apush).
-  - Select the entry with the same version number as the installed Slop Crew plugin. It is highly suggested (and sometimes required) to use the same version as the plugin.
-  - After selecting the entry, scroll down to the bottom, and select `server-windows` from the Artifacts section. You will need a GitHub account to download these artifacts.
-- Download the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-7.0.10-windows-x64-installer).
-- Start the executable by double clicking it.
-
-### Linux
-
-Build the repository from source:
-
-```shell
-$ git clone https://github.com/SlopCrew/SlopCrew.git
-$ cd SlopCrew
-$ dotnet run SlopCrew.Server --configuration Release
-```
-
-Docker users can also use the `Dockerfile`/`docker-compose.yml`, or make their own using the image at `ghcr.io/slopcrew/slopcrew-server`.
+TODO
 
 ## Stuff for developers
 
-### Compiling the plugin
+### GameNetworkingSockets
+
+Slop Crew uses [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) for networking. This can be built on Windows with [vcpkg](https://vcpkg.io/):
+
+```shell
+vcpkg install
+```
+
+### Building Slop Crew
 
 The `SlopCrew.Plugin` project references DLLs in your game install. To not commit piracy, the location to your game file must be specified with the `BRCPath` variable.
 
@@ -96,7 +60,7 @@ This path will vary per person, and will point to the folder that contains the g
 Slop Crew features an API you can use in your own BepInEx plugin. First, submodule this repository in your own code:
 
 ```shell
-$ git submodule add https://github.com/SlopCrew/SlopCrew.git SlopCrew
+git submodule add https://github.com/SlopCrew/SlopCrew.git SlopCrew
 ```
 
 Next, add the `SlopCrew.API` project as a reference to your project (adding it to your solution beforehand).

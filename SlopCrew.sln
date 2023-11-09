@@ -2,17 +2,15 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Plugin", "SlopCrew.Plugin\SlopCrew.Plugin.csproj", "{C33DD7D1-D576-42DC-849A-A67937645689}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Common", "SlopCrew.Common\SlopCrew.Common.csproj", "{D7F7D923-BAF7-464E-A52F-E807F6BE5029}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Server", "SlopCrew.Server\SlopCrew.Server.csproj", "{94A3B924-480F-4459-9E21-77913D493360}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.API", "SlopCrew.API\SlopCrew.API.csproj", "{9F225D8D-252F-4E86-8A69-66213CB0684C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.NetworkTests", "SlopCrew.NetworkTests\SlopCrew.NetworkTests.csproj", "{AC7AACCA-428C-415E-BF2C-5F9DE1011217}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{A05EECEC-AA53-429F-8E12-CF2B549671DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrewBoomAPI", "libs\CrewBoomAPI\CrewBoomAPI.csproj", "{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Common", "SlopCrew.Common\SlopCrew.Common.csproj", "{0948E6D7-9B83-4217-8168-7E84BBF744E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,10 +22,6 @@ Global
 		{C33DD7D1-D576-42DC-849A-A67937645689}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C33DD7D1-D576-42DC-849A-A67937645689}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C33DD7D1-D576-42DC-849A-A67937645689}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7F7D923-BAF7-464E-A52F-E807F6BE5029}.Release|Any CPU.Build.0 = Release|Any CPU
 		{94A3B924-480F-4459-9E21-77913D493360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{94A3B924-480F-4459-9E21-77913D493360}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94A3B924-480F-4459-9E21-77913D493360}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -36,14 +30,14 @@ Global
 		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F225D8D-252F-4E86-8A69-66213CB0684C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC7AACCA-428C-415E-BF2C-5F9DE1011217}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CA9A7D55-2ABA-46A4-9410-DA1DCE433272} = {A05EECEC-AA53-429F-8E12-CF2B549671DB}
