@@ -12,7 +12,7 @@ public class Metrics {
 
     public Metrics(Server server, Config config) {
         this.server = server;
-        
+
         if (config.Graphite.Host != null) {
             Log.Information("Connecting to Graphite ({Host}:{Port})...", config.Graphite.Host, config.Graphite.Port);
             try {
@@ -45,10 +45,11 @@ public class Metrics {
         foreach (var connection in this.server.GetConnections()) {
             if (connection.PluginVersion != null) versions.Add(connection.PluginVersion);
         }
-        
+
         var versionCounts = versions.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
         foreach (var (version, count) in versionCounts) {
-            this.graphite?.Send($"plugin_version.{version}", count);
+            var sanitizedVersion = version.Replace('.', '_');
+            this.graphite?.Send($"plugin_version.{sanitizedVersion}", count);
         }
     }
 }
