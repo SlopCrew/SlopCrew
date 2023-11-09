@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
@@ -13,6 +8,11 @@ using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters.Race;
 using SlopCrew.Plugin.Extensions;
 using SlopCrew.Plugin.UI.Phone;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using UnityEngine;
 using Vector3 = System.Numerics.Vector3;
 
@@ -66,28 +66,33 @@ public class SlopRaceEncounter : SlopEncounter {
 
         switch (this.state) {
             case RaceState.Start: {
-                if (this.timer.Elapsed.TotalSeconds > 3) {
-                    this.state = RaceState.Race;
-                    Plugin.ShouldIgnoreInput = false;
-                    this.timer.Restart();
-                } else {
-                    var secondsLeft = (int) Math.Ceiling(3 - this.timer.Elapsed.TotalSeconds);
-                    var periods = new string('.', secondsLeft);
-                    var countdown = secondsLeft.ToString(CultureInfo.CurrentCulture) + periods;
-                    this.SetTimer(countdown);
+                    if (this.timer.Elapsed.TotalSeconds > 3) {
+                        this.state = RaceState.Race;
+                        Plugin.ShouldIgnoreInput = false;
+                        this.timer.Restart();
+                    } else {
+                        var secondsLeft = (int) Math.Ceiling(3 - this.timer.Elapsed.TotalSeconds);
+                        var periods = new string('.', secondsLeft);
+                        var countdown = secondsLeft.ToString(CultureInfo.CurrentCulture) + periods;
+                        this.SetTimer(countdown);
+                    }
+
+                    var player = WorldHandler.instance.GetCurrentPlayer();
+                    var phone = Traverse.Create(player).Field("phone").GetValue<Phone>();
+                    var app = phone.GetAppInstance<AppSlopCrew>();
+                    app.EndWaitingForRace();
+
+                    break;
                 }
 
-                break;
-            }
-
             case RaceState.Race: {
-                this.SetTimer(this.TimeElapsed());
-                break;
-            }
+                    this.SetTimer(this.TimeElapsed());
+                    break;
+                }
 
             case RaceState.Finish: {
-                break;
-            }
+                    break;
+                }
         }
     }
 
@@ -148,7 +153,7 @@ public class SlopRaceEncounter : SlopEncounter {
 
     public override void Dispose() {
         base.Dispose();
-        
+
         foreach (var checkpointPin in this.checkpoints) {
             if (checkpointPin != null) {
                 UnityEngine.Object.Destroy(checkpointPin.gameObject);
@@ -184,6 +189,9 @@ public class SlopRaceEncounter : SlopEncounter {
             }
         }
         app.RaceRankings = str.Trim();
+
+        //It should already be done, but just in case
+        app.EndWaitingForRace();
     }
 
     enum RaceState {
