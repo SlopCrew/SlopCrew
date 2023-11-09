@@ -98,8 +98,8 @@ public class AppSlopCrew : App {
         // People wanted an audible sound so you'll get one
         var audioManager = Core.Instance.AudioManager;
         var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
-                                         new[] {typeof(SfxCollectionID), typeof(AudioClipID), typeof(float)});
-        playSfx.Invoke(audioManager, new object[] {SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f});
+                                         new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
+        playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
 
         if (this.encounter is EncounterType.RaceEncounter && !isWaitingForARace) {
             isWaitingForARace = true;
@@ -206,6 +206,10 @@ public class AppSlopCrew : App {
     private bool HasBannedMods() {
         var bannedMods = Plugin.NetworkConnection.ServerConfig?.BannedMods ?? new();
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
+    }
+
+    public void EndWaitingForRace() {
+        isWaitingForARace = false;
     }
 
     public void SetNotification(Notification notif) {
