@@ -56,6 +56,7 @@ debug = false
 [encounters]
 score_duration = 90
 combo_duration = 300
+banned_mods = []
 ```
 
 ### Windows
