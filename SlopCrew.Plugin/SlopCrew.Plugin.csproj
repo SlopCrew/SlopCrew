@@ -17,6 +17,10 @@
 
     <ItemGroup>
         <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="BepInEx.Core" Version="5.*"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all"/>
@@ -28,6 +32,7 @@
         <Reference Include="Assembly-CSharp">
             <HintPath>$(ManagedPath)/Assembly-CSharp.dll</HintPath>
             <Private>false</Private>
+            <Publicize>true</Publicize>
         </Reference>
         <Reference Include="UnityEngine">
             <HintPath>$(ManagedPath)/UnityEngine.dll</HintPath>

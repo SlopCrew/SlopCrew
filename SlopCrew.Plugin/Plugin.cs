@@ -1,8 +1,7 @@
-using System;
-using System.Threading;
 using BepInEx;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SlopCrew.API;
 
 namespace SlopCrew.Plugin;
 
@@ -15,10 +14,20 @@ public class Plugin : BaseUnityPlugin {
         var builder = new HostBuilder();
         builder.ConfigureServices((hostContext, services) => {
             services.AddSingleton(this.Logger);
-            services.AddHostedService<SlopConnectionManager>();
+
+            void AddSingletonHostedService<T>() where T : class, IHostedService {
+                services.AddSingleton<T>();
+                services.AddHostedService<T>(p => p.GetRequiredService<T>());
+            }
+
+            AddSingletonHostedService<SlopConnectionManager>();
+            AddSingletonHostedService<LocalPlayerManager>();
+
+            services.AddSingleton<SlopCrewAPI>();
         });
 
         this.host = builder.Build();
+        APIManager.RegisterAPI(this.host.Services.GetRequiredService<SlopCrewAPI>());
         this.host.Start();
     }
 

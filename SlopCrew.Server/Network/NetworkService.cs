@@ -41,6 +41,7 @@ public class NetworkService : BackgroundService {
         var utils = new NetworkingUtils();
         utils.SetStatusCallback(this.StatusCallback);
 
+        // TODO
         var address = new Address();
         address.SetAddress("::0", this.options.Port);
 
@@ -90,8 +91,6 @@ public class NetworkService : BackgroundService {
     }
 
     private void StatusCallback(ref StatusInfo info) {
-        Console.WriteLine("Status callback - reason: " + info.connectionInfo.state);
-
         switch (info.connectionInfo.state) {
             case ConnectionState.Connecting: {
                 this.server!.AcceptConnection(info.connection);
@@ -124,7 +123,6 @@ public class NetworkService : BackgroundService {
 
     public void WritePacket(uint connection, ClientboundMessage packet, SendFlags flags = SendFlags.Reliable) {
         var bytes = packet.ToByteArray();
-        Console.WriteLine($"Sending packet of type {packet.MessageCase} with {bytes.Length} bytes to {connection}");
         this.server!.SendMessageToConnection(connection, bytes, flags);
     }
 

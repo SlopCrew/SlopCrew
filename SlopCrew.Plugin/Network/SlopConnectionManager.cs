@@ -8,16 +8,26 @@ using Microsoft.Extensions.Hosting;
 using Reptile;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
+using UnityEngine;
 
 namespace SlopCrew.Plugin;
 
 public class SlopConnectionManager : IHostedService {
+    public ulong ServerTick;
+    public ulong Latency;
+    
     private ManualLogSource logger;
 
     private NetworkingSockets client;
     private uint? connection = null;
     private Address address;
     private ConnectionState lastState = ConnectionState.None;
+
+    public Action<ClientboundMessage>? MessageReceived;
+    public Action? Tick;
+
+    private float? tickRate = null;
+    private float tickTimer = 0;
 
     public SlopConnectionManager(ManualLogSource logger) {
         this.logger = logger;
@@ -32,8 +42,12 @@ public class SlopConnectionManager : IHostedService {
     }
 
     public Task StartAsync(CancellationToken cancellationToken) {
-        this.connection = this.client.Connect(ref address);
+        this.Connect();
         return Task.CompletedTask;
+    }
+
+    public void Connect() {
+        this.connection = this.client.Connect(ref address);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
@@ -46,6 +60,14 @@ public class SlopConnectionManager : IHostedService {
     }
 
     private void Update() {
+        if (this.tickRate is not null) {
+            this.tickTimer += Time.deltaTime;
+            if (this.tickTimer >= this.tickRate) {
+                this.tickTimer -= this.tickRate.Value;
+                this.Tick?.Invoke();
+            }
+        }
+
         this.client.RunCallbacks();
         if (this.connection == null) return;
 
@@ -78,11 +100,12 @@ public class SlopConnectionManager : IHostedService {
     }
 
     private void ProcessMessage(ClientboundMessage packet) {
-        this.logger.LogInfo($"Received packet of type {packet.MessageCase}");
+        this.MessageReceived?.Invoke(packet);
 
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.Hello: {
                 this.logger.LogInfo($"Received hello packet with tick rate {packet.Hello.TickRate}");
+                this.tickRate = 1 / packet.Hello.TickRate;
                 break;
             }
         }
@@ -91,8 +114,6 @@ public class SlopConnectionManager : IHostedService {
     public void SendMessage(ServerboundMessage packet, SendFlags flags = SendFlags.Reliable) {
         if (this.connection is null) throw new Exception("Not connected");
         var bytes = packet.ToByteArray();
-        Console.WriteLine(
-            $"Sending packet of type {packet.MessageCase} with {bytes.Length} bytes");
         this.client.SendMessageToConnection(this.connection.Value, bytes, flags);
     }
 
@@ -109,9 +130,20 @@ public class SlopConnectionManager : IHostedService {
             }
 
             case ConnectionState.ClosedByPeer:
-            case ConnectionState.ProblemDetectedLocally:
-                this.client.CloseConnection(this.connection!.Value);
+            case ConnectionState.ProblemDetectedLocally: {
+                this.OnDisconnect();
                 break;
+            }
         }
+    }
+
+    private void OnDisconnect() {
+        this.logger.LogWarning("Disconnected - attempting to reconnect");
+
+        this.tickRate = null;
+        this.tickTimer = 0;
+
+        this.client.CloseConnection(this.connection!.Value);
+        Task.Delay(5000).ContinueWith(_ => this.Connect());
     }
 }

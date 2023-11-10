@@ -12,6 +12,7 @@ public interface ISlopCrewAPI {
     public event Action OnConnected;
     public event Action OnDisconnected;
 
+    public int? StageOverride { get; set; }
     public void SendCustomPacket(string id, byte[] data);
     public event Action<string, byte[]> OnCustomPacketReceived;
 }
