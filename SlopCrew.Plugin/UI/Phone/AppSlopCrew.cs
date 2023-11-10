@@ -40,8 +40,8 @@ public class AppSlopCrew : App {
     private bool notifInitialized;
     private bool playerLocked;
     private bool hasBannedMods;
-    private string titleText;
-    private string messageText;
+    private string titleText = string.Empty;
+    private string messageText = string.Empty;
 
     private ManualLogSource log = BepInEx.Logging.Logger.CreateLogSource("Slop Crew App");
 
