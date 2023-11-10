@@ -19,6 +19,7 @@ builder.Services.AddHostedService<NetworkService>(p => p.GetRequiredService<Netw
 
 builder.Services.AddTransient<NetworkClient>();
 builder.Services.AddSingleton<MetricsService>();
+builder.Services.AddSingleton<TickRateService>();
 
 var app = builder.Build();
 app.Run();

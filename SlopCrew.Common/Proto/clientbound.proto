@@ -30,6 +30,7 @@ message ClientboundPositionUpdate {
 
 message ClientboundPong {
   uint32 id = 1;
+  uint64 tick = 2;
 }
 
 message ClientboundVisualUpdate {

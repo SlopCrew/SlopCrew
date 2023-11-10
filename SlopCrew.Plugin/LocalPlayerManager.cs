@@ -22,12 +22,16 @@ public class LocalPlayerManager : IHostedService {
     public Task StartAsync(CancellationToken cancellationToken) {
         this.connectionManager.Tick += this.Tick;
         this.connectionManager.MessageReceived += this.MessageReceived;
+        StageManager.OnStagePostInitialization += this.StagePostInit;
         return Task.CompletedTask;
     }
+
+
 
     public Task StopAsync(CancellationToken cancellationToken) {
         this.connectionManager.Tick -= this.Tick;
         this.connectionManager.MessageReceived -= this.MessageReceived;
+        StageManager.OnStagePostInitialization -= this.StagePostInit;
         return Task.CompletedTask;
     }
 
@@ -38,7 +42,9 @@ public class LocalPlayerManager : IHostedService {
     }
 
     private void Tick() {
-        var me = WorldHandler.instance.GetCurrentPlayer();
+        var worldHandler = WorldHandler.instance;
+        if (worldHandler == null) return;
+        var me = worldHandler.GetCurrentPlayer();
         if (me == null) return;
 
         if (this.HelloRefreshQueued) {
@@ -98,5 +104,9 @@ public class LocalPlayerManager : IHostedService {
 
             this.lastTransform = newTransform;
         }
+    }
+
+    private void StagePostInit() {
+        this.HelloRefreshQueued = true;
     }
 }

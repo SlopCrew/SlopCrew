@@ -22,6 +22,7 @@ public class Plugin : BaseUnityPlugin {
 
             AddSingletonHostedService<SlopConnectionManager>();
             AddSingletonHostedService<LocalPlayerManager>();
+            AddSingletonHostedService<PlayerManager>();
 
             services.AddSingleton<SlopCrewAPI>();
         });

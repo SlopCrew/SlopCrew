@@ -26,7 +26,7 @@ public class SlopConnectionManager : IHostedService {
     public Action<ClientboundMessage>? MessageReceived;
     public Action? Tick;
 
-    private float? tickRate = null;
+    public float? TickRate = null;
     private float tickTimer = 0;
 
     public SlopConnectionManager(ManualLogSource logger) {
@@ -60,10 +60,10 @@ public class SlopConnectionManager : IHostedService {
     }
 
     private void Update() {
-        if (this.tickRate is not null) {
+        if (this.TickRate is not null) {
             this.tickTimer += Time.deltaTime;
-            if (this.tickTimer >= this.tickRate) {
-                this.tickTimer -= this.tickRate.Value;
+            if (this.tickTimer >= this.TickRate) {
+                this.tickTimer -= this.TickRate.Value;
                 this.Tick?.Invoke();
             }
         }
@@ -105,7 +105,7 @@ public class SlopConnectionManager : IHostedService {
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.Hello: {
                 this.logger.LogInfo($"Received hello packet with tick rate {packet.Hello.TickRate}");
-                this.tickRate = 1 / packet.Hello.TickRate;
+                this.TickRate = 1 / packet.Hello.TickRate;
                 break;
             }
         }
@@ -140,7 +140,7 @@ public class SlopConnectionManager : IHostedService {
     private void OnDisconnect() {
         this.logger.LogWarning("Disconnected - attempting to reconnect");
 
-        this.tickRate = null;
+        this.TickRate = null;
         this.tickTimer = 0;
 
         this.client.CloseConnection(this.connection!.Value);
