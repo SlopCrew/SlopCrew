@@ -80,7 +80,7 @@ public class SlopRaceEncounter : SlopEncounter {
                     var player = WorldHandler.instance.GetCurrentPlayer();
                     var phone = Traverse.Create(player).Field("phone").GetValue<Phone>();
                     var app = phone.GetAppInstance<AppSlopCrew>();
-                    app.EndWaitingForRace();
+                    app.EndWaitingForEncounter();
 
                     break;
                 }
@@ -175,7 +175,7 @@ public class SlopRaceEncounter : SlopEncounter {
 
         var sorted = endData!.Rankings.OrderBy(x => x.Value).ToList();
 
-        var str = "";
+        var str = string.Empty;
         foreach (var kvp in sorted) {
             var id = kvp.Key;
             var timeStr = "<color=white>: " + this.NiceTimerString(kvp.Value) + "\n";
@@ -188,10 +188,10 @@ public class SlopRaceEncounter : SlopEncounter {
                 str += Plugin.SlopConfig.Username.Value + timeStr;
             }
         }
-        app.RaceRankings = str.Trim();
+        app.SetForcedText("Race Results", str.Trim());
 
         //It should already be done, but just in case
-        app.EndWaitingForRace();
+        app.EndWaitingForEncounter();
     }
 
     enum RaceState {

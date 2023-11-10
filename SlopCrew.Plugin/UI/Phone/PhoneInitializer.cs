@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Reptile;
 using Reptile.Phone;
 using SlopCrew.Common;
@@ -19,34 +19,10 @@ public class PhoneInitializer {
         var slopAppObj = new GameObject("AppSlopCrew");
         slopAppObj.layer = Layers.Phone;
 
-        var contentObj = new GameObject("Content");
-        contentObj.layer = Layers.Phone;
-
-        var app = slopAppObj.AddComponent<AppSlopCrew>();
-        var content = contentObj.AddComponent<RectTransform>();
-        var tmp = contentObj.AddComponent<TextMeshProUGUI>();
-        contentObj.AddComponent<TextMeshProFilter>();
-
-        // seems to be a hardcoded size
-        content.sizeDelta = new(1070, 1775);
-        tmp.rectTransform.sizeDelta = content.sizeDelta;
-        tmp.alignment = TextAlignmentOptions.Center;
-
-        // Same shit we do for the nameplate
-        var uiManager = Core.Instance.UIManager;
-        var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
-        tmp.font = gameplay.trickNameLabel.font;
-        tmp.fontSize = 100f;
-
-        app.Label = tmp;
-
+        slopAppObj.AddComponent<AppSlopCrew>();
         slopAppObj.transform.SetParent(apps, false);
-        contentObj.transform.SetParent(slopAppObj.transform, false);
-
         // why are these zero? idk!
         slopAppObj.transform.localScale = new(1, 1, 1);
-        contentObj.transform.localScale = new(1, 1, 1);
-
         slopAppObj.SetActive(true);
     }
 
