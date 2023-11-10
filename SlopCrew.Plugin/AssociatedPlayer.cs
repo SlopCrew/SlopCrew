@@ -6,6 +6,7 @@ using SlopCrew.Common;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 using Player = Reptile.Player;
@@ -45,14 +46,14 @@ public class AssociatedPlayer {
         this.SlopPlayer = slopPlayer;
 
         this.SetNextCharacterInfo(slopPlayer.CharacterInfo);
-        
+
         var moveStyle = (MoveStyle) slopPlayer.MoveStyle;
-        
+
         // SPECIAL_SKATEBOARD makes people error out ~Sylvie
         // It's also blocked server-side
         if (moveStyle == MoveStyle.SPECIAL_SKATEBOARD)
             moveStyle = MoveStyle.SKATEBOARD;
-        
+
         var player = WorldHandler.instance.SetupAIPlayerAt(
             this.emptyTransform,
             (Characters) slopPlayer.Character,
@@ -100,6 +101,9 @@ public class AssociatedPlayer {
         }
     }
 
+    private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+    private static Material? NameplateFontMaterial;
+
     private void SpawnNameplate() {
         var container = new GameObject("SlopCrew_NameplateContainer");
 
@@ -116,6 +120,22 @@ public class AssociatedPlayer {
 
         tmp.alignment = TextAlignmentOptions.Midline;
         tmp.fontSize = 2.5f;
+
+        if (Plugin.SlopConfig.OutlineNameplates.Value) {
+            // Lazy load the material so there's not a million material instances floating in memory
+            if (NameplateFontMaterial == null) {
+                NameplateFontMaterial = tmp.fontMaterial;
+                NameplateFontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, NamePlateOutlineColor);
+                NameplateFontMaterial.SetColor(ShaderUtilities.ID_UnderlayColor, NamePlateOutlineColor);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.1f);
+                NameplateFontMaterial.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayDilate, 0.1f);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, 0.2f);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.2f);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.0f);
+            }
+            tmp.fontMaterial = NameplateFontMaterial;
+        }
 
         nameplate.transform.parent = container.transform;
 
@@ -238,7 +258,7 @@ public class AssociatedPlayer {
 
         // Apply the rotation separately to the visual for upside down grinds.
         // & check for null in case they swap characters and we lose the reference for a moment
-        if(visual != null)
+        if (visual != null)
             this.visual.transform.rotation = newRot;
     }
 
