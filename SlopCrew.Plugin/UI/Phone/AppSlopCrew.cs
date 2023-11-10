@@ -265,6 +265,9 @@ public class AppSlopCrew : App {
             return;
         }
 
+        // This happens when literally no encounter is going on or one just ended
+        SetEncounterStatus(EncounterStatus.None);
+
         if (!this.playerLocked) {
             var position = player.transform.position;
             var nearestPlayer = Plugin.PlayerManager.AssociatedPlayers

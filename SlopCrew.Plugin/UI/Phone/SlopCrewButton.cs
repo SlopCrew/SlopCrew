@@ -109,6 +109,13 @@ internal class SlopCrewButton : PhoneScrollButton {
     }
 
     protected override void ConstantUpdate() {
+        if (Plugin.CurrentEncounter?.IsBusy == true) {
+            SetUnavailable(!app.IsActiveEncounter(this.encounterType));
+            return;
+        } else {
+            SetUnavailable(false);
+        }
+
         switch (encounterType) {
             case EncounterType.ScoreEncounter:
             case EncounterType.ComboEncounter:
@@ -116,10 +123,6 @@ internal class SlopCrewButton : PhoneScrollButton {
                 break;
             case EncounterType.RaceEncounter:
                 break;
-        }
-
-        if (Plugin.CurrentEncounter?.IsBusy == true) {
-            SetUnavailable(!app.IsActiveEncounter(this.encounterType));
         }
     }
 
