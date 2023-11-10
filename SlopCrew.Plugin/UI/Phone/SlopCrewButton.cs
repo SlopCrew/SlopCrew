@@ -15,6 +15,8 @@ internal class SlopCrewButton : PhoneScrollButton {
     [SerializeField]
     private TextMeshProUGUI? modeLabel;
     [SerializeField]
+    private TextMeshProUGUI? waitingLabel;
+    [SerializeField]
     private GameObject? confirmArrow;
 
     [SerializeField]
@@ -30,12 +32,14 @@ internal class SlopCrewButton : PhoneScrollButton {
     public void InitializeButton(Image buttonBackground,
                                  Image buttonIcon,
                                  TextMeshProUGUI modeLabel,
+                                 TextMeshProUGUI waitingLabel,
                                  GameObject confirmArrow,
                                  Sprite normalButtonSprite,
                                  Sprite selectedButtonSprite) {
         this.buttonBackground = buttonBackground;
         this.buttonIcon = buttonIcon;
         this.modeLabel = modeLabel;
+        this.waitingLabel = waitingLabel;
         this.confirmArrow = confirmArrow;
         this.normalButtonSprite = normalButtonSprite;
         this.selectedButtonSprite = selectedButtonSprite;
@@ -58,5 +62,9 @@ internal class SlopCrewButton : PhoneScrollButton {
         buttonBackground.sprite = normalButtonSprite;
         modeLabel.color = normalModeColor;
         confirmArrow.SetActive(false);
+    }
+
+    public void SetWaiting(bool waiting) {
+        waitingLabel.gameObject.SetActive(waiting);
     }
 }

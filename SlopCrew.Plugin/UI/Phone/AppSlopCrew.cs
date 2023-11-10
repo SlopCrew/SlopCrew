@@ -19,22 +19,18 @@ namespace SlopCrew.Plugin.UI.Phone;
 
 public class AppSlopCrew : App {
     [NonSerialized] public string? RaceRankings;
-    [NonSerialized] public TMP_Text Label = null!;
 
     private SlopCrewScrollView? scrollView;
 
     private AssociatedPlayer? nearestPlayer;
-    private EncounterType encounter = EncounterType.ScoreEncounter;
+    private EncounterType waitingEncounter;
+    private bool isWaitingForEncounter = false;
 
-    private List<EncounterType> encounterTypes = new() {
-        EncounterType.ScoreEncounter,
-        EncounterType.ComboEncounter,
-        EncounterType.RaceEncounter
-    };
+    private EncounterType[] encounterTypes = (EncounterType[]) Enum.GetValues(typeof(EncounterType));
 
     private bool notifInitialized;
     private bool playerLocked;
-    private bool isWaitingForARace = false;
+    private bool hasBannedMods;
 
     public override void Awake() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
@@ -96,7 +92,14 @@ public class AppSlopCrew : App {
     public override void OnAppEnable() {
         base.OnAppEnable();
 
-        scrollView.SetListContent(encounterTypes.Count);
+        scrollView.SetListContent(encounterTypes.Length);
+
+        // I don't think anyone's going to just disable or enable banned mods while the game is running?
+        // So we can probably cache the result when opening the app instead of asking every frame
+        hasBannedMods = HasBannedMods();
+        if (hasBannedMods) {
+            scrollView.CanvasGroup.alpha = 0.5f;
+        }
     }
 
     public override void OnPressUp() {
@@ -104,16 +107,8 @@ public class AppSlopCrew : App {
             this.RaceRankings = null;
             return;
         }
-        if (Plugin.CurrentEncounter?.IsBusy == true) return;
-
-        var nextIndex = this.encounterTypes.IndexOf(this.encounter) - 1;
-        if (nextIndex < 0) nextIndex = this.encounterTypes.Count - 1;
 
         scrollView.Move(PhoneScroll.ScrollDirection.Previous, m_AudioManager);
-
-        var nextEncounter = encounterTypes[nextIndex];
-
-        this.encounter = nextEncounter;
     }
 
     public override void OnPressDown() {
@@ -121,143 +116,133 @@ public class AppSlopCrew : App {
             this.RaceRankings = null;
             return;
         }
-        if (Plugin.CurrentEncounter?.IsBusy == true) return;
-
-        var nextIndex = this.encounterTypes.IndexOf(this.encounter) + 1;
-        if (nextIndex >= this.encounterTypes.Count) nextIndex = 0;
 
         scrollView.Move(PhoneScroll.ScrollDirection.Next, m_AudioManager);
-
-        var nextEncounter = encounterTypes[nextIndex];
-
-        this.encounter = nextEncounter;
     }
 
     public override void OnPressRight() {
+        if (hasBannedMods) {
+            return;
+        }
+
+        if (nearestPlayer == null) {
+            return;
+        }
+
+        EncounterType currentSelectedMode = (EncounterType) scrollView.GetContentIndex();
+
+        if (isWaitingForEncounter && currentSelectedMode != waitingEncounter) {
+            return;
+        }
+
         scrollView.HoldAnimationSelectedButton();
-
-        //if (isWaitingForARace) {
-        //    this.SendCancelEncounterRequest();
-        //    return;
-        //}
-
-        //if (this.RaceRankings is not null) {
-        //    this.RaceRankings = null;
-        //    return;
-        //}
-        //if (!this.SendEncounterRequest()) return;
-
-        //// People wanted an audible sound so you'll get one
-        //var audioManager = Core.Instance.AudioManager;
-        //var playSfx = AccessTools.Method("Reptile.AudioManager:PlaySfxGameplay",
-        //                                 new[] { typeof(SfxCollectionID), typeof(AudioClipID), typeof(float) });
-        //playSfx.Invoke(audioManager, new object[] { SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm, 0f });
-
-        //if (this.encounter is EncounterType.RaceEncounter && !isWaitingForARace) {
-        //    isWaitingForARace = true;
-        //}
     }
 
     public override void OnReleaseRight() {
         scrollView.ActivateAnimationSelectedButton();
+
+        EncounterType currentSelectedMode = (EncounterType) scrollView.GetContentIndex();
+
+        if (isWaitingForEncounter && currentSelectedMode == waitingEncounter) {
+            SendCancelEncounterRequest(waitingEncounter);
+            return;
+        }
+
+        if (this.RaceRankings is not null) {
+            this.RaceRankings = null;
+            return;
+        }
+
+        if (!SendEncounterRequest(currentSelectedMode)) return;
+
+        m_AudioManager.PlaySfx(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
+
+        if (currentSelectedMode == EncounterType.RaceEncounter && !isWaitingForEncounter) {
+            waitingEncounter = EncounterType.RaceEncounter;
+            isWaitingForEncounter = true;
+            SetWaiting(true);
+        }
     }
 
-    private bool SendEncounterRequest() {
-        if (!this.encounter.IsStateful() && this.nearestPlayer == null) return false;
+    private bool SendEncounterRequest(EncounterType encounter) {
+        if (!encounter.IsStateful() && this.nearestPlayer == null) return false;
         if (Plugin.CurrentEncounter?.IsBusy == true) return false;
-        if (this.HasBannedMods()) return false;
+        if (hasBannedMods) return false;
 
         Plugin.HasEncounterBeenCancelled = false;
 
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterRequest {
             PlayerID = this.nearestPlayer?.SlopPlayer.ID ?? uint.MaxValue,
-            EncounterType = this.encounter
+            EncounterType = encounter
         });
 
         return true;
     }
 
-    private void SendCancelEncounterRequest() {
+    private void SendCancelEncounterRequest(EncounterType encounter) {
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterCancel {
-            EncounterType = this.encounter
+            EncounterType = encounter
         });
     }
 
     public override void OnAppUpdate() {
-        return;
+        var player = WorldHandler.instance.GetCurrentPlayer();
+        if (player is null) return;
 
-        var me = WorldHandler.instance.GetCurrentPlayer();
-        if (me is null) return;
-
-        if (Plugin.CurrentEncounter is SlopRaceEncounter && isWaitingForARace) {
-            isWaitingForARace = false;
+        if (Plugin.CurrentEncounter is SlopRaceEncounter && isWaitingForEncounter && waitingEncounter == EncounterType.RaceEncounter) {
+            EndWaitingForEncounter();
         }
 
-        if (isWaitingForARace) {
+        if (isWaitingForEncounter && waitingEncounter == EncounterType.RaceEncounter) {
             if (Plugin.HasEncounterBeenCancelled) {
-                isWaitingForARace = false;
-
-                Core.Instance.AudioManager.PlaySfx(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
+                EndWaitingForEncounter();
             }
-
-            this.Label.text = "Waiting for a race...\n Press right to cancel";
             return;
         }
 
-        if (this.HasBannedMods()) {
-            this.Label.text = "Please disable\nadvantageous\nmods";
+        if (hasBannedMods) {
             return;
         }
 
         if (Plugin.CurrentEncounter?.IsBusy == true) {
             if (Plugin.CurrentEncounter is SlopRaceEncounter race && race.IsWaitingForResults()) {
-                this.Label.text = "Waiting for results...";
+                //this.Label.text = "Waiting for results...";
             } else {
-                this.Label.text = "glhf";
+                //this.Label.text = "glhf";
             }
             return;
         }
 
         if (this.RaceRankings is not null) {
-            this.Label.text = this.RaceRankings;
+            //this.Label.text = this.RaceRankings;
             return;
         }
 
         if (!this.playerLocked) {
-            var position = me.transform.position.FromMentalDeficiency();
+            var position = player.transform.position;
             this.nearestPlayer = Plugin.PlayerManager.AssociatedPlayers
                 .Where(x => x.IsValid())
-                .OrderBy(x =>
-                             System.Numerics.Vector3.Distance(
-                                 x.ReptilePlayer.transform.position.FromMentalDeficiency(),
-                                 position
-                             ))
+                .OrderBy(x => Vector3.Distance(x.ReptilePlayer.transform.position, position))
                 .FirstOrDefault();
         }
 
-        var modeName = this.encounter switch {
-            EncounterType.ScoreEncounter => "score",
-            EncounterType.ComboEncounter => "combo",
-            EncounterType.RaceEncounter => "race"
-        };
-
-        if (this.encounter.IsStateful()) {
-            this.Label.text = $"Press right\nto wait for a\n{modeName} battle";
-            return;
-        }
+        //if (this.encounter.IsStateful()) {
+        //    this.Label.text = $"Press right\nto wait for a\n{modeName} battle";
+        //    return;
+        //}
 
         if (this.nearestPlayer == null) {
             if (this.playerLocked) this.playerLocked = false;
-            this.Label.text = $"No players nearby\nfor {modeName} battle";
+            //this.Label.text = $"No players nearby\nfor {modeName} battle";
         } else {
             var filteredName = PlayerNameFilter.DoFilter(this.nearestPlayer.SlopPlayer.Name);
-            var text = $"Press right\nto {modeName} battle\n" + filteredName;
+            //var text = $"Press right\nto {modeName} battle\n" + filteredName;
 
             if (this.playerLocked) {
-                text = $"{filteredName}<color=white>\nwants to {modeName} battle!\n\nPress right\nto start";
+                //text = $"{filteredName}<color=white>\nwants to {modeName} battle!\n\nPress right\nto start";
             }
 
-            this.Label.text = text;
+            //this.Label.text = text;
         }
     }
 
@@ -266,8 +251,17 @@ public class AppSlopCrew : App {
         return Chainloader.PluginInfos.Keys.Any(x => bannedMods.Contains(x));
     }
 
-    public void EndWaitingForRace() {
-        isWaitingForARace = false;
+    public void EndWaitingForEncounter() {
+        isWaitingForEncounter = false;
+
+        SetWaiting(false);
+    }
+
+    private void SetWaiting(bool waiting) {
+        var button = scrollView.GetButtons()[(int) waitingEncounter] as SlopCrewButton;
+        if (button == null) return;
+
+        button.SetWaiting(waiting);
     }
 
     public void SetNotification(Notification notif) {
@@ -281,12 +275,11 @@ public class AppSlopCrew : App {
     public override void OpenContent(AUnlockable unlockable, bool appAlreadyOpen) {
         if (Plugin.PhoneInitializer.LastRequest is not null) {
             var request = Plugin.PhoneInitializer.LastRequest;
-            this.encounter = request.EncounterType;
 
             if (Plugin.PlayerManager.Players.TryGetValue(request.PlayerID, out var player)) {
                 this.nearestPlayer = player;
                 if (Plugin.SlopConfig.StartEncountersOnRequest.Value) {
-                    this.SendEncounterRequest();
+                    this.SendEncounterRequest(request.EncounterType);
                 } else {
                     this.playerLocked = true;
                     Task.Run(() => {

@@ -19,6 +19,8 @@ public class SlopCrewScrollView : PhoneScroll {
     private Sprite? buttonSpriteSelected;
     private Sprite?[] buttonIcons = new Sprite?[3];
 
+    public CanvasGroup? CanvasGroup { get; private set; }
+
     private static readonly string[] ModeButtonTitles = {
         "Score Battle",
         "Combo Battle",
@@ -57,12 +59,18 @@ public class SlopCrewScrollView : PhoneScroll {
         buttonTitle.transform.localPosition = new Vector2(96.0f, 76.0f);
         buttonTitle.SetText("Slop Crew Encounter");
 
+        var buttonWaiting = Instantiate(titleObject);
+        buttonWaiting.transform.SetParent(rectTransform, false);
+        buttonWaiting.transform.localPosition = new Vector2(96.0f, -76.0f);
+        buttonWaiting.SetText("Waiting...");
+        buttonWaiting.gameObject.SetActive(false);
+
         var confirmArrow = Instantiate(arrowObject);
         confirmArrow.transform.SetParent(rectTransform, false);
         confirmArrow.transform.localPosition = new Vector2(430.0f, 120.0f);
 
         var slopCrewButton = button.AddComponent<SlopCrewButton>();
-        slopCrewButton.InitializeButton(buttonBackground, buttonIcon, buttonTitle, confirmArrow, buttonSprite, buttonSpriteSelected);
+        slopCrewButton.InitializeButton(buttonBackground, buttonIcon, buttonTitle, buttonWaiting, confirmArrow, buttonSprite, buttonSpriteSelected);
 
         m_AppButtonPrefab = slopCrewButton.gameObject;
         m_AppButtonPrefab.SetActive(false);
@@ -80,6 +88,8 @@ public class SlopCrewScrollView : PhoneScroll {
         LIST_LOOPS = false;
 
         traverse.Field("m_ButtonContainer").SetValue(gameObject.GetComponent<RectTransform>());
+
+        CanvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         LoadSprites();
         CreatePrefabs(arrowObject, titleObject);

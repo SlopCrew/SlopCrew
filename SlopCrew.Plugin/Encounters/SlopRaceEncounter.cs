@@ -80,7 +80,7 @@ public class SlopRaceEncounter : SlopEncounter {
                     var player = WorldHandler.instance.GetCurrentPlayer();
                     var phone = Traverse.Create(player).Field("phone").GetValue<Phone>();
                     var app = phone.GetAppInstance<AppSlopCrew>();
-                    app.EndWaitingForRace();
+                    app.EndWaitingForEncounter();
 
                     break;
                 }
@@ -191,7 +191,7 @@ public class SlopRaceEncounter : SlopEncounter {
         app.RaceRankings = str.Trim();
 
         //It should already be done, but just in case
-        app.EndWaitingForRace();
+        app.EndWaitingForEncounter();
     }
 
     enum RaceState {
