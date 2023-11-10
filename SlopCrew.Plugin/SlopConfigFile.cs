@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using BepInEx.Configuration;
 
 namespace SlopCrew.Plugin;
@@ -15,6 +15,7 @@ public class SlopConfigFile {
     public ConfigEntry<bool> ShowConnectionInfo;
     public ConfigEntry<bool> ShowPlayerNameplates;
     public ConfigEntry<bool> BillboardNameplates;
+    public ConfigEntry<bool> OutlineNameplates;
     public ConfigEntry<bool> ShowPlayerMapPins;
 
     // Phone
@@ -81,6 +82,13 @@ public class SlopConfigFile {
             "BillboardNameplates",
             true,
             "Billboard nameplates (always face the camera)."
+        );
+
+        this.OutlineNameplates = this.config.Bind(
+            "General",
+            "OutlineNameplates",
+            true,
+            "Add a dark outline to nameplates for contrast."
         );
 
         this.ShowPlayerMapPins = this.config.Bind(

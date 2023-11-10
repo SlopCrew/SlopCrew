@@ -366,8 +366,6 @@ public class AppSlopCrew : App {
         if (player == null) {
             if (this.playerLocked) this.playerLocked = false;
             SetStatusText("NEAREST PLAYER", "None found.");
-
-
             return;
         }
 
