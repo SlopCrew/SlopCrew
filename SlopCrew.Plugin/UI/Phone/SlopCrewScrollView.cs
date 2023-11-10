@@ -63,12 +63,12 @@ public class SlopCrewScrollView : PhoneScroll {
         buttonTitle.transform.localPosition = new Vector2(96.0f, 76.0f);
         buttonTitle.SetText("Slop Crew Encounter");
 
-        // Waiting for encounter label
-        var buttonWaiting = Instantiate(titleObject);
-        buttonWaiting.transform.SetParent(rectTransform, false);
-        buttonWaiting.transform.localPosition = new Vector2(96.0f, -76.0f);
-        buttonWaiting.SetText("Waiting...");
-        buttonWaiting.gameObject.SetActive(false);
+        // Encounter status label
+        var buttonStatus = Instantiate(titleObject);
+        buttonStatus.transform.SetParent(rectTransform, false);
+        buttonStatus.transform.localPosition = new Vector2(96.0f, -76.0f);
+        buttonStatus.SetText("Waiting...");
+        buttonStatus.gameObject.SetActive(false);
 
         // Arrow to indicate pressing right = confirm
         var confirmArrow = Instantiate(arrowObject);
@@ -76,7 +76,7 @@ public class SlopCrewScrollView : PhoneScroll {
         confirmArrow.transform.localPosition = new Vector2(430.0f, 120.0f);
 
         var slopCrewButton = button.AddComponent<SlopCrewButton>();
-        slopCrewButton.InitializeButton(buttonBackground, buttonIcon, buttonTitle, buttonWaiting, confirmArrow, buttonSprite, buttonSpriteSelected);
+        slopCrewButton.InitializeButton(buttonBackground, buttonIcon, buttonTitle, buttonStatus, confirmArrow, buttonSprite, buttonSpriteSelected);
 
         m_AppButtonPrefab = slopCrewButton.gameObject;
         m_AppButtonPrefab.SetActive(false);

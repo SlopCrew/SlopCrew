@@ -8,6 +8,7 @@ using SlopCrew.Common.Network.Serverbound;
 using SlopCrew.Plugin.Encounters;
 using SlopCrew.Plugin.Extensions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,22 +19,29 @@ using UnityEngine.UI;
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class AppSlopCrew : App {
-    [NonSerialized] public string? RaceRankings;
+    public enum EncounterStatus {
+        None,
+        Waiting,
+        InProgress,
+        WaitingResults,
+    }
 
     private SlopCrewScrollView? scrollView;
     private TextMeshProUGUI? statusTitle;
-    private TextMeshProUGUI? statusText;
+    private TextMeshProUGUI? statusMessage;
 
     private AssociatedPlayer? nearestPlayer;
-    private EncounterType waitingEncounter;
+    private EncounterType currentEncounter;
     private bool isWaitingForEncounter = false;
+    private bool isDisplayingForcedText = false;
 
     private EncounterType[] encounterTypes = (EncounterType[]) Enum.GetValues(typeof(EncounterType));
 
     private bool notifInitialized;
     private bool playerLocked;
     private bool hasBannedMods;
-    private bool hasNearestPlayer;
+    private string titleText;
+    private string messageText;
 
     private ManualLogSource log = BepInEx.Logging.Logger.CreateLogSource("Slop Crew App");
 
@@ -89,11 +97,11 @@ public class AppSlopCrew : App {
         textContainer.localPosition = new Vector2(-480.0f, 150.7f);
 
         statusTitle = textContainer.Find("CurrentTitleLabel").GetComponent<TextMeshProUGUI>();
-        statusText = textContainer.Find("CurrentArtistLabel").GetComponent<TextMeshProUGUI>();
-        statusText.transform.localPosition = new Vector2(0.0f, 64.0f);
-        statusText.name = "CurrentStatusLabel";
+        statusMessage = textContainer.Find("CurrentArtistLabel").GetComponent<TextMeshProUGUI>();
+        statusMessage.transform.localPosition = new Vector2(0.0f, 64.0f);
+        statusMessage.name = "CurrentStatusLabel";
 
-        statusTitle.rectTransform.sizeDelta = statusText.rectTransform.sizeDelta = new Vector2(1000.0f, 128.0f);
+        statusTitle.rectTransform.sizeDelta = statusMessage.rectTransform.sizeDelta = new Vector2(1000.0f, 128.0f);
 
         statusTitle.SetText("NEAREST PLAYER");
     }
@@ -127,8 +135,7 @@ public class AppSlopCrew : App {
         this.hasBannedMods = HasBannedMods();
         if (this.hasBannedMods) {
             scrollView.CanvasGroup.alpha = 0.5f;
-            statusTitle.SetText("Please disable advantageous mods.");
-            statusText.SetText(string.Empty);
+            SetStatusText("Please disable adavantageous mods.", string.Empty);
             foreach (var button in scrollView.GetButtons()) {
                 button.IsSelected = false;
             }
@@ -140,11 +147,7 @@ public class AppSlopCrew : App {
             return;
         }
 
-        if (this.RaceRankings is not null) {
-            this.RaceRankings = null;
-            return;
-        }
-
+        DismissForcedText();
         scrollView.Move(PhoneScroll.ScrollDirection.Previous, m_AudioManager);
     }
 
@@ -153,11 +156,7 @@ public class AppSlopCrew : App {
             return;
         }
 
-        if (this.RaceRankings is not null) {
-            this.RaceRankings = null;
-            return;
-        }
-
+        DismissForcedText();
         scrollView.Move(PhoneScroll.ScrollDirection.Next, m_AudioManager);
     }
 
@@ -172,7 +171,7 @@ public class AppSlopCrew : App {
             return;
         }
 
-        if (isWaitingForEncounter && currentSelectedMode != waitingEncounter) {
+        if (isWaitingForEncounter && currentSelectedMode != currentEncounter) {
             return;
         }
 
@@ -190,13 +189,8 @@ public class AppSlopCrew : App {
             return;
         }
 
-        if (isWaitingForEncounter && currentSelectedMode == waitingEncounter) {
-            SendCancelEncounterRequest(waitingEncounter);
-            return;
-        }
-
-        if (this.RaceRankings is not null) {
-            this.RaceRankings = null;
+        if (isWaitingForEncounter && currentSelectedMode == currentEncounter) {
+            SendCancelEncounterRequest(currentEncounter);
             return;
         }
 
@@ -206,9 +200,9 @@ public class AppSlopCrew : App {
         m_AudioManager.PlaySfx(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
 
         if (currentSelectedMode == EncounterType.RaceEncounter && !isWaitingForEncounter) {
-            waitingEncounter = EncounterType.RaceEncounter;
+            currentEncounter = EncounterType.RaceEncounter;
             isWaitingForEncounter = true;
-            SetWaiting(true);
+            SetEncounterStatus(EncounterStatus.Waiting);
         }
     }
 
@@ -244,11 +238,11 @@ public class AppSlopCrew : App {
         var player = WorldHandler.instance.GetCurrentPlayer();
         if (player is null) return;
 
-        if (Plugin.CurrentEncounter is SlopRaceEncounter && isWaitingForEncounter && waitingEncounter == EncounterType.RaceEncounter) {
+        if (Plugin.CurrentEncounter is SlopRaceEncounter && isWaitingForEncounter && currentEncounter == EncounterType.RaceEncounter) {
             EndWaitingForEncounter();
         }
 
-        if (isWaitingForEncounter && waitingEncounter == EncounterType.RaceEncounter) {
+        if (isWaitingForEncounter && currentEncounter == EncounterType.RaceEncounter) {
             if (Plugin.HasEncounterBeenCancelled) {
                 EndWaitingForEncounter();
             }
@@ -261,15 +255,10 @@ public class AppSlopCrew : App {
 
         if (Plugin.CurrentEncounter?.IsBusy == true) {
             if (Plugin.CurrentEncounter is SlopRaceEncounter race && race.IsWaitingForResults()) {
-                //this.Label.text = "Waiting for results...";
+                SetEncounterStatus(EncounterStatus.WaitingResults);
             } else {
-                //this.Label.text = "glhf";
+                SetEncounterStatus(EncounterStatus.InProgress);
             }
-            return;
-        }
-
-        if (this.RaceRankings is not null) {
-            //this.Label.text = this.RaceRankings;
             return;
         }
 
@@ -284,11 +273,6 @@ public class AppSlopCrew : App {
                 NearestPlayerChanged(nearestPlayer);
             }
         }
-
-        //if (this.encounter.IsStateful()) {
-        //    this.Label.text = $"Press right\nto wait for a\n{modeName} battle";
-        //    return;
-        //}
     }
 
     private bool HasBannedMods() {
@@ -298,8 +282,7 @@ public class AppSlopCrew : App {
 
     public void EndWaitingForEncounter() {
         isWaitingForEncounter = false;
-
-        SetWaiting(false);
+        SetEncounterStatus(EncounterStatus.None);
     }
 
     private bool ModeRequiresNearbyPlayer(EncounterType mode) {
@@ -310,26 +293,59 @@ public class AppSlopCrew : App {
         return true;
     }
 
-    private void SetWaiting(bool waiting) {
-        var button = scrollView.GetButtonByRelativeIndex((int) waitingEncounter) as SlopCrewButton;
+    private void SetStatusText(string title, string message) {
+        if (isDisplayingForcedText) {
+            titleText = title;
+            messageText = message;
+            return;
+        }
+
+        if (statusTitle.text != title) {
+            statusTitle.SetText(title);
+        }
+        if (statusMessage.text != message) {
+            statusMessage.SetText(message);
+        }
+    }
+
+    public void SetForcedText(string title, string result) {
+        SetStatusText(title, result);
+        isDisplayingForcedText = true;
+    }
+
+    private void DismissForcedText() {
+        if (!isDisplayingForcedText) {
+            return;
+        }
+
+        isDisplayingForcedText = false;
+        SetStatusText(titleText, messageText);
+    }
+
+    private void SetEncounterStatus(EncounterStatus status) {
+        var button = scrollView.GetButtonByRelativeIndex((int) currentEncounter) as SlopCrewButton;
         if (button == null) return;
 
-        button.SetWaiting(waiting);
+        if (button.Status == status) {
+            return;
+        }
+
+        button.SetStatus(status);
     }
 
     private void NearestPlayerChanged(AssociatedPlayer? player) {
         if (player == null) {
             if (this.playerLocked) this.playerLocked = false;
-            statusText.SetText("None found.");
+            SetStatusText("NEAREST PLAYER", "None found.");
             return;
         }
 
         string playerName = PlayerNameFilter.DoFilter(player.SlopPlayer.Name);
 
         if (this.playerLocked) {
-            statusText.SetText($"<b>{playerName}");
+            SetStatusText("NEAREST PLAYER", $"<b>{playerName}");
         } else {
-            statusText.SetText(playerName);
+            SetStatusText("NEAREST PLAYER", playerName);
         }
     }
 

@@ -15,7 +15,7 @@ internal class SlopCrewButton : PhoneScrollButton {
     [SerializeField]
     private TextMeshProUGUI? modeLabel;
     [SerializeField]
-    private TextMeshProUGUI? waitingLabel;
+    private TextMeshProUGUI? statusLabel;
     [SerializeField]
     private GameObject? confirmArrow;
 
@@ -29,17 +29,19 @@ internal class SlopCrewButton : PhoneScrollButton {
     [SerializeField]
     private Color selectedModeColor = new Color(0.196f, 0.305f, 0.612f);
 
+    public AppSlopCrew.EncounterStatus Status { get; private set; }
+
     public void InitializeButton(Image buttonBackground,
                                  Image buttonIcon,
                                  TextMeshProUGUI modeLabel,
-                                 TextMeshProUGUI waitingLabel,
+                                 TextMeshProUGUI statusLabel,
                                  GameObject confirmArrow,
                                  Sprite normalButtonSprite,
                                  Sprite selectedButtonSprite) {
         this.buttonBackground = buttonBackground;
         this.buttonIcon = buttonIcon;
         this.modeLabel = modeLabel;
-        this.waitingLabel = waitingLabel;
+        this.statusLabel = statusLabel;
         this.confirmArrow = confirmArrow;
         this.normalButtonSprite = normalButtonSprite;
         this.selectedButtonSprite = selectedButtonSprite;
@@ -54,7 +56,7 @@ internal class SlopCrewButton : PhoneScrollButton {
         base.OnSelect(skipAnimations);
         buttonBackground.sprite = selectedButtonSprite;
         modeLabel.color = selectedModeColor;
-        waitingLabel.color = selectedModeColor;
+        statusLabel.color = selectedModeColor;
         confirmArrow.SetActive(true);
     }
 
@@ -62,11 +64,25 @@ internal class SlopCrewButton : PhoneScrollButton {
         base.OnDeselect(skipAnimations);
         buttonBackground.sprite = normalButtonSprite;
         modeLabel.color = normalModeColor;
-        waitingLabel.color = normalModeColor;
+        statusLabel.color = normalModeColor;
         confirmArrow.SetActive(false);
     }
 
-    public void SetWaiting(bool waiting) {
-        waitingLabel.gameObject.SetActive(waiting);
+    public void SetStatus(AppSlopCrew.EncounterStatus status) {
+        statusLabel.gameObject.SetActive(status != AppSlopCrew.EncounterStatus.None);
+
+        switch (status) {
+            case AppSlopCrew.EncounterStatus.Waiting:
+                statusLabel.SetText("Waiting...");
+                break;
+            case AppSlopCrew.EncounterStatus.InProgress:
+                statusLabel.SetText("In progress!");
+                break;
+            case AppSlopCrew.EncounterStatus.WaitingResults:
+                statusLabel.SetText("Awaiting results...");
+                break;
+        }
+
+        Status = status;
     }
 }
