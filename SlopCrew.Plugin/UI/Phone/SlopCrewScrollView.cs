@@ -37,34 +37,40 @@ public class SlopCrewScrollView : PhoneScroll {
     }
 
     private void CreatePrefabs(GameObject arrowObject, TextMeshProUGUI titleObject) {
+        // Main button
         GameObject button = new GameObject("SlopCrew Button");
         var rectTransform = button.AddComponent<RectTransform>();
         rectTransform.anchorMin = new Vector2(1.0f, 0.5f);
         rectTransform.anchorMax = rectTransform.anchorMin;
         rectTransform.sizeDelta = new Vector2(1052.0f, 298.0f);
 
+        // Button background
         var buttonBackgroundObject = new GameObject("Button Background");
         buttonBackgroundObject.transform.SetParent(rectTransform, false);
         var buttonBackground = buttonBackgroundObject.AddComponent<Image>();
         buttonBackground.rectTransform.sizeDelta = new Vector2(1052.0f, 298.0f);
 
+        // Mode icon
         var buttonIconObject = new GameObject("Button Icon");
         buttonIconObject.transform.SetParent(rectTransform, false);
         var buttonIcon = buttonIconObject.AddComponent<Image>();
         buttonIcon.rectTransform.sizeDelta = new Vector2(150.0f, 150.0f);
         buttonIcon.rectTransform.localPosition = new Vector2(-375.0f, 0.0f);
 
+        // Mode title
         var buttonTitle = Instantiate(titleObject);
         buttonTitle.transform.SetParent(rectTransform, false);
         buttonTitle.transform.localPosition = new Vector2(96.0f, 76.0f);
         buttonTitle.SetText("Slop Crew Encounter");
 
+        // Waiting for encounter label
         var buttonWaiting = Instantiate(titleObject);
         buttonWaiting.transform.SetParent(rectTransform, false);
         buttonWaiting.transform.localPosition = new Vector2(96.0f, -76.0f);
         buttonWaiting.SetText("Waiting...");
         buttonWaiting.gameObject.SetActive(false);
 
+        // Arrow to indicate pressing right = confirm
         var confirmArrow = Instantiate(arrowObject);
         confirmArrow.transform.SetParent(rectTransform, false);
         confirmArrow.transform.localPosition = new Vector2(430.0f, 120.0f);
@@ -101,7 +107,7 @@ public class SlopCrewScrollView : PhoneScroll {
     }
 
     protected override void SetButtonContent(PhoneScrollButton button, int contentIndex) {
-        (button as SlopCrewButton).SetButtonContents(ModeButtonTitles[contentIndex], buttonIcons[contentIndex]);
+        ((SlopCrewButton) button).SetButtonContents(ModeButtonTitles[contentIndex], buttonIcons[contentIndex]);
     }
 
     protected override void SetButtonPosition(PhoneScrollButton button, float posIndex) {

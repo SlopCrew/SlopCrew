@@ -21,6 +21,8 @@ public class AppSlopCrew : App {
     [NonSerialized] public string? RaceRankings;
 
     private SlopCrewScrollView? scrollView;
+    private TextMeshProUGUI? statusTitle;
+    private TextMeshProUGUI? statusText;
 
     private AssociatedPlayer? nearestPlayer;
     private EncounterType waitingEncounter;
@@ -31,6 +33,9 @@ public class AppSlopCrew : App {
     private bool notifInitialized;
     private bool playerLocked;
     private bool hasBannedMods;
+    private bool hasNearestPlayer;
+
+    private ManualLogSource log = BepInEx.Logging.Logger.CreateLogSource("Slop Crew App");
 
     public override void Awake() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
@@ -46,31 +51,54 @@ public class AppSlopCrew : App {
         var content = contentObject.AddComponent<RectTransform>();
         content.sizeDelta = new(1070, 1775);
 
-        AddScrollView(content);
-        AddOverlay(content);
+        var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
+        AddScrollView(musicApp, content);
+        AddOverlay(musicApp, content);
+
+        NearestPlayerChanged(null);
     }
 
-    private void AddOverlay(RectTransform content) {
-        AppGraffiti graffitiApp = this.MyPhone.GetAppInstance<AppGraffiti>();
+    private void AddOverlay(AppMusicPlayer musicApp, RectTransform content) {
+        // Overlay
+        var overlay = musicApp.transform.Find("Content/Overlay").gameObject;
+        GameObject slopCrewOverlay = Instantiate(overlay, content);
 
-        GameObject overlay = graffitiApp.transform.GetChild(1).gameObject;
-        GameObject slopOverlay = Instantiate(overlay, content);
-
-        var title = slopOverlay.GetComponentInChildren<TextMeshProUGUI>();
+        var title = slopCrewOverlay.transform.Find("Icons/HeaderLabel").GetComponent<TextMeshProUGUI>();
         Destroy(title.GetComponent<TMProLocalizationAddOn>());
-        Destroy(title.GetComponent<TMProFontLocalizer>());
         title.SetText("Slop Crew");
 
-        var overlayHeaderImage = slopOverlay.transform.GetChild(0);
+        var overlayHeaderImage = slopCrewOverlay.transform.Find("OverlayTop");
         overlayHeaderImage.localPosition = Vector2.up * 870.0f;
+        var overlayBottomImage = slopCrewOverlay.transform.Find("OverlayBottom");
+        overlayBottomImage.localPosition = Vector2.down * 870.0f;
 
-        var iconImage = slopOverlay.transform.GetChild(1).GetChild(1).GetComponent<Image>();
+        var iconImage = slopCrewOverlay.transform.Find("Icons/AppIcon").GetComponent<Image>();
         iconImage.sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
+
+        // Status panel
+        var status = musicApp.transform.Find("Content/StatusPanel").gameObject;
+        GameObject slopCrewStatusPanel = Instantiate(status, content);
+
+        // Get rid of music player UI stuff we don't need
+        Destroy(slopCrewStatusPanel.GetComponent<MusicPlayerStatusPanel>());
+        Destroy(slopCrewStatusPanel.transform.Find("Progress").gameObject);
+        Destroy(slopCrewStatusPanel.transform.Find("ShuffleControl").gameObject);
+        Destroy(slopCrewStatusPanel.transform.Find("LeftSide").gameObject);
+
+        var textContainer = slopCrewStatusPanel.transform.Find("RightSide");
+        textContainer.localPosition = new Vector2(-480.0f, 150.7f);
+
+        statusTitle = textContainer.Find("CurrentTitleLabel").GetComponent<TextMeshProUGUI>();
+        statusText = textContainer.Find("CurrentArtistLabel").GetComponent<TextMeshProUGUI>();
+        statusText.transform.localPosition = new Vector2(0.0f, 64.0f);
+        statusText.name = "CurrentStatusLabel";
+
+        statusTitle.rectTransform.sizeDelta = statusText.rectTransform.sizeDelta = new Vector2(1000.0f, 128.0f);
+
+        statusTitle.SetText("NEAREST PLAYER");
     }
 
-    private void AddScrollView(RectTransform content) {
-        AppMusicPlayer musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
-
+    private void AddScrollView(AppMusicPlayer musicApp, RectTransform content) {
         // I really just do not want to hack together custom objects for sprites the game already loads anyway
         var musicTraverse = Traverse.Create(musicApp);
         var musicList = musicTraverse.Field("m_TrackList").GetValue() as MusicPlayerTrackList;
@@ -96,13 +124,22 @@ public class AppSlopCrew : App {
 
         // I don't think anyone's going to just disable or enable banned mods while the game is running?
         // So we can probably cache the result when opening the app instead of asking every frame
-        hasBannedMods = HasBannedMods();
-        if (hasBannedMods) {
+        this.hasBannedMods = HasBannedMods();
+        if (this.hasBannedMods) {
             scrollView.CanvasGroup.alpha = 0.5f;
+            statusTitle.SetText("Please disable advantageous mods.");
+            statusText.SetText(string.Empty);
+            foreach (var button in scrollView.GetButtons()) {
+                button.IsSelected = false;
+            }
         }
     }
 
     public override void OnPressUp() {
+        if (this.hasBannedMods) {
+            return;
+        }
+
         if (this.RaceRankings is not null) {
             this.RaceRankings = null;
             return;
@@ -112,6 +149,10 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressDown() {
+        if (this.hasBannedMods) {
+            return;
+        }
+
         if (this.RaceRankings is not null) {
             this.RaceRankings = null;
             return;
@@ -121,15 +162,15 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressRight() {
-        if (hasBannedMods) {
-            return;
-        }
-
-        if (nearestPlayer == null) {
+        if (this.hasBannedMods) {
             return;
         }
 
         EncounterType currentSelectedMode = (EncounterType) scrollView.GetContentIndex();
+
+        if (ModeRequiresNearbyPlayer(currentSelectedMode) && this.nearestPlayer == null) {
+            return;
+        }
 
         if (isWaitingForEncounter && currentSelectedMode != waitingEncounter) {
             return;
@@ -139,9 +180,15 @@ public class AppSlopCrew : App {
     }
 
     public override void OnReleaseRight() {
-        scrollView.ActivateAnimationSelectedButton();
+        if (this.hasBannedMods) {
+            return;
+        }
 
         EncounterType currentSelectedMode = (EncounterType) scrollView.GetContentIndex();
+
+        if (ModeRequiresNearbyPlayer(currentSelectedMode) && this.nearestPlayer == null) {
+            return;
+        }
 
         if (isWaitingForEncounter && currentSelectedMode == waitingEncounter) {
             SendCancelEncounterRequest(waitingEncounter);
@@ -155,6 +202,7 @@ public class AppSlopCrew : App {
 
         if (!SendEncounterRequest(currentSelectedMode)) return;
 
+        scrollView.ActivateAnimationSelectedButton();
         m_AudioManager.PlaySfx(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
 
         if (currentSelectedMode == EncounterType.RaceEncounter && !isWaitingForEncounter) {
@@ -165,6 +213,9 @@ public class AppSlopCrew : App {
     }
 
     private bool SendEncounterRequest(EncounterType encounter) {
+        log.LogMessage($"Sent encounter request for {encounter}");
+        return true;
+
         if (!encounter.IsStateful() && this.nearestPlayer == null) return false;
         if (Plugin.CurrentEncounter?.IsBusy == true) return false;
         if (hasBannedMods) return false;
@@ -180,6 +231,10 @@ public class AppSlopCrew : App {
     }
 
     private void SendCancelEncounterRequest(EncounterType encounter) {
+        log.LogMessage($"Sent cancel encounter request for {encounter}");
+        EndWaitingForEncounter();
+        return;
+
         Plugin.NetworkConnection.SendMessage(new ServerboundEncounterCancel {
             EncounterType = encounter
         });
@@ -220,30 +275,20 @@ public class AppSlopCrew : App {
 
         if (!this.playerLocked) {
             var position = player.transform.position;
-            this.nearestPlayer = Plugin.PlayerManager.AssociatedPlayers
+            var nearestPlayer = Plugin.PlayerManager.AssociatedPlayers
                 .Where(x => x.IsValid())
                 .OrderBy(x => Vector3.Distance(x.ReptilePlayer.transform.position, position))
                 .FirstOrDefault();
+
+            if (nearestPlayer != this.nearestPlayer) {
+                NearestPlayerChanged(nearestPlayer);
+            }
         }
 
         //if (this.encounter.IsStateful()) {
         //    this.Label.text = $"Press right\nto wait for a\n{modeName} battle";
         //    return;
         //}
-
-        if (this.nearestPlayer == null) {
-            if (this.playerLocked) this.playerLocked = false;
-            //this.Label.text = $"No players nearby\nfor {modeName} battle";
-        } else {
-            var filteredName = PlayerNameFilter.DoFilter(this.nearestPlayer.SlopPlayer.Name);
-            //var text = $"Press right\nto {modeName} battle\n" + filteredName;
-
-            if (this.playerLocked) {
-                //text = $"{filteredName}<color=white>\nwants to {modeName} battle!\n\nPress right\nto start";
-            }
-
-            //this.Label.text = text;
-        }
     }
 
     private bool HasBannedMods() {
@@ -257,11 +302,35 @@ public class AppSlopCrew : App {
         SetWaiting(false);
     }
 
+    private bool ModeRequiresNearbyPlayer(EncounterType mode) {
+        if (mode == EncounterType.RaceEncounter) {
+            return false;
+        }
+
+        return true;
+    }
+
     private void SetWaiting(bool waiting) {
-        var button = scrollView.GetButtons()[(int) waitingEncounter] as SlopCrewButton;
+        var button = scrollView.GetButtonByRelativeIndex((int) waitingEncounter) as SlopCrewButton;
         if (button == null) return;
 
         button.SetWaiting(waiting);
+    }
+
+    private void NearestPlayerChanged(AssociatedPlayer? player) {
+        if (player == null) {
+            if (this.playerLocked) this.playerLocked = false;
+            statusText.SetText("None found.");
+            return;
+        }
+
+        string playerName = PlayerNameFilter.DoFilter(player.SlopPlayer.Name);
+
+        if (this.playerLocked) {
+            statusText.SetText($"<b>{playerName}");
+        } else {
+            statusText.SetText(playerName);
+        }
     }
 
     public void SetNotification(Notification notif) {

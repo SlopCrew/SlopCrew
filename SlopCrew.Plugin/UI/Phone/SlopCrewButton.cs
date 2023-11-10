@@ -54,6 +54,7 @@ internal class SlopCrewButton : PhoneScrollButton {
         base.OnSelect(skipAnimations);
         buttonBackground.sprite = selectedButtonSprite;
         modeLabel.color = selectedModeColor;
+        waitingLabel.color = selectedModeColor;
         confirmArrow.SetActive(true);
     }
 
@@ -61,6 +62,7 @@ internal class SlopCrewButton : PhoneScrollButton {
         base.OnDeselect(skipAnimations);
         buttonBackground.sprite = normalButtonSprite;
         modeLabel.color = normalModeColor;
+        waitingLabel.color = normalModeColor;
         confirmArrow.SetActive(false);
     }
 
