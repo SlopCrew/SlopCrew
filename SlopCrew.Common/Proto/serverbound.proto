@@ -31,6 +31,7 @@ message ServerboundPositionUpdate {
 
 message ServerboundPing {
   uint32 id = 1;
+  uint64 time = 2;
 }
 
 message ServerboundVisualUpdate {

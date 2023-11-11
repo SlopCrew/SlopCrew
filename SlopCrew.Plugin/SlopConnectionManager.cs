@@ -15,7 +15,7 @@ namespace SlopCrew.Plugin;
 public class SlopConnectionManager : IHostedService {
     public ulong ServerTick;
     public ulong Latency;
-    
+
     private ManualLogSource logger;
 
     private NetworkingSockets client;
@@ -29,6 +29,11 @@ public class SlopConnectionManager : IHostedService {
     public float? TickRate = null;
     private float tickTimer = 0;
 
+    private Task? pingTask = null;
+    private CancellationTokenSource? pingTokenSource = null;
+    private DateTime lastPing = DateTime.MinValue;
+    private uint pingId = 0;
+
     public SlopConnectionManager(ManualLogSource logger) {
         this.logger = logger;
 
@@ -36,7 +41,7 @@ public class SlopConnectionManager : IHostedService {
         this.client = new NetworkingSockets();
 
         this.address = new Address();
-        this.address.SetAddress("::1", 42069);
+        this.address.SetAddress("::1", 42069); // TODO
 
         Core.OnUpdate += this.Update;
     }
@@ -48,6 +53,27 @@ public class SlopConnectionManager : IHostedService {
 
     public void Connect() {
         this.connection = this.client.Connect(ref address);
+        if (this.pingTask is not null) {
+            this.pingTokenSource!.Cancel();
+            this.pingTask.Wait();
+        }
+
+        this.pingTokenSource = new CancellationTokenSource();
+        this.pingTask = Task.Run(async () => {
+            while (!this.pingTokenSource!.IsCancellationRequested) {
+                this.pingId = (uint) UnityEngine.Random.Range(0, int.MaxValue);
+                this.lastPing = DateTime.Now;
+                var now = (ulong) (DateTime.UtcNow.ToFileTimeUtc() / 10_000);
+                this.SendMessage(new ServerboundMessage {
+                    Ping = new ServerboundPing {
+                        Id = this.pingId,
+                        Time = now
+                    }
+                });
+
+                await Task.Delay(Constants.PingFrequency, this.pingTokenSource.Token);
+            }
+        }, this.pingTokenSource.Token);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
@@ -64,6 +90,7 @@ public class SlopConnectionManager : IHostedService {
             this.tickTimer += Time.deltaTime;
             if (this.tickTimer >= this.TickRate) {
                 this.tickTimer -= this.TickRate.Value;
+                this.ServerTick++;
                 this.Tick?.Invoke();
             }
         }
@@ -76,7 +103,7 @@ public class SlopConnectionManager : IHostedService {
         var info = new ConnectionInfo();
         this.client.GetConnectionInfo(this.connection.Value, ref info);
         if (info.state != this.lastState) {
-            this.logger.LogInfo($"Connection state changed from {this.lastState} to {info.state}");
+            this.logger.LogDebug($"Connection state changed from {this.lastState} to {info.state}");
             this.lastState = info.state;
             this.HandleStateChange(info);
         }
@@ -104,8 +131,14 @@ public class SlopConnectionManager : IHostedService {
 
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.Hello: {
-                this.logger.LogInfo($"Received hello packet with tick rate {packet.Hello.TickRate}");
                 this.TickRate = 1 / packet.Hello.TickRate;
+                break;
+            }
+
+            case ClientboundMessage.MessageOneofCase.Pong: {
+                var latency = (uint) (DateTime.Now - this.lastPing).TotalMilliseconds;
+                this.Latency = latency;
+                this.ServerTick = packet.Pong.Tick;
                 break;
             }
         }
@@ -144,6 +177,9 @@ public class SlopConnectionManager : IHostedService {
         this.tickTimer = 0;
 
         this.client.CloseConnection(this.connection!.Value);
+
+        this.pingTokenSource?.Cancel();
+
         Task.Delay(5000).ContinueWith(_ => this.Connect());
     }
 }

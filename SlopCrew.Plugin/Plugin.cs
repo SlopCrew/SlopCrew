@@ -8,7 +8,7 @@ namespace SlopCrew.Plugin;
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 [BepInProcess("Bomb Rush Cyberfunk.exe")]
 public class Plugin : BaseUnityPlugin {
-    private IHost host = null!;
+    public static IHost Host = null!;
 
     private void Awake() {
         var builder = new HostBuilder();
@@ -23,17 +23,18 @@ public class Plugin : BaseUnityPlugin {
             AddSingletonHostedService<SlopConnectionManager>();
             AddSingletonHostedService<LocalPlayerManager>();
             AddSingletonHostedService<PlayerManager>();
+            AddSingletonHostedService<PatchManager>();
 
             services.AddSingleton<SlopCrewAPI>();
         });
 
-        this.host = builder.Build();
-        APIManager.RegisterAPI(this.host.Services.GetRequiredService<SlopCrewAPI>());
-        this.host.Start();
+        Host = builder.Build();
+        APIManager.RegisterAPI(Host.Services.GetRequiredService<SlopCrewAPI>());
+        Host.Start();
     }
 
     private void OnDestroy() {
-        this.host.StopAsync().GetAwaiter().GetResult();
-        this.host.Dispose();
+        Host.StopAsync().GetAwaiter().GetResult();
+        Host.Dispose();
     }
 }

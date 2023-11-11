@@ -1,10 +1,8 @@
 using System;
 using Reptile;
-using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using Transform = SlopCrew.Common.Proto.Transform;
 
 namespace SlopCrew.Plugin;
 
@@ -26,6 +24,8 @@ public class AssociatedPlayer : IDisposable {
 
         var emptyGameObject = new GameObject("SlopCrew_EmptyGameObject");
         var emptyTransform = emptyGameObject.transform;
+        emptyTransform.position = ((System.Numerics.Vector3) slopPlayer.Transform.Position).ToMentalDeficiency();
+        emptyTransform.rotation = ((System.Numerics.Quaternion) slopPlayer.Transform.Rotation).ToMentalDeficiency();
 
         var character = (Characters) slopPlayer.CharacterInfo.Character;
         var outfit = slopPlayer.CharacterInfo.Outfit;
@@ -45,7 +45,10 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void Dispose() {
-        if (this.ReptilePlayer != null) Object.Destroy(this.ReptilePlayer.gameObject);
+        if (this.ReptilePlayer != null) {
+            WorldHandler.instance.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
+            Object.Destroy(this.ReptilePlayer.gameObject);
+        }
     }
 
     public void UpdateIfDifferent(Common.Proto.Player player) {
@@ -78,35 +81,16 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void ProcessPositionUpdate(PositionUpdate newUpdate) {
-        var lerpTime = this.positionUpdate is null
-                           ? 0
-                           : (newUpdate.Tick - this.positionUpdate.Tick) / this.connectionManager.TickRate;
-        var latency = (newUpdate.Latency + this.connectionManager.Latency) / 1000f / 2f;
-        var timeToTarget = lerpTime + latency;
-        
         this.positionUpdate = newUpdate;
 
         System.Numerics.Vector3 targetPos = newUpdate.Transform.Position!;
         System.Numerics.Quaternion targetRot = newUpdate.Transform.Rotation!;
-        
-        var tf = this.ReptilePlayer.transform;
-        var newPos = UnityEngine.Vector3.SmoothDamp(
-            tf.position,
-            targetPos.ToMentalDeficiency(),
-            ref this.velocity,
-            timeToTarget!.Value
-        );
-        this.ReptilePlayer.transform.position = newPos;
 
-        var newRot = UnityEngine.Quaternion.RotateTowards(
-            tf.rotation,
-            targetRot.ToMentalDeficiency(),
-            360f * Time.deltaTime
-        );
-        this.ReptilePlayer.transform.rotation = newRot;
+        this.ReptilePlayer.transform.position = targetPos.ToMentalDeficiency();
+        this.ReptilePlayer.transform.rotation = targetRot.ToMentalDeficiency();
 
         if (this.ReptilePlayer.characterVisual != null) {
-            this.ReptilePlayer.characterVisual.transform.rotation = newRot;
+            this.ReptilePlayer.characterVisual.transform.rotation = targetRot.ToMentalDeficiency();
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Reptile;
 using SlopCrew.API;
+using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using Player = SlopCrew.Common.Proto.Player;
 
@@ -25,7 +27,6 @@ public class LocalPlayerManager : IHostedService {
         StageManager.OnStagePostInitialization += this.StagePostInit;
         return Task.CompletedTask;
     }
-
 
 
     public Task StopAsync(CancellationToken cancellationToken) {
@@ -51,8 +52,10 @@ public class LocalPlayerManager : IHostedService {
             this.connectionManager.SendMessage(new ServerboundMessage {
                 Hello = new ServerboundHello {
                     Player = new Player {
-                        // TODO
-                        Name = "Big Slopper",
+                        // FIXME im too lazy to write a config file lmao
+                        Name = Directory.GetCurrentDirectory().Contains("gog")
+                                   ? "GOG Slopper"
+                                   : "Big Slopper",
 
                         Transform = new Transform {
                             Position = new(me.tf.position.FromMentalDeficiency()),
@@ -79,7 +82,6 @@ public class LocalPlayerManager : IHostedService {
         var newRot = transform.rotation.FromMentalDeficiency();
         var newVel = me.motor.velocity.FromMentalDeficiency();
 
-
         const float minDistance = 0.01f;
 
         if (this.lastTransform == null
@@ -100,7 +102,7 @@ public class LocalPlayerManager : IHostedService {
                         Latency = this.connectionManager.Latency
                     }
                 }
-            });
+            }, flags: SendFlags.Unreliable);
 
             this.lastTransform = newTransform;
         }

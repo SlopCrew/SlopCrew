@@ -7,4 +7,6 @@ public class Constants {
     public const string DefaultName = "Big Slopper";
     public const string CensoredName = "Punished Slopper";
     public const int NameLimit = 32;
+
+    public const int PingFrequency = 5000;
 }

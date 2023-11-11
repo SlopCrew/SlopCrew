@@ -77,12 +77,12 @@ public class NetworkService : BackgroundService {
 
         foreach (var (stage, updates) in this.queuedPositionUpdates) {
             if (updates.Any()) {
-                this.queuedPositionUpdates[stage].Clear();
                 this.SendToStage(stage, new ClientboundMessage {
                     PositionUpdate = new() {
                         Updates = {updates}
                     }
-                });
+                }, flags: SendFlags.Unreliable);
+                this.queuedPositionUpdates[stage].Clear();
             }
         }
     }
@@ -167,15 +167,15 @@ public class NetworkService : BackgroundService {
     public void BroadcastPlayersInStage(int stage) {
         var players = this.Clients
             .Where(x => x.Player is not null && x.Stage == stage)
-            .Select(x => x.Player!)
             .ToList();
 
         this.metricsService.UpdatePopulation(stage, players.Count);
+        
+        foreach (var client in players) {
+            var playersWithoutClient = players
+                .Select(x => x.Player!)
+                .Where(x => x.Id != client.Player?.Id).ToList();
 
-        foreach (var client in this.Clients) {
-            if (client.Stage != stage) continue;
-
-            var playersWithoutClient = players.Where(x => x.Id != client.Player?.Id);
             client.SendPacket(new ClientboundMessage {
                 PlayersUpdate = new() {
                     Players = {playersWithoutClient}

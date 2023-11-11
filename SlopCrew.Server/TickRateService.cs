@@ -5,6 +5,7 @@ public class TickRateService : IDisposable {
     private Task task;
     private CancellationTokenSource cts;
 
+    public ulong CurrentTick;
     public event Action? Tick;
     
     public TickRateService(ILogger<TickRateService> logger) {
@@ -16,6 +17,7 @@ public class TickRateService : IDisposable {
             while (!this.cts.IsCancellationRequested) {
                 await Task.Delay(1000 / tickRate);
                 try {
+                    this.CurrentTick++;
                     this.RunTick();
                 } catch (Exception e) {
                     this.logger.LogError(e, "Error running tick");
