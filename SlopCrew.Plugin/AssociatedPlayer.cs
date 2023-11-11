@@ -1,31 +1,43 @@
 using System;
+using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using SlopCrew.Common.Proto;
+using SlopCrew.Plugin.UI;
+using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
 
 public class AssociatedPlayer : IDisposable {
     public Common.Proto.Player SlopPlayer;
     public Reptile.Player ReptilePlayer;
+    public MapPin? MapPin;
 
     private PlayerManager playerManager;
     private ConnectionManager connectionManager;
+    private Config config;
 
     private UnityEngine.Vector3 velocity = new();
     private PositionUpdate? targetUpdate = null;
 
     public bool PhoneOut = false;
 
+    private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+    private static Material? NameplateFontMaterial;
+
     // This is bad. I don't know what's better.
     public AssociatedPlayer(
         PlayerManager playerManager,
         ConnectionManager connectionManager,
+        Config config,
         Common.Proto.Player slopPlayer
     ) {
         this.playerManager = playerManager;
         this.connectionManager = connectionManager;
+        this.config = config;
         this.SlopPlayer = slopPlayer;
 
         var emptyGameObject = new GameObject("SlopCrew_EmptyGameObject");
@@ -48,12 +60,129 @@ public class AssociatedPlayer : IDisposable {
         this.ReptilePlayer.motor.gravity = 0;
         this.ReptilePlayer.motor.SetKinematic(true);
         this.ReptilePlayer.motor.enabled = false;
+
+        if (this.config.General.ShowPlayerNameplates.Value) {
+            this.SpawnNameplate();
+        }
+
+        if (this.config.General.ShowPlayerMapPins.Value) {
+            this.SpawnMapPin();
+        }
+        
+        Object.Destroy(emptyGameObject);
+    }
+
+    // FIXME: nameplates sink into player in millenium square???
+    private void SpawnNameplate() {
+        Debug.Log("Spawning nameplate");
+        var container = new GameObject("SlopCrew_NameplateContainer");
+
+        // Setup the nameplate itself
+        var nameplate = new GameObject("SlopCrew_Nameplate");
+        var tmp = nameplate.AddComponent<TextMeshPro>();
+        tmp.text = this.SlopPlayer.Name;
+        nameplate.AddComponent<TextMeshProFilter>();
+
+        // Yoink the font from somewhere else because I guess asset loading is impossible
+        var gameplay = Core.Instance.UIManager.gameplay;
+        tmp.font = gameplay.trickNameLabel.font;
+
+        tmp.alignment = TextAlignmentOptions.Midline;
+        tmp.fontSize = 2.5f;
+
+        if (this.config.General.OutlineNameplates.Value) {
+            // Lazy load the material so there's not a million material instances floating in memory
+            if (NameplateFontMaterial == null) {
+                NameplateFontMaterial = tmp.fontMaterial;
+                NameplateFontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, NamePlateOutlineColor);
+                NameplateFontMaterial.SetColor(ShaderUtilities.ID_UnderlayColor, NamePlateOutlineColor);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.1f);
+                NameplateFontMaterial.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayDilate, 0.1f);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, 0.2f);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.2f);
+                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.0f);
+            }
+
+            tmp.fontMaterial = NameplateFontMaterial;
+        }
+
+        nameplate.transform.parent = container.transform;
+
+        /*if (this.SlopPlayer.IsDeveloper) {
+            var heat = gameplay.wanted1;
+            var icon = heat.GetComponent<Image>();
+
+            var devIcon = new GameObject("SlopCrew_DevIcon");
+            devIcon.name = "SlopCrew_DevIcon";
+            devIcon.SetActive(true);
+
+            var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = icon.sprite;
+
+            // center it
+            var localPosition = devIcon.transform.localPosition;
+            localPosition -= new Vector3(0, localPosition.y / 2, 0);
+            devIcon.transform.localPosition = localPosition;
+
+            devIcon.transform.parent = container.transform;
+            devIcon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            devIcon.transform.position += new Vector3(0, 0.25f, 0);
+            devIcon.AddComponent<UISpinny>();
+        }*/
+
+        // Rotate it to match the player's head
+        container.transform.rotation = this.ReptilePlayer.tf.rotation;
+        // and flip it around
+        container.transform.Rotate(0, 180, 0);
+        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
+
+        var bounds = this.ReptilePlayer.interactionCollider.bounds;
+        container.transform.localPosition = new UnityEngine.Vector3(
+            0,
+            (bounds.extents.y * 2) + 0.25f,
+            0
+        );
+
+        var uiNameplate = container.AddComponent<UINameplate>();
+        uiNameplate.Billboard = this.config.General.BillboardNameplates.Value;
+    }
+
+    private void SpawnMapPin() {
+        var mapController = Mapcontroller.Instance;
+        this.MapPin = mapController.CreatePin(MapPin.PinType.StoryObjectivePin);
+
+        this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
+        this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
+        this.MapPin.OnPinEnable();
+
+        var pinInObj = this.MapPin.transform.Find("InViewVisualization").gameObject;
+
+        // Particles. Get rid of them.
+        var pinInPartObj = pinInObj.transform.Find("Particle System").gameObject;
+        Object.Destroy(pinInPartObj);
+
+        var pinOutObj = this.MapPin.transform.Find("OutOfViewVisualization").gameObject;
+        var pinOutPartS = pinOutObj.GetComponent<ParticleSystem>();
+        var pinOutPartR = pinOutObj.GetComponent<ParticleSystemRenderer>();
+        Object.Destroy(pinOutPartS);
+        Object.Destroy(pinOutPartR);
+
+        // Color
+        var pinInMeshR = pinInObj.GetComponent<MeshRenderer>();
+        var pinInMat = pinInMeshR.material;
+        pinInMat.color = new Color(1f, 1f, 0.85f);
     }
 
     public void Dispose() {
         if (this.ReptilePlayer != null) {
-            WorldHandler.instance.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
+            var worldHandler = WorldHandler.instance;
+            if (worldHandler != null) worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
             Object.Destroy(this.ReptilePlayer.gameObject);
+        }
+
+        if (this.MapPin != null) {
+            Object.Destroy(this.MapPin.gameObject);
         }
     }
 
@@ -134,17 +263,12 @@ public class AssociatedPlayer : IDisposable {
     }
 
     // TODO: this interp code sucks. I don't understand how the previous interp code works anymore
-    // but I can't seem to get fluid feeling movement working anymore
-    // help appreciated :D
+    // but I can't seem to get fluid feeling movement working anymore - help appreciated :D
     public void ProcessPositionUpdate() {
         if (this.targetUpdate is null || this.ReptilePlayer == null) return;
 
-        var tickDiff = this.targetUpdate.Tick - this.connectionManager.ServerTick;
-        var lerpTime = tickDiff * this.connectionManager.TickRate;
-
         var latency = (this.targetUpdate.Latency + this.connectionManager.Latency) / 1000f / 2f;
-        var timeToTarget = lerpTime + latency;
-        if (timeToTarget < 0) timeToTarget = 0;
+        var timeToTarget = this.connectionManager.TickRate + latency;
 
         var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
         var newPos = UnityEngine.Vector3.SmoothDamp(

@@ -19,10 +19,12 @@ public class PlayerManager : IHostedService {
 
     private ManualLogSource logger;
     private ConnectionManager connectionManager;
+    private Config config;
 
-    public PlayerManager(ConnectionManager connectionManager, ManualLogSource logger) {
+    public PlayerManager(ConnectionManager connectionManager, ManualLogSource logger, Config config) {
         this.connectionManager = connectionManager;
         this.logger = logger;
+        this.config = config;
     }
 
     public Task StartAsync(CancellationToken cancellationToken) {
@@ -59,6 +61,7 @@ public class PlayerManager : IHostedService {
                         this.Players.Add(player.Id, new AssociatedPlayer(
                                              this,
                                              this.connectionManager,
+                                             this.config,
                                              player));
                     }
                 }
