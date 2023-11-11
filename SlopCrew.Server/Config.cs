@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using Tomlyn;
 
 namespace SlopCrew.Server;
@@ -7,6 +7,7 @@ public class Config {
     public string Interface { get; set; } = "http://+:42069";
     public bool Debug { get; set; } = false;
     public string? AdminPassword { get; set; } = null;
+    public string RacePath { get; set; } = string.Empty;
 
     public ConfigCertificates Certificates { get; set; } = new();
     public ConfigGraphite Graphite { get; set; } = new();

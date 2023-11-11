@@ -1,10 +1,10 @@
 using EmbedIO;
+using EmbedIO.Authentication;
 using EmbedIO.WebApi;
 using Serilog;
 using Serilog.Core;
 using SlopCrew.Common;
 using SlopCrew.Common.Network.Clientbound;
-using EmbedIO.Authentication;
 using Constants = SlopCrew.Common.Constants;
 
 namespace SlopCrew.Server;
@@ -74,7 +74,7 @@ public class Server {
             .WithWebApi("/api", m => m.WithController<SlopAPIController>())
             .WithModule(this.Module);
 
-        this.StatefulEncounterManager = new();
+        this.StatefulEncounterManager = new(this.Config);
     }
 
     public void Start() {

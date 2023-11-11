@@ -17,19 +17,56 @@ public class StatefulEncounterManager {
 
     private const int TicksPerQueue = Constants.TicksPerSecond * 20;
 
-    public StatefulEncounterManager() {
+    public StatefulEncounterManager(Config config) {
+        if (!string.IsNullOrEmpty(config.RacePath)) {
+            Task.Run(async () => {
+                Log.Information($"Loading race from local path...");
+
+                await LoadRaceConfigs(config.RacePath);
+
+                Log.Information($"Loaded {this.RaceConfigs.Count} local races");
+            }).Wait();
+
+            return;
+        }
+
         Task.Run(this.DownloadRaceConfigs).Wait();
+    }
+
+    private async Task LoadRaceConfigs(string path) {
+        string[] files = Directory.GetFiles(path, "*.json");
+        ConcurrentBag<RaceConfig> raceConfigs = new();
+        var options = new JsonSerializerOptions {
+            IncludeFields = true
+        };
+
+        await Parallel.ForEachAsync(files,
+         async (file, _) => {
+             try {
+                 using var fileStream = new FileStream(file, FileMode.Open);
+                 var race = await JsonSerializer.DeserializeAsync<RaceConfig>(fileStream, options);
+
+                 if (race != null) {
+                     raceConfigs.Add(race);
+                 }
+             } catch (Exception e) {
+                 Log.Error($"An exception occured while loading race {path}/{file} : {e}");
+             }
+         });
+
+        this.RaceConfigs = raceConfigs.ToList();
     }
 
     private async Task DownloadRaceConfigs() {
         Log.Information("Downloading race configs from GitHub...");
         var gh = new GitHubDownloader();
         var races = await gh.DownloadFilesFromDirectory("SlopCrew", "race-config");
+        var options = new JsonSerializerOptions {
+            IncludeFields = true
+        };
 
         foreach (var file in races.Values) {
-            var raceConfig = JsonSerializer.Deserialize<RaceConfig>(file, new JsonSerializerOptions {
-                IncludeFields = true
-            });
+            var raceConfig = JsonSerializer.Deserialize<RaceConfig>(file, options);
             if (raceConfig != null) this.RaceConfigs.Add(raceConfig);
         }
 
