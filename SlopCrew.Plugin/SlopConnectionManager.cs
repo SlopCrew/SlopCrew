@@ -25,6 +25,7 @@ public class SlopConnectionManager : IHostedService {
 
     public Action<ClientboundMessage>? MessageReceived;
     public Action? Tick;
+    public Action? Disconnected;
 
     public float? TickRate = null;
     private float tickTimer = 0;
@@ -172,14 +173,14 @@ public class SlopConnectionManager : IHostedService {
 
     private void OnDisconnect() {
         this.logger.LogWarning("Disconnected - attempting to reconnect");
+        this.Disconnected?.Invoke();
 
         this.TickRate = null;
         this.tickTimer = 0;
 
         this.client.CloseConnection(this.connection!.Value);
-
         this.pingTokenSource?.Cancel();
 
-        Task.Delay(5000).ContinueWith(_ => this.Connect());
+        Task.Delay(Constants.ReconnectFrequency).ContinueWith(_ => this.Connect());
     }
 }

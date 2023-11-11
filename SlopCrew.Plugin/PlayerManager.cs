@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BepInEx.Logging;
@@ -10,9 +11,11 @@ using SlopCrew.Common.Proto;
 namespace SlopCrew.Plugin;
 
 public class PlayerManager : IHostedService {
-    private ManualLogSource logger;
     public Dictionary<uint, AssociatedPlayer> Players = new();
+    public bool SettingVisual;
+    public bool PlayingAnimation;
 
+    private ManualLogSource logger;
     private SlopConnectionManager connectionManager;
 
     public PlayerManager(SlopConnectionManager connectionManager, ManualLogSource logger) {
@@ -22,12 +25,14 @@ public class PlayerManager : IHostedService {
 
     public Task StartAsync(CancellationToken cancellationToken) {
         StageManager.OnStageInitialized += this.StageInit;
+        this.connectionManager.Disconnected += this.Disconnected;
         this.connectionManager.MessageReceived += this.MessageReceived;
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
         StageManager.OnStageInitialized -= this.StageInit;
+        this.connectionManager.Disconnected -= this.Disconnected;
         this.connectionManager.MessageReceived -= this.MessageReceived;
         return Task.CompletedTask;
     }
@@ -49,6 +54,7 @@ public class PlayerManager : IHostedService {
                     } else {
                         // New player
                         this.Players.Add(player.Id, new AssociatedPlayer(
+                                             this,
                                              this.connectionManager,
                                              player));
                     }
@@ -70,8 +76,27 @@ public class PlayerManager : IHostedService {
             case ClientboundMessage.MessageOneofCase.PositionUpdate: {
                 foreach (var update in packet.PositionUpdate.Updates) {
                     if (this.Players.TryGetValue(update.PlayerId, out var player)) {
-                        this.logger.LogDebug($"Processing position update for {update.PlayerId}");
-                        player?.ProcessPositionUpdate(update);
+                        player.QueuePositionUpdate(update);
+                    }
+                }
+
+                break;
+            }
+
+            case ClientboundMessage.MessageOneofCase.VisualUpdate: {
+                foreach (var update in packet.VisualUpdate.Updates) {
+                    if (this.Players.TryGetValue(update.PlayerId, out var player)) {
+                        player.HandleVisualUpdate(update);
+                    }
+                }
+
+                break;
+            }
+
+            case ClientboundMessage.MessageOneofCase.AnimationUpdate: {
+                foreach (var update in packet.AnimationUpdate.Updates) {
+                    if (this.Players.TryGetValue(update.PlayerId, out var player)) {
+                        player.HandleAnimationUpdate(update);
                     }
                 }
 
@@ -80,7 +105,10 @@ public class PlayerManager : IHostedService {
         }
     }
 
-    private void StageInit() {
+    private void Disconnected() => this.CleanupPlayers();
+    private void StageInit() => this.CleanupPlayers();
+
+    private void CleanupPlayers() {
         foreach (var player in this.Players.Values) player.Dispose();
         this.Players.Clear();
     }

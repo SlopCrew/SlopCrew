@@ -16,6 +16,7 @@ public class LocalPlayerManager : IHostedService {
     private SlopConnectionManager connectionManager;
 
     private Transform? lastTransform;
+    private int? lastAnimation;
 
     public LocalPlayerManager(SlopConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
@@ -110,5 +111,22 @@ public class LocalPlayerManager : IHostedService {
 
     private void StagePostInit() {
         this.HelloRefreshQueued = true;
+    }
+
+    public void PlayAnim(int anim, bool forceOverwrite, bool instant, float atTime) {
+        // Sometimes the game spams animation
+        if (this.lastAnimation == anim) return;
+        this.lastAnimation = anim;
+
+        this.connectionManager.SendMessage(new ServerboundMessage {
+            AnimationUpdate = new ServerboundAnimationUpdate {
+                Update = new AnimationUpdate {
+                    Animation = anim,
+                    ForceOverwrite = forceOverwrite,
+                    Instant = instant,
+                    Time = atTime
+                }
+            }
+        });
     }
 }

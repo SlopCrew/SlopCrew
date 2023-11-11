@@ -9,4 +9,5 @@ public class Constants {
     public const int NameLimit = 32;
 
     public const int PingFrequency = 5000;
+    public const int ReconnectFrequency = 5000;
 }

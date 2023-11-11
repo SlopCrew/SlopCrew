@@ -62,7 +62,7 @@ public class NetworkClient : IDisposable {
                 this.SafetyCheck(ref tf);
                 update.Transform = tf;
                 this.Player.Transform = tf;
-                
+
                 this.networkService.QueuePositionUpdate(this.Stage.Value, update);
                 break;
             }
@@ -77,6 +77,23 @@ public class NetworkClient : IDisposable {
                         Tick = this.tickRateService.CurrentTick
                     }
                 });
+
+                break;
+            }
+
+            case ServerboundMessage.MessageOneofCase.VisualUpdate: {
+                if (this.Stage is null || this.Player is null) break;
+                var update = packet.VisualUpdate.Update;
+                update.PlayerId = this.Player!.Id;
+                this.networkService.QueueVisualUpdate(this.Stage.Value, update);
+                break;
+            }
+
+            case ServerboundMessage.MessageOneofCase.AnimationUpdate: {
+                if (this.Stage is null || this.Player is null) break;
+                var update = packet.AnimationUpdate.Update;
+                update.PlayerId = this.Player!.Id;
+                this.networkService.QueueAnimationUpdate(this.Stage.Value, update);
                 break;
             }
         }

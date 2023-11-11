@@ -10,15 +10,21 @@ public class AssociatedPlayer : IDisposable {
     public Common.Proto.Player SlopPlayer;
     public Reptile.Player ReptilePlayer;
 
+    private PlayerManager playerManager;
     private SlopConnectionManager connectionManager;
-    private PositionUpdate? positionUpdate;
 
     private UnityEngine.Vector3 velocity = new();
+    private PositionUpdate? targetUpdate = null;
 
+    public bool PhoneOut = false;
+
+    // This is bad. I don't know what's better.
     public AssociatedPlayer(
+        PlayerManager playerManager,
         SlopConnectionManager connectionManager,
         Common.Proto.Player slopPlayer
     ) {
+        this.playerManager = playerManager;
         this.connectionManager = connectionManager;
         this.SlopPlayer = slopPlayer;
 
@@ -51,7 +57,47 @@ public class AssociatedPlayer : IDisposable {
         }
     }
 
+    public void HandleVisualUpdate(VisualUpdate update) {
+        if (this.ReptilePlayer == null) return;
+
+        var characterVisual = this.ReptilePlayer.characterVisual;
+        var prevSpraycanState = this.ReptilePlayer.spraycanState;
+
+        var boostpackEffect = (BoostpackEffectMode) update.Boostpack;
+        var frictionEffect = (FrictionEffectMode) update.Friction;
+        var spraycan = update.Spraycan;
+        var phone = update.Phone;
+        var spraycanState = (Reptile.Player.SpraycanState) update.SpraycanState;
+
+        characterVisual.hasEffects = true;
+        characterVisual.hasBoostPack = true;
+
+        // TODO scale
+        this.playerManager.SettingVisual = true;
+        characterVisual.SetBoostpackEffect(boostpackEffect);
+        characterVisual.SetFrictionEffect(frictionEffect);
+        characterVisual.SetSpraycan(spraycan);
+        characterVisual.SetPhone(phone);
+
+        if (prevSpraycanState != spraycanState) {
+            this.ReptilePlayer.SetSpraycanState(spraycanState);
+        }
+
+        this.PhoneOut = phone;
+        this.playerManager.SettingVisual = false;
+    }
+
+    public void HandleAnimationUpdate(AnimationUpdate update) {
+        if (this.ReptilePlayer == null) return;
+
+        this.playerManager.PlayingAnimation = true;
+        this.ReptilePlayer.PlayAnim(update.Animation, update.ForceOverwrite, update.Instant, update.Time);
+        this.playerManager.PlayingAnimation = false;
+    }
+
     public void UpdateIfDifferent(Common.Proto.Player player) {
+        if (this.ReptilePlayer == null) return;
+
         // TODO: account for custom character info
         var differentCharacter = this.SlopPlayer.CharacterInfo.Character != player.CharacterInfo.Character;
         var differentOutfit = this.SlopPlayer.CharacterInfo.Outfit != player.CharacterInfo.Outfit;
@@ -80,17 +126,41 @@ public class AssociatedPlayer : IDisposable {
         }
     }
 
-    public void ProcessPositionUpdate(PositionUpdate newUpdate) {
-        this.positionUpdate = newUpdate;
+    public void QueuePositionUpdate(PositionUpdate newUpdate) {
+        this.targetUpdate = newUpdate;
+    }
 
-        System.Numerics.Vector3 targetPos = newUpdate.Transform.Position!;
-        System.Numerics.Quaternion targetRot = newUpdate.Transform.Rotation!;
+    public void Update() {
+        this.ProcessPositionUpdate();
+    }
 
-        this.ReptilePlayer.transform.position = targetPos.ToMentalDeficiency();
-        this.ReptilePlayer.transform.rotation = targetRot.ToMentalDeficiency();
+    public void ProcessPositionUpdate() {
+        if (this.targetUpdate is null || this.ReptilePlayer == null) return;
+
+        var lerpTime = (this.targetUpdate.Tick - this.connectionManager.ServerTick)
+                       * this.connectionManager.TickRate;
+        var latency = (this.targetUpdate.Latency + this.connectionManager.Latency) / 1000f / 2f;
+        var timeToTarget = lerpTime + latency;
+
+        var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
+        var newPos = UnityEngine.Vector3.SmoothDamp(
+            this.ReptilePlayer.transform.position,
+            targetPos,
+            ref this.velocity,
+            timeToTarget!.Value
+        );
+        this.ReptilePlayer.transform.position = newPos;
+
+        var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
+        var newRot = UnityEngine.Quaternion.Slerp(
+            this.ReptilePlayer.transform.rotation,
+            targetRot,
+            timeToTarget.Value
+        );
+        this.ReptilePlayer.transform.rotation = newRot;
 
         if (this.ReptilePlayer.characterVisual != null) {
-            this.ReptilePlayer.characterVisual.transform.rotation = targetRot.ToMentalDeficiency();
+            this.ReptilePlayer.characterVisual.transform.rotation = newRot;
         }
     }
 }

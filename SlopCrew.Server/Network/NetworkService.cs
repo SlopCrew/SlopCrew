@@ -19,6 +19,8 @@ public class NetworkService : BackgroundService {
 
     private Dictionary<uint, NetworkClient> clients = new();
     private Dictionary<int, List<PositionUpdate>> queuedPositionUpdates = new();
+    private Dictionary<int, List<VisualUpdate>> queuedVisualUpdates = new();
+    private Dictionary<int, List<AnimationUpdate>> queuedAnimationUpdates = new();
 
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
@@ -64,27 +66,52 @@ public class NetworkService : BackgroundService {
         return Task.CompletedTask;
     }
 
-    public void QueuePositionUpdate(int stage, PositionUpdate update) {
-        if (this.queuedPositionUpdates.TryGetValue(stage, out var updates)) {
-            updates.Add(update);
+    private void QueueUpdate<T>(int stage, T update, Dictionary<int, List<T>> updates) {
+        if (updates.TryGetValue(stage, out var list)) {
+            list.Add(update);
         } else {
-            this.queuedPositionUpdates.Add(stage, new() {update});
+            updates.Add(stage, new() {update});
         }
     }
+
+    private void DispatchUpdate<T>(Func<List<T>, ClientboundMessage> packetCtor, Dictionary<int, List<T>> updates) {
+        foreach (var (stage, list) in updates) {
+            if (list.Any()) {
+                this.SendToStage(stage, packetCtor(list));
+                updates[stage].Clear();
+            }
+        }
+    }
+
+    public void QueuePositionUpdate(int stage, PositionUpdate update) =>
+        this.QueueUpdate(stage, update, this.queuedPositionUpdates);
+
+    public void QueueVisualUpdate(int stage, VisualUpdate update) =>
+        this.QueueUpdate(stage, update, this.queuedVisualUpdates);
+
+    public void QueueAnimationUpdate(int stage, AnimationUpdate update) =>
+        this.QueueUpdate(stage, update, this.queuedAnimationUpdates);
 
     private void Tick() {
         this.HandleMessages();
 
-        foreach (var (stage, updates) in this.queuedPositionUpdates) {
-            if (updates.Any()) {
-                this.SendToStage(stage, new ClientboundMessage {
-                    PositionUpdate = new() {
-                        Updates = {updates}
-                    }
-                }, flags: SendFlags.Unreliable);
-                this.queuedPositionUpdates[stage].Clear();
+        this.DispatchUpdate(updates => new ClientboundMessage {
+            PositionUpdate = new ClientboundPositionUpdate {
+                Updates = {updates}
             }
-        }
+        }, this.queuedPositionUpdates);
+
+        this.DispatchUpdate(updates => new ClientboundMessage {
+            VisualUpdate = new ClientboundVisualUpdate {
+                Updates = {updates}
+            }
+        }, this.queuedVisualUpdates);
+
+        this.DispatchUpdate(updates => new ClientboundMessage {
+            AnimationUpdate = new ClientboundAnimationUpdate {
+                Updates = {updates}
+            }
+        }, this.queuedAnimationUpdates);
     }
 
     private void HandleMessages() {
@@ -170,7 +197,7 @@ public class NetworkService : BackgroundService {
             .ToList();
 
         this.metricsService.UpdatePopulation(stage, players.Count);
-        
+
         foreach (var client in players) {
             var playersWithoutClient = players
                 .Select(x => x.Player!)

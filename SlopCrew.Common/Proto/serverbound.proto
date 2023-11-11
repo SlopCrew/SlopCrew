@@ -11,6 +11,7 @@ message ServerboundMessage {
     ServerboundPositionUpdate position_update = 3;
     ServerboundPing ping = 4;
     ServerboundVisualUpdate visual_update = 5;
+    ServerboundAnimationUpdate animation_update = 6;
   }
 }
 
