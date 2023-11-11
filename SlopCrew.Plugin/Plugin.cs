@@ -20,10 +20,13 @@ public class Plugin : BaseUnityPlugin {
                 services.AddHostedService<T>(p => p.GetRequiredService<T>());
             }
 
-            AddSingletonHostedService<SlopConnectionManager>();
+            AddSingletonHostedService<ConnectionManager>();
             AddSingletonHostedService<LocalPlayerManager>();
             AddSingletonHostedService<PlayerManager>();
             AddSingletonHostedService<PatchManager>();
+
+            var config = new Config(this.Config);
+            services.AddSingleton(config);
 
             services.AddSingleton<SlopCrewAPI>();
         });

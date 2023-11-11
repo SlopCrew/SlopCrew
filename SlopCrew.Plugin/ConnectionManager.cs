@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +13,14 @@ using UnityEngine;
 
 namespace SlopCrew.Plugin;
 
-public class SlopConnectionManager : IHostedService {
+public class ConnectionManager : IHostedService {
     public ulong ServerTick;
     public ulong Latency;
 
+    private Config config;
     private ManualLogSource logger;
-
     private NetworkingSockets client;
+
     private uint? connection = null;
     private Address address;
     private ConnectionState lastState = ConnectionState.None;
@@ -35,16 +37,41 @@ public class SlopConnectionManager : IHostedService {
     private DateTime lastPing = DateTime.MinValue;
     private uint pingId = 0;
 
-    public SlopConnectionManager(ManualLogSource logger) {
+    public ConnectionManager(
+        Config config,
+        ManualLogSource logger
+    ) {
+        this.config = config;
         this.logger = logger;
 
         Library.Initialize();
         this.client = new NetworkingSockets();
 
         this.address = new Address();
-        this.address.SetAddress("::1", 42069); // TODO
+        this.address.SetAddress(
+            this.LookupIP(this.config.Server.Host.Value),
+            this.config.Server.Port.Value
+        );
 
         Core.OnUpdate += this.Update;
+    }
+
+    private string LookupIP(string host) {
+        try {
+            var srv = Dns.GetHostEntry("_slopcrew._udp." + host);
+            if (srv.AddressList.Length > 0) return srv.AddressList[0].ToString();
+        } catch {
+            // ignored
+        }
+
+        try {
+            var a = Dns.GetHostEntry(host);
+            if (a.AddressList.Length > 0) return a.AddressList[0].ToString();
+        } catch {
+            // ignored
+        }
+
+        throw new Exception($"Could not resolve host {host}");
     }
 
     public Task StartAsync(CancellationToken cancellationToken) {
@@ -132,7 +159,7 @@ public class SlopConnectionManager : IHostedService {
 
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.Hello: {
-                this.TickRate = 1 / packet.Hello.TickRate;
+                this.TickRate = 1f / packet.Hello.TickRate;
                 break;
             }
 

@@ -1,21 +1,26 @@
-namespace  SlopCrew.Server;
+using Microsoft.Extensions.Options;
+using SlopCrew.Server.Options;
+
+namespace SlopCrew.Server;
 
 public class TickRateService : IDisposable {
     private ILogger<TickRateService> logger;
+    private ServerOptions serverOptions;
+    
     private Task task;
     private CancellationTokenSource cts;
 
     public ulong CurrentTick;
     public event Action? Tick;
-    
-    public TickRateService(ILogger<TickRateService> logger) {
+
+    public TickRateService(ILogger<TickRateService> logger, IOptions<ServerOptions> serverOptions) {
         this.logger = logger;
-        const int tickRate = 10; // TODO
-        
+        this.serverOptions = serverOptions.Value;
+
         this.cts = new CancellationTokenSource();
         this.task = Task.Run(async () => {
             while (!this.cts.IsCancellationRequested) {
-                await Task.Delay(1000 / tickRate);
+                await Task.Delay(1000 / this.serverOptions.TickRate);
                 try {
                     this.CurrentTick++;
                     this.RunTick();
@@ -35,4 +40,3 @@ public class TickRateService : IDisposable {
         this.Tick?.Invoke();
     }
 }
-

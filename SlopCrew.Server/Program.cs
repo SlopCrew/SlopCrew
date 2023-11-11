@@ -1,13 +1,12 @@
-﻿using SlopCrew.Server;
+﻿using Microsoft.Extensions.Options;
+using SlopCrew.Server;
 using SlopCrew.Server.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders().AddConsole();
 
 void BindConfig<T>(string name) where T : class, new() {
-    var options = new T();
-    builder.Configuration.Bind(name, options);
-    builder.Services.AddSingleton(options);
+    builder.Services.Configure<T>(builder.Configuration.GetSection(name));
 }
 
 BindConfig<ServerOptions>("Server");

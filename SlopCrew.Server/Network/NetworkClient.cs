@@ -1,7 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Options;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
+using SlopCrew.Server.Options;
 
 namespace SlopCrew.Server;
 
@@ -16,10 +18,12 @@ public class NetworkClient : IDisposable {
 
     private NetworkService networkService;
     private TickRateService tickRateService;
-
-    public NetworkClient(NetworkService networkService, TickRateService tickRateService) {
+    private ServerOptions serverOptions;
+    
+    public NetworkClient(NetworkService networkService, TickRateService tickRateService, IOptions<ServerOptions> serverOptions) {
         this.networkService = networkService;
         this.tickRateService = tickRateService;
+        this.serverOptions = serverOptions.Value;
     }
 
     public void Dispose() { }
@@ -38,7 +42,7 @@ public class NetworkClient : IDisposable {
                 this.SendPacket(new ClientboundMessage {
                     Hello = new ClientboundHello {
                         // TODO config this
-                        TickRate = 10,
+                        TickRate = this.serverOptions.TickRate,
                         BannedPlugins = { }
                     }
                 });
@@ -107,7 +111,6 @@ public class NetworkClient : IDisposable {
 
         if (this.Player?.Id is null) {
             player.Id = this.networkService.GetNextFreeID();
-            Console.WriteLine($"Player {player.Name} assigned ID {player.Id}");
         } else {
             player.Id = this.Player.Id;
         }

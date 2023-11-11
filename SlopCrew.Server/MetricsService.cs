@@ -1,4 +1,5 @@
 ﻿using Graphite;
+using Microsoft.Extensions.Options;
 using SlopCrew.Server.Options;
 
 namespace SlopCrew.Server;
@@ -12,18 +13,21 @@ public class MetricsService {
 
     public MetricsService(
         ILogger<MetricsService> logger,
-        GraphiteOptions options
+        IOptions<GraphiteOptions> options
     ) {
         this.logger = logger;
 
-        if (options.Host != null) {
-            this.logger.LogInformation("Connecting to Graphite ({Host}:{Port})", options.Host,
-                                       options.Port);
+        if (options.Value.Host != null) {
+            this.logger.LogInformation(
+                "Connecting to Graphite ({Host}:{Port})",
+                options.Value.Host,
+                options.Value.Port
+            );
 
             try {
                 this.graphite = new GraphiteTcpClient(
-                    options.Host,
-                    options.Port,
+                    options.Value.Host,
+                    options.Value.Port,
                     "slop"
                 );
             } catch (Exception e) {

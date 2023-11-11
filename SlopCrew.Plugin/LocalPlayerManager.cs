@@ -12,13 +12,20 @@ namespace SlopCrew.Plugin;
 
 public class LocalPlayerManager : IHostedService {
     public bool HelloRefreshQueued;
+    public bool VisualRefreshQueued;
     public int CurrentOutfit;
-    private SlopConnectionManager connectionManager;
+
+    private Config config;
+    private ConnectionManager connectionManager;
 
     private Transform? lastTransform;
     private int? lastAnimation;
 
-    public LocalPlayerManager(SlopConnectionManager connectionManager) {
+    public LocalPlayerManager(
+        Config config,
+        ConnectionManager connectionManager
+    ) {
+        this.config = config;
         this.connectionManager = connectionManager;
     }
 
@@ -49,14 +56,16 @@ public class LocalPlayerManager : IHostedService {
         var me = worldHandler.GetCurrentPlayer();
         if (me == null) return;
 
+        this.HandleRefreshes(me);
+        this.HandleMovement(me);
+    }
+
+    private void HandleRefreshes(Reptile.Player me) {
         if (this.HelloRefreshQueued) {
             this.connectionManager.SendMessage(new ServerboundMessage {
                 Hello = new ServerboundHello {
                     Player = new Player {
-                        // FIXME im too lazy to write a config file lmao
-                        Name = Directory.GetCurrentDirectory().Contains("gog")
-                                   ? "GOG Slopper"
-                                   : "Big Slopper",
+                        Name = this.config.General.Username.Value,
 
                         Transform = new Transform {
                             Position = new(me.tf.position.FromMentalDeficiency()),
@@ -78,6 +87,25 @@ public class LocalPlayerManager : IHostedService {
             this.HelloRefreshQueued = false;
         }
 
+        if (this.VisualRefreshQueued) {
+            this.connectionManager.SendMessage(new ServerboundMessage {
+                VisualUpdate = new ServerboundVisualUpdate {
+                    Update = new VisualUpdate {
+                        Boostpack = (int) me.characterVisual.boostpackEffectMode,
+                        Friction = (int) me.characterVisual.frictionEffectMode,
+                        Spraycan = me.characterVisual.VFX.spraycan.activeSelf,
+                        Phone = me.characterVisual.VFX.phone.activeSelf,
+                        SpraycanState = (int) me.spraycanState
+                    }
+                }
+            });
+
+            this.VisualRefreshQueued = false;
+        }
+    }
+
+
+    private void HandleMovement(Reptile.Player me) {
         var transform = me.tf;
         var newPos = transform.position.FromMentalDeficiency();
         var newRot = transform.rotation.FromMentalDeficiency();
@@ -108,6 +136,7 @@ public class LocalPlayerManager : IHostedService {
             this.lastTransform = newTransform;
         }
     }
+
 
     private void StagePostInit() {
         this.HelloRefreshQueued = true;

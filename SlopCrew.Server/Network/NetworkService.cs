@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Google.Protobuf;
+using Microsoft.Extensions.Options;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using SlopCrew.Server.Options;
@@ -25,12 +26,12 @@ public class NetworkService : BackgroundService {
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
     public NetworkService(
-        ILogger<NetworkService> logger, IServiceProvider provider, ServerOptions options,
+        ILogger<NetworkService> logger, IServiceProvider provider, IOptions<ServerOptions> options,
         MetricsService metricsService, TickRateService tickRateService
     ) {
         this.logger = logger;
         this.provider = provider;
-        this.options = options;
+        this.options = options.Value;
         this.metricsService = metricsService;
         this.tickRateService = tickRateService;
     }

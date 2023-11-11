@@ -11,7 +11,7 @@ public class AssociatedPlayer : IDisposable {
     public Reptile.Player ReptilePlayer;
 
     private PlayerManager playerManager;
-    private SlopConnectionManager connectionManager;
+    private ConnectionManager connectionManager;
 
     private UnityEngine.Vector3 velocity = new();
     private PositionUpdate? targetUpdate = null;
@@ -21,7 +21,7 @@ public class AssociatedPlayer : IDisposable {
     // This is bad. I don't know what's better.
     public AssociatedPlayer(
         PlayerManager playerManager,
-        SlopConnectionManager connectionManager,
+        ConnectionManager connectionManager,
         Common.Proto.Player slopPlayer
     ) {
         this.playerManager = playerManager;
@@ -72,7 +72,6 @@ public class AssociatedPlayer : IDisposable {
         characterVisual.hasEffects = true;
         characterVisual.hasBoostPack = true;
 
-        // TODO scale
         this.playerManager.SettingVisual = true;
         characterVisual.SetBoostpackEffect(boostpackEffect);
         characterVisual.SetFrictionEffect(frictionEffect);
@@ -134,13 +133,18 @@ public class AssociatedPlayer : IDisposable {
         this.ProcessPositionUpdate();
     }
 
+    // TODO: this interp code sucks. I don't understand how the previous interp code works anymore
+    // but I can't seem to get fluid feeling movement working anymore
+    // help appreciated :D
     public void ProcessPositionUpdate() {
         if (this.targetUpdate is null || this.ReptilePlayer == null) return;
 
-        var lerpTime = (this.targetUpdate.Tick - this.connectionManager.ServerTick)
-                       * this.connectionManager.TickRate;
+        var tickDiff = this.targetUpdate.Tick - this.connectionManager.ServerTick;
+        var lerpTime = tickDiff * this.connectionManager.TickRate;
+
         var latency = (this.targetUpdate.Latency + this.connectionManager.Latency) / 1000f / 2f;
         var timeToTarget = lerpTime + latency;
+        if (timeToTarget < 0) timeToTarget = 0;
 
         var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
         var newPos = UnityEngine.Vector3.SmoothDamp(

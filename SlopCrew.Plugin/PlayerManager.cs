@@ -12,13 +12,15 @@ namespace SlopCrew.Plugin;
 
 public class PlayerManager : IHostedService {
     public Dictionary<uint, AssociatedPlayer> Players = new();
+    public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
+
     public bool SettingVisual;
     public bool PlayingAnimation;
 
     private ManualLogSource logger;
-    private SlopConnectionManager connectionManager;
+    private ConnectionManager connectionManager;
 
-    public PlayerManager(SlopConnectionManager connectionManager, ManualLogSource logger) {
+    public PlayerManager(ConnectionManager connectionManager, ManualLogSource logger) {
         this.connectionManager = connectionManager;
         this.logger = logger;
     }
@@ -34,6 +36,7 @@ public class PlayerManager : IHostedService {
         StageManager.OnStageInitialized -= this.StageInit;
         this.connectionManager.Disconnected -= this.Disconnected;
         this.connectionManager.MessageReceived -= this.MessageReceived;
+        this.CleanupPlayers();
         return Task.CompletedTask;
     }
 
