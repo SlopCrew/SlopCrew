@@ -25,6 +25,8 @@ public class NetworkService : BackgroundService {
 
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
+    private StatusCallback callback;
+
     public NetworkService(
         ILogger<NetworkService> logger, IServiceProvider provider, IOptions<ServerOptions> options,
         MetricsService metricsService, TickRateService tickRateService
@@ -42,7 +44,8 @@ public class NetworkService : BackgroundService {
         this.pollGroup = this.server.CreatePollGroup();
 
         var utils = new NetworkingUtils();
-        utils.SetStatusCallback(this.StatusCallback);
+        this.callback = this.StatusCallback;
+        utils.SetStatusCallback(this.callback);
 
         // TODO
         var address = new Address();
