@@ -25,8 +25,8 @@ public class NetworkService : BackgroundService {
 
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
-    private StatusCallback callback;
-
+    private StatusCallback callback = null!;
+    
     public NetworkService(
         ILogger<NetworkService> logger, IServiceProvider provider, IOptions<ServerOptions> options,
         MetricsService metricsService, TickRateService tickRateService

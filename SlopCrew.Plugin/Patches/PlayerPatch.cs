@@ -102,7 +102,7 @@ public class PlayerPatch {
         MoveStyle setMoveStyle,
         bool changeProp = true,
         bool changeAnim = true,
-        GameObject specialSkateboard = null
+        GameObject specialSkateboard = null!
     ) {
         if (__instance == WorldHandler.instance.GetCurrentPlayer()) {
             var localPlayerManager = Plugin.Host.Services.GetRequiredService<LocalPlayerManager>();
