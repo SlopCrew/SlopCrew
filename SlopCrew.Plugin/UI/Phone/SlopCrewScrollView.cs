@@ -76,7 +76,7 @@ public class SlopCrewScrollView : PhoneScroll {
         // Mode description
         var buttonDescription = Instantiate(titleObject);
         buttonDescription.transform.SetParent(rectTransform, false);
-        buttonDescription.transform.localPosition = new Vector2(scaledButtonSize.x * 0.11f, scaledButtonSize.y * 0.111f);
+        buttonDescription.transform.localPosition = new Vector2(scaledButtonSize.x * 0.113f, scaledButtonSize.y * 0.111f);
         buttonDescription.SetText("Description");
 
         // Encounter status label
