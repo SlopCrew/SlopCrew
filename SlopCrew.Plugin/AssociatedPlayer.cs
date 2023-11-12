@@ -103,6 +103,7 @@ public class AssociatedPlayer {
 
     private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
     private static Material? NameplateFontMaterial;
+    private const float NameplateHeightFactor = 1.33f;
 
     private void SpawnNameplate() {
         var container = new GameObject("SlopCrew_NameplateContainer");
@@ -137,8 +138,6 @@ public class AssociatedPlayer {
             tmp.fontMaterial = NameplateFontMaterial;
         }
 
-        nameplate.transform.parent = container.transform;
-
         if (this.SlopPlayer.IsDeveloper) {
             var heat = gameplay.wanted1;
             var icon = heat.GetComponent<Image>();
@@ -161,20 +160,13 @@ public class AssociatedPlayer {
             devIcon.AddComponent<UISpinny>();
         }
 
-        // Configure the container's position
-        var bounds = this.ReptilePlayer.interactionCollider.bounds;
-        container.transform.position = new Vector3(
-            0,
-            bounds.max.y,
-            0
-        );
+        container.transform.SetParent(this.ReptilePlayer.interactionCollider.transform, false);
+        nameplate.transform.SetParent(container.transform, false);
 
-        // Rotate it to match the player's head
-        container.transform.rotation = this.ReptilePlayer.tf.rotation;
-        // and flip it around
+        var capsule = this.ReptilePlayer.interactionCollider as CapsuleCollider;
+        // float * float before float * vector is faster because reasons
+        container.transform.localPosition = Vector3.up * (capsule.height * NameplateHeightFactor);
         container.transform.Rotate(0, 180, 0);
-
-        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
         container.AddComponent<UINameplate>();
     }
 
