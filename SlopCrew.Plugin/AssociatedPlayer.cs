@@ -27,6 +27,7 @@ public class AssociatedPlayer : IDisposable {
 
     private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
     private static Material? NameplateFontMaterial;
+    private const float NameplateHeightFactor = 1.33f;
 
     // This is bad. I don't know what's better.
     public AssociatedPlayer(
@@ -68,7 +69,7 @@ public class AssociatedPlayer : IDisposable {
         if (this.config.General.ShowPlayerMapPins.Value) {
             this.SpawnMapPin();
         }
-        
+
         Object.Destroy(emptyGameObject);
     }
 
@@ -131,18 +132,13 @@ public class AssociatedPlayer : IDisposable {
             devIcon.AddComponent<UISpinny>();
         }*/
 
-        // Rotate it to match the player's head
-        container.transform.rotation = this.ReptilePlayer.tf.rotation;
-        // and flip it around
-        container.transform.Rotate(0, 180, 0);
-        container.transform.parent = this.ReptilePlayer.interactionCollider.transform;
+        container.transform.SetParent(this.ReptilePlayer.interactionCollider.transform, false);
+        nameplate.transform.SetParent(container.transform, false);
 
-        var bounds = this.ReptilePlayer.interactionCollider.bounds;
-        container.transform.localPosition = new UnityEngine.Vector3(
-            0,
-            (bounds.extents.y * 2) + 0.25f,
-            0
-        );
+        var capsule = this.ReptilePlayer.interactionCollider as CapsuleCollider;
+        // float * float before float * vector is faster because reasons
+        container.transform.localPosition = UnityEngine.Vector3.up * (capsule!.height * NameplateHeightFactor);
+        container.transform.Rotate(0, 180, 0);
 
         var uiNameplate = container.AddComponent<UINameplate>();
         uiNameplate.Billboard = this.config.General.BillboardNameplates.Value;
