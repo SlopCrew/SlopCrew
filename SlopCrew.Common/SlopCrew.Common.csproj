@@ -3,6 +3,12 @@
         <TargetFramework>net462</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+
+        <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsWindows)' == 'true'">
+        <DefineConstants>WINDOWS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,7 +17,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="../vcpkg_installed/x64-windows/bin/*">
+        <Content Include="../libs/GameNetworkingSockets/*.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+
+        <Content Include="../libs/GameNetworkingSockets/*.pdb">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+
+        <Content Include="../libs/GameNetworkingSockets/*.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
 
@@ -19,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.25.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.25.0"/>
         <PackageReference Include="Grpc.Tools" Version="2.54.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

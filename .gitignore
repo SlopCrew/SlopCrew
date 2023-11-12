@@ -1,7 +1,9 @@
 # Build artifacts
 bin/
 obj/
+vcpkg/
 vcpkg_installed/
+libs/GameNetworkingSockets/
 
 # IDE settings
 .idea/

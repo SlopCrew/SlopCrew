@@ -856,23 +856,30 @@ public static class Library {
 
 [SuppressUnmanagedCodeSecurity]
 internal static class Native {
+#if WINDOWS
     private const string nativeLibrary = "GameNetworkingSockets.dll";
+#else
+    private const string nativeLibrary = "libGameNetworkingSockets.so";
+#endif
 
     [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern IntPtr LoadLibrary(string fileName);
 
     private static void LoadDependencies() {
-        var assemblyPath = Path.GetDirectoryName(typeof(Native).Assembly.Location);
+        // Only required on Windows, Linux handles this fine
+        if (PlatformHelper.Is(Platform.Windows)) {
+            var assemblyPath = Path.GetDirectoryName(typeof(Native).Assembly.Location);
 
-        var nativeDllPath = Path.Combine(assemblyPath, "libcrypto-1_1-x64.dll");
-        if (LoadLibrary(nativeDllPath) == IntPtr.Zero)
-            throw new IOException(
-                $"Failed to load {nativeDllPath}, verify that the file exists and is not corrupted.");
+            var nativeDllPath = Path.Combine(assemblyPath, "libcrypto-1_1-x64.dll");
+            if (LoadLibrary(nativeDllPath) == IntPtr.Zero)
+                throw new IOException(
+                    $"Failed to load {nativeDllPath}, verify that the file exists and is not corrupted.");
 
-        nativeDllPath = Path.Combine(assemblyPath, "libprotobuf.dll");
-        if (LoadLibrary(nativeDllPath) == IntPtr.Zero)
-            throw new IOException(
-                $"Failed to load {nativeDllPath}, verify that the file exists and is not corrupted.");
+            nativeDllPath = Path.Combine(assemblyPath, "libprotobuf.dll");
+            if (LoadLibrary(nativeDllPath) == IntPtr.Zero)
+                throw new IOException(
+                    $"Failed to load {nativeDllPath}, verify that the file exists and is not corrupted.");
+        }
     }
 
     static Native() {

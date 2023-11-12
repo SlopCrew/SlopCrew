@@ -11,13 +11,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      - SLOP_CONFIG=/config.toml
     ports:
-      - "42069:42069"
-    volumes:
-      - ./config.docker.toml:/config.toml:ro
-      - ./cert:/cert:ro
+      - "42069:42069/udp"
     networks:
       - slopcrew-network
 

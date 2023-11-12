@@ -48,10 +48,17 @@ public class ConnectionManager : IHostedService {
         this.client = new NetworkingSockets();
 
         this.address = new Address();
-        this.address.SetAddress(
-            this.LookupIP(this.config.Server.Host.Value),
-            this.config.Server.Port.Value
-        );
+        try {
+            this.address.SetAddress(
+                this.config.Server.Host.Value,
+                this.config.Server.Port.Value
+            );
+        } catch {
+            this.address.SetAddress(
+                this.LookupIP(this.config.Server.Host.Value),
+                this.config.Server.Port.Value
+            );
+        }
 
         Core.OnUpdate += this.Update;
     }

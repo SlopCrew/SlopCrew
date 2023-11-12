@@ -26,7 +26,7 @@ public class NetworkService : BackgroundService {
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
     private StatusCallback callback = null!;
-    
+
     public NetworkService(
         ILogger<NetworkService> logger, IServiceProvider provider, IOptions<ServerOptions> options,
         MetricsService metricsService, TickRateService tickRateService
@@ -40,6 +40,7 @@ public class NetworkService : BackgroundService {
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken) {
         Library.Initialize();
+
         this.server = new NetworkingSockets();
         this.pollGroup = this.server.CreatePollGroup();
 
