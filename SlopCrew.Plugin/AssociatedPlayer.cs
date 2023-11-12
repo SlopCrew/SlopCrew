@@ -263,7 +263,7 @@ public class AssociatedPlayer : IDisposable {
     public void ProcessPositionUpdate() {
         if (this.targetUpdate is null || this.ReptilePlayer == null) return;
 
-        var latency = (this.targetUpdate.Latency + this.connectionManager.Latency) / 1000f;
+        var latency = this.targetUpdate.Latency / 1000f;
         var timeToMove = this.connectionManager.TickRate!.Value + latency;
 
         var currentPos = this.ReptilePlayer.tf.position;
@@ -289,5 +289,9 @@ public class AssociatedPlayer : IDisposable {
             rotVelocity * Time.deltaTime
         );
         this.ReptilePlayer.tf.rotation = newRot;
+
+        if (this.ReptilePlayer.characterVisual != null) {
+            this.ReptilePlayer.characterVisual.transform.rotation = newRot;
+        }
     }
 }
