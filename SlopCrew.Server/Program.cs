@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Options;
-using SlopCrew.Server;
+﻿using SlopCrew.Server;
+using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +11,7 @@ void BindConfig<T>(string name) where T : class, new() {
 
 BindConfig<ServerOptions>("Server");
 BindConfig<GraphiteOptions>("Graphite");
+BindConfig<EncounterOptions>("Encounter");
 
 // This is fucking stupid. I hate MSDI
 builder.Services.AddSingleton<NetworkService>();
@@ -19,6 +20,7 @@ builder.Services.AddHostedService<NetworkService>(p => p.GetRequiredService<Netw
 builder.Services.AddTransient<NetworkClient>();
 builder.Services.AddSingleton<MetricsService>();
 builder.Services.AddSingleton<TickRateService>();
+builder.Services.AddSingleton<EncounterService>();
 
 var app = builder.Build();
 app.Run();

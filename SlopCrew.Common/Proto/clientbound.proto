@@ -12,6 +12,11 @@ message ClientboundMessage {
     ClientboundPong pong = 4;
     ClientboundVisualUpdate visual_update = 5;
     ClientboundAnimationUpdate animation_update = 6;
+
+    ClientboundEncounterRequest encounter_request = 7;
+    ClientboundEncounterStart encounter_start = 8;
+    ClientboundEncounterUpdate encounter_update = 9;
+    ClientboundEncounterEnd encounter_end = 10;
   }
 }
 
@@ -39,4 +44,45 @@ message ClientboundVisualUpdate {
 
 message ClientboundAnimationUpdate {
   repeated AnimationUpdate updates = 1;
+}
+
+message ClientboundEncounterRequest {
+  EncounterType type = 1;
+  optional uint32 player_id = 2;
+}
+
+message ClientboundEncounterStart {
+  EncounterType type = 1;
+  oneof data {
+    SimpleEncounterStartData simple = 2;
+  }
+}
+
+message SimpleEncounterStartData {
+  uint32 player_id = 1;
+}
+
+message ClientboundEncounterUpdate {
+  EncounterType type = 1;
+  oneof data {
+    ClientboundSimpleEncounterUpdateData simple = 2;
+  }
+}
+
+message ClientboundSimpleEncounterUpdateData {
+  uint32 your_score = 1;
+  uint32 opponent_score = 2;
+}
+
+message ClientboundEncounterEnd {
+  EncounterType type = 1;
+  oneof data {
+    SimpleEncounterEndData simple = 2;
+  }
+}
+
+message SimpleEncounterEndData {
+  bool ended_early = 1;
+  uint32 your_score = 2;
+  uint32 opponent_score = 3;
 }

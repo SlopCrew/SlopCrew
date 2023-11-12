@@ -7,10 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Graphite.NET" Version="1.1.0" />
+        <PackageReference Include="Graphite.NET" Version="1.1.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj" />
+        <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj"/>
     </ItemGroup>
 </Project>

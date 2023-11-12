@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
+using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
 
 namespace SlopCrew.Server;
@@ -16,15 +17,27 @@ public class NetworkClient : IDisposable {
     public string? Key;
     public ulong Latency;
 
+    public Dictionary<EncounterType, List<NetworkClient>> EncounterRequests = new();
+    public Encounter? CurrentEncounter;
+
     private NetworkService networkService;
     private TickRateService tickRateService;
+    private EncounterService encounterService;
     private ServerOptions serverOptions;
-    
-    public NetworkClient(NetworkService networkService, TickRateService tickRateService, IOptions<ServerOptions> serverOptions) {
+
+    public NetworkClient(
+        NetworkService networkService,
+        TickRateService tickRateService,
+        EncounterService encounterService,
+        IOptions<ServerOptions> serverOptions
+    ) {
         this.networkService = networkService;
         this.tickRateService = tickRateService;
+        this.encounterService = encounterService;
         this.serverOptions = serverOptions.Value;
     }
+
+    public bool IsConnected() => this.networkService.Clients.Contains(this);
 
     public void Dispose() { }
 
@@ -100,6 +113,60 @@ public class NetworkClient : IDisposable {
                 this.networkService.QueueAnimationUpdate(this.Stage.Value, update);
                 break;
             }
+
+            case ServerboundMessage.MessageOneofCase.EncounterRequest: {
+                if (this.CurrentEncounter is not null) return;
+                var request = packet.EncounterRequest;
+
+                switch (request.Type) {
+                    case EncounterType.ScoreBattle or EncounterType.ComboBattle: {
+                        if (request.HasPlayerId) this.ProcessEncounterRequest(request.Type, request.PlayerId);
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    public void ProcessEncounterRequest(EncounterType type, uint other) {
+        var otherPlayer = this.networkService.Clients.FirstOrDefault(x => x.Player?.Id == other);
+        if (otherPlayer is null) return;
+
+        if (this.EncounterRequests.TryGetValue(type, out var requests)) {
+            if (requests.Contains(otherPlayer)) return;
+            requests.Add(otherPlayer);
+        } else {
+            this.EncounterRequests[type] = new() {otherPlayer};
+        }
+
+        Task.Run(async () => {
+            await Task.Delay(5000);
+            if (this.EncounterRequests.TryGetValue(type, out var requests)) {
+                requests.Remove(otherPlayer);
+            }
+        });
+
+        if (
+            otherPlayer.EncounterRequests.TryGetValue(type, out var otherRequests)
+            && otherRequests.Contains(this)
+        ) {
+            otherPlayer.EncounterRequests.Clear();
+            this.EncounterRequests.Clear();
+            
+            if (this.Player is null || otherPlayer.Player is null) return;
+            
+            var encounter = this.encounterService.StartSimpleEncounter(this, otherPlayer, type);
+            this.CurrentEncounter = encounter;
+            otherPlayer.CurrentEncounter = encounter;
+        } else {
+            otherPlayer.SendPacket(new ClientboundMessage {
+                EncounterRequest = new ClientboundEncounterRequest {
+                    Type = type,
+                    PlayerId = this.Player!.Id
+                }
+            });
         }
     }
 

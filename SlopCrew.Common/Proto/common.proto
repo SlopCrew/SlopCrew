@@ -67,3 +67,9 @@ message AnimationUpdate {
   bool instant = 4;
   float time = 5;
 }
+
+enum EncounterType {
+  ScoreBattle = 0;
+  ComboBattle = 1;
+  Race = 2;
+}

@@ -10,4 +10,7 @@ public class Constants {
 
     public const int PingFrequency = 5000;
     public const int ReconnectFrequency = 5000;
+
+    public const int SimpleEncounterStartTime = 3;
+    public const int SimpleEncounterEndTime = 5;
 }

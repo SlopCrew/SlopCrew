@@ -12,6 +12,9 @@ message ServerboundMessage {
     ServerboundPing ping = 4;
     ServerboundVisualUpdate visual_update = 5;
     ServerboundAnimationUpdate animation_update = 6;
+
+    ServerboundEncounterRequest encounter_request = 7;
+    ServerboundEncounterUpdate encounter_update = 8;
   }
 }
 
@@ -41,4 +44,20 @@ message ServerboundVisualUpdate {
 
 message ServerboundAnimationUpdate {
   AnimationUpdate update = 1;
+}
+
+message ServerboundEncounterRequest {
+  EncounterType type = 1;
+  optional uint32 player_id = 2;
+}
+
+message ServerboundEncounterUpdate {
+  EncounterType type = 1;
+  oneof data {
+    ServerboundSimpleEncounterUpdateData simple = 2;
+  }
+}
+
+message ServerboundSimpleEncounterUpdateData {
+  uint32 score = 1;
 }
