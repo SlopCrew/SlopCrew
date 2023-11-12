@@ -33,12 +33,12 @@ public class SlopCrewScrollView : PhoneScroll {
         var centerPivot = new Vector2(0.5f, 0.5f);
         var height = phoneSheet.height;
 
-        buttonSpriteSelected = Sprite.Create(phoneSheet, new Rect(0.0f, height - 2.0f - ButtonSize.y, ButtonSize.x, ButtonSize.y), centerPivot, 100.0f);
-        buttonSprite = Sprite.Create(phoneSheet, new Rect(0.0f, height - 177.0f - ButtonSize.y, ButtonSize.x, ButtonSize.y), centerPivot, 100.0f);
+        buttonSpriteSelected = Sprite.Create(phoneSheet, new Rect(11.0f, height - 25.0f - ButtonSize.y, ButtonSize.x, ButtonSize.y), centerPivot, 100.0f);
+        buttonSprite = Sprite.Create(phoneSheet, new Rect(11.0f, height - 231.0f - ButtonSize.y, ButtonSize.x, ButtonSize.y), centerPivot, 100.0f);
 
-        buttonIcons[0] = Sprite.Create(phoneSheet, new Rect(301.0f, height - 354.0f - IconSize.y, IconSize.x, IconSize.y), centerPivot, 100.0f);
-        buttonIcons[1] = Sprite.Create(phoneSheet, new Rect(153.0f, height - 354.0f - IconSize.y, IconSize.x, IconSize.y), centerPivot, 100.0f);
-        buttonIcons[2] = Sprite.Create(phoneSheet, new Rect(301.0f, height - 615.0f - IconSize.y, IconSize.x, IconSize.y), centerPivot, 100.0f);
+        buttonIcons[0] = Sprite.Create(phoneSheet, new Rect(337.0f, height - 437.0f - IconSize.y, IconSize.x, IconSize.y), centerPivot, 100.0f);
+        buttonIcons[1] = Sprite.Create(phoneSheet, new Rect(175.0f, height - 437.0f - IconSize.y, IconSize.x, IconSize.y), centerPivot, 100.0f);
+        buttonIcons[2] = Sprite.Create(phoneSheet, new Rect(333.0f, height - 727.0f - IconSize.y, IconSize.x, IconSize.y), centerPivot, 100.0f);
     }
 
     private void CreatePrefabs(GameObject arrowObject, TextMeshProUGUI titleObject) {
