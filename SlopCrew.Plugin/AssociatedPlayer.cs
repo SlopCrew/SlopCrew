@@ -263,28 +263,31 @@ public class AssociatedPlayer : IDisposable {
     public void ProcessPositionUpdate() {
         if (this.targetUpdate is null || this.ReptilePlayer == null) return;
 
-        var latency = (this.targetUpdate.Latency + this.connectionManager.Latency) / 1000f / 2f;
-        var timeToTarget = this.connectionManager.TickRate + latency;
+        var latency = (this.targetUpdate.Latency + this.connectionManager.Latency) / 1000f;
+        var timeToMove = this.connectionManager.TickRate!.Value + latency;
 
+        var currentPos = this.ReptilePlayer.tf.position;
         var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
-        var newPos = UnityEngine.Vector3.SmoothDamp(
-            this.ReptilePlayer.transform.position,
+        var posDiff = targetPos - currentPos;
+        var posVelocity = posDiff / timeToMove;
+
+        var newPos = UnityEngine.Vector3.MoveTowards(
+            currentPos,
             targetPos,
-            ref this.velocity,
-            timeToTarget!.Value
+            posVelocity.magnitude * Time.deltaTime
         );
-        this.ReptilePlayer.transform.position = newPos;
+        this.ReptilePlayer.tf.position = newPos;
 
+        var currentRot = this.ReptilePlayer.tf.rotation;
         var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
-        var newRot = UnityEngine.Quaternion.Slerp(
-            this.ReptilePlayer.transform.rotation,
-            targetRot,
-            timeToTarget.Value
-        );
-        this.ReptilePlayer.transform.rotation = newRot;
+        var rotDiff = UnityEngine.Quaternion.Angle(currentRot, targetRot);
+        var rotVelocity = rotDiff / timeToMove;
 
-        if (this.ReptilePlayer.characterVisual != null) {
-            this.ReptilePlayer.characterVisual.transform.rotation = newRot;
-        }
+        var newRot = UnityEngine.Quaternion.RotateTowards(
+            currentRot,
+            targetRot,
+            rotVelocity * Time.deltaTime
+        );
+        this.ReptilePlayer.tf.rotation = newRot;
     }
 }
