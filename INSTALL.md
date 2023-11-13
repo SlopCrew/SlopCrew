@@ -33,7 +33,30 @@ Users launching from Steam can insert `WINEDLLOVERRIDES="winhttp=n,b" %command%`
 
 ## Custom servers
 
-TODO
+Follow the instructions for your operating system below. Afterwards, you will need to enable accessing your server:
+
+- (Suggested for newcomers) Use a VPN like Tailscale, Radmin, or ZeroTier to create a private network between your friends.
+- Port forward the server through your router and share your public IP with your friends.
+
+The server will run on port 42069, UDP protocol.
+
+### Windows
+
+- Download the server binaries [from GitHub Actions](https://github.com/SlopCrew/SlopCrew/actions/workflows/server-build.yml?query=branch%3Amain+event%3Apush).
+  - Select the entry with the same version number as the installed Slop Crew plugin. It is highly suggested (and sometimes required) to use the same version as the plugin.
+  - After selecting the entry, scroll down to the bottom, and select `server-windows` from the Artifacts section. You will need a GitHub account to download these artifacts.
+- Download the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-7.0.10-windows-x64-installer).
+- Start the executable by double clicking it.
+
+### Linux
+
+After [setting up GameNetworkingSockets](#gamenetworkingsockets), build the server:
+
+```shell
+$ dotnet run SlopCrew.Server --configuration Release
+```
+
+Docker users can also use the `Dockerfile`/`docker-compose.yml`, or make their own using the image at `ghcr.io/slopcrew/slopcrew-server`.
 
 ## Stuff for developers
 
@@ -45,6 +68,8 @@ Slop Crew uses [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetw
 vcpkg install
 ```
 
+Copy the resulting binaries (`.dll` or `.so`) into `libs/GameNetworkingSockets`.
+
 ### Building Slop Crew
 
 The `SlopCrew.Plugin` project references DLLs in your game install. To not commit piracy, the location to your game file must be specified with the `BRCPath` variable.
@@ -54,6 +79,8 @@ This path will vary per person, and will point to the folder that contains the g
 - Visual Studio: Set `BRCPath` as a global environment variable (I haven't figured out how to set it per-project yet).
 - JetBrains Rider: Go to `File | Settings | Build, Execution, Deployment | Toolset and Build` and edit the MSBuild global properties.
 - dotnet CLI: Pass `-p:BRCPath="path/to/game"` as an argument.
+
+Linux users will need to acquire the Windows GameNetworkingSockets binaries, along with setting the `SLOPCREW_FORCE_WINDOWS` environment variable to true, when building the plugin.
 
 ### Using the API
 
