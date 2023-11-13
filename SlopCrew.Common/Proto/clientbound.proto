@@ -76,6 +76,8 @@ message ClientboundEncounterUpdate {
 message ClientboundSimpleEncounterUpdateData {
   Score your_score = 1;
   Score opponent_score = 2;
+  optional bool your_combo_dropped = 3;
+  optional bool opponent_combo_dropped = 4;
 }
 
 message ClientboundEncounterEnd {

@@ -4,17 +4,27 @@ using Timer = System.Timers.Timer;
 
 namespace SlopCrew.Server.Encounters;
 
-public class ScoreBattleEncounter : Encounter {
+public class ComboBattleEncounter : Encounter {
     private NetworkClient one;
     private NetworkClient two;
     private Score oneScore = new();
     private Score twoScore = new();
+    private bool oneComboDropped;
+    private bool twoComboDropped;
+    private bool grace;
     private uint length;
     private Timer timer;
 
-    public ScoreBattleEncounter(NetworkClient one, NetworkClient two, uint length) {
+    public ComboBattleEncounter(NetworkClient one, NetworkClient two, uint length, uint grace) {
         this.length = length;
+        this.grace = true;
 
+        // lmao this is so bad
+        Task.Run(async () => {
+            await Task.Delay((int) (grace * 1000));
+            this.grace = false;
+        });
+        
         var timerLength = Constants.SimpleEncounterStartTime + this.length;
         this.timer = new Timer(timerLength * 1000);
         this.timer.Elapsed += (_, _) => this.Stop();
@@ -29,7 +39,12 @@ public class ScoreBattleEncounter : Encounter {
 
     public override void Update() {
         base.Update();
+
         if (!this.one.IsConnected() || !this.two.IsConnected()) {
+            this.Stop();
+        }
+
+        if (this.oneComboDropped && this.twoComboDropped) {
             this.Stop();
         }
     }
@@ -42,7 +57,7 @@ public class ScoreBattleEncounter : Encounter {
     private void SendStart() {
         this.one.SendPacket(new ClientboundMessage {
             EncounterStart = new ClientboundEncounterStart {
-                Type = EncounterType.ScoreBattle,
+                Type = EncounterType.ComboBattle,
                 Simple = new SimpleEncounterStartData {
                     PlayerId = this.two.Player!.Id
                 }
@@ -51,7 +66,7 @@ public class ScoreBattleEncounter : Encounter {
 
         this.two.SendPacket(new ClientboundMessage {
             EncounterStart = new ClientboundEncounterStart {
-                Type = EncounterType.ScoreBattle,
+                Type = EncounterType.ComboBattle,
                 Simple = new SimpleEncounterStartData {
                     PlayerId = this.one.Player!.Id
                 }
@@ -60,16 +75,33 @@ public class ScoreBattleEncounter : Encounter {
     }
 
     public override void ProcessPacket(NetworkClient client, ServerboundEncounterUpdate packet) {
-        if (packet.Type != EncounterType.ScoreBattle) return;
+        if (packet.Type != EncounterType.ComboBattle) return;
         if (packet.DataCase != ServerboundEncounterUpdate.DataOneofCase.Simple) return;
 
         if (client == this.one) {
-            this.oneScore = packet.Simple.Score;
+            if (!this.oneComboDropped) {
+                if (this.CalculateComboDrop(this.oneScore, packet.Simple.Score)) {
+                    this.oneComboDropped = true;
+                } else {
+                    this.oneScore = packet.Simple.Score;
+                }
+            }
         } else if (client == this.two) {
-            this.twoScore = packet.Simple.Score;
+            if (!this.twoComboDropped) {
+                if (this.CalculateComboDrop(this.twoScore, packet.Simple.Score)) {
+                    this.twoComboDropped = true;
+                } else {
+                    this.twoScore = packet.Simple.Score;
+                }
+            }
         }
 
         this.SendUpdate();
+    }
+
+    private bool CalculateComboDrop(Score oldScore, Score newScore) {
+        if (this.grace) return false;
+        return newScore.BaseScore * newScore.Multiplier < oldScore.BaseScore * oldScore.Multiplier;
     }
 
     private void SendUpdate() {
@@ -78,10 +110,12 @@ public class ScoreBattleEncounter : Encounter {
         if (this.one.IsConnected()) {
             this.one.SendPacket(new ClientboundMessage {
                 EncounterUpdate = new ClientboundEncounterUpdate {
-                    Type = EncounterType.ScoreBattle,
+                    Type = EncounterType.ComboBattle,
                     Simple = new ClientboundSimpleEncounterUpdateData {
                         YourScore = this.oneScore,
-                        OpponentScore = this.twoScore
+                        OpponentScore = this.twoScore,
+                        YourComboDropped = this.oneComboDropped,
+                        OpponentComboDropped = this.twoComboDropped
                     }
                 }
             });
@@ -90,10 +124,12 @@ public class ScoreBattleEncounter : Encounter {
         if (this.two.IsConnected()) {
             this.two.SendPacket(new ClientboundMessage {
                 EncounterUpdate = new ClientboundEncounterUpdate {
-                    Type = EncounterType.ScoreBattle,
+                    Type = EncounterType.ComboBattle,
                     Simple = new ClientboundSimpleEncounterUpdateData {
                         YourScore = this.twoScore,
-                        OpponentScore = this.oneScore
+                        OpponentScore = this.oneScore,
+                        YourComboDropped = this.twoComboDropped,
+                        OpponentComboDropped = this.oneComboDropped
                     }
                 }
             });

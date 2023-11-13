@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BepInEx.Logging;
@@ -6,7 +5,6 @@ using Microsoft.Extensions.Hosting;
 using Reptile;
 using SlopCrew.Common.Proto;
 using SlopCrew.Plugin.UI.Phone;
-using UnityEngine;
 
 namespace SlopCrew.Plugin.Encounters;
 
@@ -68,6 +66,11 @@ public class EncounterManager : IHostedService {
         switch (start.Type) {
             case EncounterType.ScoreBattle: {
                 this.CurrentEncounter = new ScoreBattleEncounter(this, start);
+                break;
+            }
+
+            case EncounterType.ComboBattle: {
+                this.CurrentEncounter = new ComboBattleEncounter(this, start);
                 break;
             }
         }

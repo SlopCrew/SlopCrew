@@ -31,8 +31,9 @@ public class EncounterService : IDisposable {
     }
     
     public Encounter StartSimpleEncounter(NetworkClient one, NetworkClient two, EncounterType type) {
-        var encounter = type switch {
+        Encounter encounter = type switch {
             EncounterType.ScoreBattle => new ScoreBattleEncounter(one, two, this.options.ScoreBattleLength),
+            EncounterType.ComboBattle => new ComboBattleEncounter(one, two, this.options.ComboBattleLength, this.options.ComboBattleGrace),
             _ => throw new Exception("TODO")
         };
         this.encounters.Add(encounter);

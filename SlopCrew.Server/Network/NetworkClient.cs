@@ -125,7 +125,7 @@ public class NetworkClient : IDisposable {
 
                 switch (request.Type) {
                     case EncounterType.ScoreBattle or EncounterType.ComboBattle: {
-                        if (request.HasPlayerId) this.ProcessEncounterRequest(request.Type, request.PlayerId);
+                        if (request.HasPlayerId) this.ProcessSimpleEncounterRequest(request.Type, request.PlayerId);
                         break;
                     }
                 }
@@ -153,7 +153,7 @@ public class NetworkClient : IDisposable {
         }
     }
 
-    public void ProcessEncounterRequest(EncounterType type, uint other) {
+    public void ProcessSimpleEncounterRequest(EncounterType type, uint other) {
         var otherPlayer = this.networkService.Clients.FirstOrDefault(x => x.Player?.Id == other);
         if (otherPlayer is null) return;
 

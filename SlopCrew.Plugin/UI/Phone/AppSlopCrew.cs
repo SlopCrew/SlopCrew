@@ -400,16 +400,17 @@ public class AppSlopCrew : App {
         if (this.encounterManager.CurrentEncounter?.IsBusy == true) return;
         
         if (this.playerManager.Players.TryGetValue(request.PlayerId, out var associatedPlayer)) {
-            var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
-
             var me = WorldHandler.instance.GetCurrentPlayer();
             if (me == null) return;
+            
+            LastRequest = request;
+            
             var phone = me.phone;
             var emailApp = phone.GetAppInstance<AppEmail>();
             var emailNotif = emailApp.GetComponent<Notification>();
             this.SetNotification(emailNotif);
 
-            LastRequest = request;
+            var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
             phone.PushNotification(this, name, null);
         } 
     }
