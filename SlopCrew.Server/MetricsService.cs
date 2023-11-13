@@ -38,12 +38,14 @@ public class MetricsService {
     }
 
     public void UpdateConnections(int count) {
+        if (this.Connections == count) return;
         this.logger.LogInformation("Now at {Count} connections", count);
         this.Connections = count;
         this.graphite?.Send("connections", count);
     }
 
     public void UpdatePopulation(int stage, int count) {
+        if (this.Population.TryGetValue(stage, out var oldCount) && oldCount == count) return;
         this.logger.LogInformation("Now at {Count} players in stage {Stage}", count, stage);
         this.Population[stage] = count;
         this.graphite?.Send($"population.{stage}", count);
