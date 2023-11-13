@@ -22,10 +22,6 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
 
-        <Content Include="../libs/GameNetworkingSockets/*.pdb">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-
         <Content Include="../libs/GameNetworkingSockets/*.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
