@@ -295,7 +295,7 @@ public class AppSlopCrew : App {
         }
     }
 
-    public void SetNotification(Notification notif) {
+    private void SetNotification(Notification notif) {
         if (this.notifInitialized) return;
         var newNotif = Instantiate(notif.gameObject, this.transform);
         this.m_Notification = newNotif.GetComponent<Notification>();
@@ -393,5 +393,24 @@ public class AppSlopCrew : App {
 
     public bool IsActiveEncounter(EncounterType type) {
         return currentEncounter == type;
+    }
+
+    public void ProcessEncounterRequest(ClientboundEncounterRequest request) {
+        if (!this.config.Phone.ReceiveNotifications.Value) return;
+        if (this.encounterManager.CurrentEncounter?.IsBusy == true) return;
+        
+        if (this.playerManager.Players.TryGetValue(request.PlayerId, out var associatedPlayer)) {
+            var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
+
+            var me = WorldHandler.instance.GetCurrentPlayer();
+            if (me == null) return;
+            var phone = me.phone;
+            var emailApp = phone.GetAppInstance<AppEmail>();
+            var emailNotif = emailApp.GetComponent<Notification>();
+            this.SetNotification(emailNotif);
+
+            LastRequest = request;
+            phone.PushNotification(this, name, null);
+        } 
     }
 }

@@ -5,6 +5,7 @@ using BepInEx.Logging;
 using Microsoft.Extensions.Hosting;
 using Reptile;
 using SlopCrew.Common.Proto;
+using SlopCrew.Plugin.UI.Phone;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.Encounters;
@@ -54,27 +55,8 @@ public class EncounterManager : IHostedService {
             this.CurrentEncounter.Dispose();
             this.CurrentEncounter = null;
         }
-        
+
         this.CurrentEncounter?.Update();
-
-        if (Input.GetKeyDown(KeyCode.L)) {
-            var me = WorldHandler.instance.GetCurrentPlayer();
-            if (me == null) return;
-
-            var players = this.PlayerManager.AssociatedPlayers
-                .Where(x => x.ReptilePlayer != null);
-            var closestPlayer = players
-                .OrderBy(x => UnityEngine.Vector3.Distance(me.transform.position, x.ReptilePlayer.transform.position))
-                .FirstOrDefault();
-            if (closestPlayer == null) return;
-
-            this.ConnectionManager.SendMessage(new ServerboundMessage {
-                EncounterRequest = new ServerboundEncounterRequest {
-                    Type = EncounterType.ScoreBattle,
-                    PlayerId = closestPlayer.SlopPlayer.Id
-                }
-            });
-        }
     }
 
     private void StartEncounter(ClientboundEncounterStart start) {
@@ -110,7 +92,7 @@ public class EncounterManager : IHostedService {
                     BaseScore = baseScore,
                     Multiplier = multiplier
                 };
-                
+
                 this.ConnectionManager.SendMessage(new ServerboundMessage {
                     EncounterUpdate = new ServerboundEncounterUpdate {
                         Type = encounter.Type,
@@ -128,7 +110,11 @@ public class EncounterManager : IHostedService {
     private void MessageReceived(ClientboundMessage message) {
         switch (message.MessageCase) {
             case ClientboundMessage.MessageOneofCase.EncounterRequest: {
-                this.logger.LogInfo("request " + message.EncounterRequest.PlayerId);
+                var me = WorldHandler.instance.GetCurrentPlayer();
+                if (me == null) return;
+                var app = me.phone.GetAppInstance<AppSlopCrew>();
+                if (app == null) return;
+                app.ProcessEncounterRequest(message.EncounterRequest);
                 break;
             }
 
