@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
 
         <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
+        <IsWindows Condition="'$(SLOPCREW_FORCE_WINDOWS)' == 'true'">true</IsWindows>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(IsWindows)' == 'true'">
