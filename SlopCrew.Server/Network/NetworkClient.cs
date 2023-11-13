@@ -92,7 +92,8 @@ public class NetworkClient : IDisposable {
             case ServerboundMessage.MessageOneofCase.Ping: {
                 var sentAt = packet.Ping.Time;
                 var now = (ulong) (DateTime.UtcNow.ToFileTimeUtc() / 10_000);
-                this.Latency = (now - sentAt) * 2;
+                //this.Latency = (now - sentAt) * 2;
+                this.Latency = 0;
                 this.SendPacket(new ClientboundMessage {
                     Pong = new ClientboundPong {
                         Id = packet.Ping.Id,

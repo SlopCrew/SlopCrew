@@ -253,6 +253,8 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void QueuePositionUpdate(PositionUpdate newUpdate) {
+        if (this.ReptilePlayer == null) return;
+        
         this.targetUpdate = newUpdate;
         var latency = newUpdate.Latency / 1000f;
         var timeToMove = this.connectionManager.TickRate!.Value + latency;
