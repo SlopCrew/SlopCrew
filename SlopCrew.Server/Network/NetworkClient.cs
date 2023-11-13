@@ -57,7 +57,6 @@ public class NetworkClient : IDisposable {
 
                 this.SendPacket(new ClientboundMessage {
                     Hello = new ClientboundHello {
-                        // TODO config this
                         TickRate = this.serverOptions.TickRate,
                         BannedPlugins = {this.encounterOptions.BannedPlugins},
                         ScoreBattleLength = this.encounterOptions.ScoreBattleLength,
@@ -136,6 +135,17 @@ public class NetworkClient : IDisposable {
 
             case ServerboundMessage.MessageOneofCase.EncounterUpdate: {
                 this.CurrentEncounter?.ProcessPacket(this, packet.EncounterUpdate);
+                break;
+            }
+
+            case ServerboundMessage.MessageOneofCase.CustomPacket: {
+                if (this.Player is null || this.Stage is null) return;
+                this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
+                    CustomPacket = new ClientboundCustomPacket {
+                        PlayerId = this.Player.Id,
+                        Packet = packet.CustomPacket.Packet
+                    }
+                });
                 break;
             }
         }

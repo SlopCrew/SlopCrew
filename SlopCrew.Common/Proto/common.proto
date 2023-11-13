@@ -79,3 +79,8 @@ message Score {
   int32 base_score = 2;
   int32 multiplier = 3;
 }
+
+message CustomPacket {
+  string id = 1;
+  bytes data = 2;
+}

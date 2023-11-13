@@ -124,7 +124,7 @@ public class NetworkService : BackgroundService {
     private void HandleMessages() {
         this.server!.RunCallbacks();
 
-        const int maxMessages = 20;
+        var maxMessages = this.clients.Count * 10;
         var messages = new NetworkingMessage[maxMessages];
         var count = this.server.ReceiveMessagesOnPollGroup(this.pollGroup, messages, maxMessages);
 

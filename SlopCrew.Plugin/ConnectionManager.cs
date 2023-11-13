@@ -64,6 +64,7 @@ public class ConnectionManager : IHostedService {
         }
 
         Core.OnUpdate += this.Update;
+        this.api.OnCustomPacketSent += this.SendCustomPacket;
     }
 
     private string LookupIP(string host) {
@@ -184,6 +185,15 @@ public class ConnectionManager : IHostedService {
                 this.api.ChangePlayerCount(packet.PlayersUpdate.Players.Count + 1);
                 break;
             }
+
+            case ClientboundMessage.MessageOneofCase.CustomPacket: {
+                this.api.DispatchCustomPacket(
+                    packet.CustomPacket.PlayerId,
+                    packet.CustomPacket.Packet.Id,
+                    packet.CustomPacket.Packet.Data.ToByteArray()
+                );
+                break;
+            }
         }
     }
 
@@ -226,5 +236,18 @@ public class ConnectionManager : IHostedService {
 
         this.api.ChangeConnected(false);
         Task.Delay(Constants.ReconnectFrequency).ContinueWith(_ => this.Connect());
+    }
+
+    private void SendCustomPacket(string id, byte[] data) {
+        if (data.Length > Constants.MaxCustomPacketSize) return;
+        
+        this.SendMessage(new ServerboundMessage {
+            CustomPacket = new ServerboundCustomPacket {
+                Packet = new CustomPacket {
+                    Id = id,
+                    Data = ByteString.CopyFrom(data)
+                }
+            }
+        });
     }
 }

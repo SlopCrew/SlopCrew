@@ -14,5 +14,5 @@ public interface ISlopCrewAPI {
 
     public int? StageOverride { get; set; }
     public void SendCustomPacket(string id, byte[] data);
-    public event Action<string, byte[]> OnCustomPacketReceived;
+    public event Action<uint, string, byte[]> OnCustomPacketReceived;
 }

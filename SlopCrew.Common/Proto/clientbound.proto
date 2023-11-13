@@ -17,6 +17,8 @@ message ClientboundMessage {
     ClientboundEncounterStart encounter_start = 8;
     ClientboundEncounterUpdate encounter_update = 9;
     ClientboundEncounterEnd encounter_end = 10;
+
+    ClientboundCustomPacket custom_packet = 11;
   }
 }
 
@@ -87,4 +89,9 @@ message SimpleEncounterEndData {
   bool ended_early = 1;
   Score your_score = 2;
   Score opponent_score = 3;
+}
+
+message ClientboundCustomPacket {
+  uint32 player_id = 1;
+  CustomPacket packet = 2;
 }

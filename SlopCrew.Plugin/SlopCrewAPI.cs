@@ -19,7 +19,7 @@ public class SlopCrewAPI : ISlopCrewAPI {
     }
     
     internal event Action<string, byte[]>? OnCustomPacketSent;
-    public event Action<string, byte[]>? OnCustomPacketReceived;
+    public event Action<uint, string, byte[]>? OnCustomPacketReceived;
 
     internal void ChangeConnected(bool value) {
         if (this.Connected == value) return;
@@ -35,5 +35,9 @@ public class SlopCrewAPI : ISlopCrewAPI {
     internal void ChangePlayerCount(int count) {
         this.PlayerCount = count;
         this.OnPlayerCountChanged?.Invoke(count);
+    }
+
+    internal void DispatchCustomPacket(uint player, string id, byte[] data) {
+        this.OnCustomPacketReceived?.Invoke(player, id, data);
     }
 }
