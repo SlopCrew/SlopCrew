@@ -19,6 +19,7 @@ public class ConnectionManager : IHostedService {
 
     private Config config;
     private ManualLogSource logger;
+    private SlopCrewAPI api;
     private NetworkingSockets client;
 
     private uint? connection = null;
@@ -39,10 +40,12 @@ public class ConnectionManager : IHostedService {
 
     public ConnectionManager(
         Config config,
-        ManualLogSource logger
+        ManualLogSource logger,
+        SlopCrewAPI api
     ) {
         this.config = config;
         this.logger = logger;
+        this.api = api;
 
         Library.Initialize();
         this.client = new NetworkingSockets();
@@ -176,6 +179,11 @@ public class ConnectionManager : IHostedService {
                 this.ServerTick = packet.Pong.Tick;
                 break;
             }
+
+            case ClientboundMessage.MessageOneofCase.PlayersUpdate: {
+                this.api.ChangePlayerCount(packet.PlayersUpdate.Players.Count + 1);
+                break;
+            }
         }
     }
 
@@ -188,6 +196,7 @@ public class ConnectionManager : IHostedService {
     private void HandleStateChange(ConnectionInfo connectionInfo) {
         switch (connectionInfo.state) {
             case ConnectionState.Connected: {
+                this.api.ChangeConnected(true);
                 this.SendMessage(new ServerboundMessage {
                     Version = new ServerboundVersion {
                         ProtocolVersion = Constants.NetworkVersion,
@@ -215,6 +224,7 @@ public class ConnectionManager : IHostedService {
         this.client.CloseConnection(this.connection!.Value);
         this.pingTokenSource?.Cancel();
 
+        this.api.ChangeConnected(false);
         Task.Delay(Constants.ReconnectFrequency).ContinueWith(_ => this.Connect());
     }
 }
