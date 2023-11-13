@@ -73,3 +73,9 @@ enum EncounterType {
   ComboBattle = 1;
   Race = 2;
 }
+
+message Score {
+  int32 score = 1;
+  int32 base_score = 2;
+  int32 multiplier = 3;
+}

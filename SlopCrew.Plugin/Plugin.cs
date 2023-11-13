@@ -2,6 +2,7 @@ using BepInEx;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SlopCrew.API;
+using SlopCrew.Plugin.Encounters;
 
 namespace SlopCrew.Plugin;
 
@@ -24,6 +25,8 @@ public class Plugin : BaseUnityPlugin {
             AddSingletonHostedService<LocalPlayerManager>();
             AddSingletonHostedService<PlayerManager>();
             AddSingletonHostedService<PatchManager>();
+            AddSingletonHostedService<EncounterManager>();
+            AddSingletonHostedService<ServerConfig>();
 
             var config = new Config(this.Config);
             services.AddSingleton(config);

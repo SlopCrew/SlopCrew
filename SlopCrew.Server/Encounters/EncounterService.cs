@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using SlopCrew.Common.Proto;
 using SlopCrew.Server.Options;
 
@@ -10,10 +11,10 @@ public class EncounterService : IDisposable {
     private TickRateService tickRateService;
     private List<Encounter> encounters = new();
     
-    public EncounterService(ILogger<EncounterService> logger, TickRateService tickRateService, EncounterOptions options) {
+    public EncounterService(ILogger<EncounterService> logger, TickRateService tickRateService, IOptions<EncounterOptions> options) {
         this.logger = logger;
         this.tickRateService = tickRateService;
-        this.options = options;
+        this.options = options.Value;
         this.tickRateService.Tick += this.Tick;
     }
 

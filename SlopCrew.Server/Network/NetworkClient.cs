@@ -24,17 +24,20 @@ public class NetworkClient : IDisposable {
     private TickRateService tickRateService;
     private EncounterService encounterService;
     private ServerOptions serverOptions;
+    private EncounterOptions encounterOptions;
 
     public NetworkClient(
         NetworkService networkService,
         TickRateService tickRateService,
         EncounterService encounterService,
-        IOptions<ServerOptions> serverOptions
+        IOptions<ServerOptions> serverOptions,
+        IOptions<EncounterOptions> encounterOptions
     ) {
         this.networkService = networkService;
         this.tickRateService = tickRateService;
         this.encounterService = encounterService;
         this.serverOptions = serverOptions.Value;
+        this.encounterOptions = encounterOptions.Value;
     }
 
     public bool IsConnected() => this.networkService.Clients.Contains(this);
@@ -56,7 +59,9 @@ public class NetworkClient : IDisposable {
                     Hello = new ClientboundHello {
                         // TODO config this
                         TickRate = this.serverOptions.TickRate,
-                        BannedPlugins = { }
+                        BannedPlugins = {this.encounterOptions.BannedPlugins},
+                        ScoreBattleLength = this.encounterOptions.ScoreBattleLength,
+                        ComboBattleLength = this.encounterOptions.ComboBattleLength
                     }
                 });
 
@@ -127,6 +132,11 @@ public class NetworkClient : IDisposable {
 
                 break;
             }
+
+            case ServerboundMessage.MessageOneofCase.EncounterUpdate: {
+                this.CurrentEncounter?.ProcessPacket(this, packet.EncounterUpdate);
+                break;
+            }
         }
     }
 
@@ -154,9 +164,9 @@ public class NetworkClient : IDisposable {
         ) {
             otherPlayer.EncounterRequests.Clear();
             this.EncounterRequests.Clear();
-            
+
             if (this.Player is null || otherPlayer.Player is null) return;
-            
+
             var encounter = this.encounterService.StartSimpleEncounter(this, otherPlayer, type);
             this.CurrentEncounter = encounter;
             otherPlayer.CurrentEncounter = encounter;

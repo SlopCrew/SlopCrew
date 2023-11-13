@@ -7,8 +7,8 @@ namespace SlopCrew.Server.Encounters;
 public class ScoreBattleEncounter : Encounter {
     private NetworkClient one;
     private NetworkClient two;
-    private uint oneScore;
-    private uint twoScore;
+    private Score oneScore;
+    private Score twoScore;
     private uint length;
     private Timer timer;
 
@@ -49,11 +49,11 @@ public class ScoreBattleEncounter : Encounter {
             }
         });
 
-        this.one.SendPacket(new ClientboundMessage {
+        this.two.SendPacket(new ClientboundMessage {
             EncounterStart = new ClientboundEncounterStart {
                 Type = EncounterType.ScoreBattle,
                 Simple = new SimpleEncounterStartData {
-                    PlayerId = this.two.Player!.Id
+                    PlayerId = this.one.Player!.Id
                 }
             }
         });
@@ -73,6 +73,8 @@ public class ScoreBattleEncounter : Encounter {
     }
 
     private void SendUpdate() {
+        if (this.Finished) return;
+        
         if (this.one.IsConnected()) {
             this.one.SendPacket(new ClientboundMessage {
                 EncounterUpdate = new ClientboundEncounterUpdate {

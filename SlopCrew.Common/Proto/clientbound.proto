@@ -23,6 +23,8 @@ message ClientboundMessage {
 message ClientboundHello {
   int32 tick_rate = 1;
   repeated string banned_plugins = 2;
+  uint32 score_battle_length = 3;
+  uint32 combo_battle_length = 4;
 }
 
 message ClientboundPlayersUpdate {
@@ -70,8 +72,8 @@ message ClientboundEncounterUpdate {
 }
 
 message ClientboundSimpleEncounterUpdateData {
-  uint32 your_score = 1;
-  uint32 opponent_score = 2;
+  Score your_score = 1;
+  Score opponent_score = 2;
 }
 
 message ClientboundEncounterEnd {
@@ -83,6 +85,6 @@ message ClientboundEncounterEnd {
 
 message SimpleEncounterEndData {
   bool ended_early = 1;
-  uint32 your_score = 2;
-  uint32 opponent_score = 3;
+  Score your_score = 2;
+  Score opponent_score = 3;
 }

@@ -22,6 +22,8 @@ public class AssociatedPlayer : IDisposable {
 
     private UnityEngine.Vector3 velocity = new();
     private PositionUpdate? targetUpdate = null;
+    private float? targetPosSpeed = null;
+    private float? targetRotSpeed = null;
 
     public bool PhoneOut = false;
 
@@ -252,6 +254,21 @@ public class AssociatedPlayer : IDisposable {
 
     public void QueuePositionUpdate(PositionUpdate newUpdate) {
         this.targetUpdate = newUpdate;
+        var latency = newUpdate.Latency / 1000f;
+        var timeToMove = this.connectionManager.TickRate!.Value + latency;
+        
+        var currentPos = this.ReptilePlayer.tf.position;
+        var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
+        var posDiff = targetPos - currentPos;
+        var posVelocity = posDiff / timeToMove;
+
+        var currentRot = this.ReptilePlayer.tf.rotation;
+        var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
+        var rotDiff = UnityEngine.Quaternion.Angle(currentRot, targetRot);
+        var rotVelocity = rotDiff / timeToMove;
+        
+        this.targetPosSpeed = posVelocity.magnitude;
+        this.targetRotSpeed = rotVelocity;
     }
 
     public void Update() {
@@ -268,25 +285,21 @@ public class AssociatedPlayer : IDisposable {
 
         var currentPos = this.ReptilePlayer.tf.position;
         var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
-        var posDiff = targetPos - currentPos;
-        var posVelocity = posDiff / timeToMove;
-
+        
         var newPos = UnityEngine.Vector3.MoveTowards(
             currentPos,
             targetPos,
-            posVelocity.magnitude * Time.deltaTime
+            this.targetPosSpeed!.Value * Time.deltaTime
         );
         this.ReptilePlayer.tf.position = newPos;
 
         var currentRot = this.ReptilePlayer.tf.rotation;
         var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
-        var rotDiff = UnityEngine.Quaternion.Angle(currentRot, targetRot);
-        var rotVelocity = rotDiff / timeToMove;
 
         var newRot = UnityEngine.Quaternion.RotateTowards(
             currentRot,
             targetRot,
-            rotVelocity * Time.deltaTime
+            this.targetRotSpeed!.Value * Time.deltaTime
         );
         this.ReptilePlayer.tf.rotation = newRot;
 

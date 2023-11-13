@@ -3,6 +3,7 @@ using Google.Protobuf;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
+using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
 
 namespace SlopCrew.Server;
@@ -10,7 +11,7 @@ namespace SlopCrew.Server;
 public class NetworkService : BackgroundService {
     private ILogger<NetworkService> logger;
     private IServiceProvider provider;
-    private ServerOptions options;
+    private ServerOptions serverOptions;
     private MetricsService metricsService;
     private TickRateService tickRateService;
 
@@ -28,12 +29,13 @@ public class NetworkService : BackgroundService {
     private StatusCallback callback = null!;
 
     public NetworkService(
-        ILogger<NetworkService> logger, IServiceProvider provider, IOptions<ServerOptions> options,
+        ILogger<NetworkService> logger, IServiceProvider provider,
+        IOptions<ServerOptions> serverOptions,
         MetricsService metricsService, TickRateService tickRateService
     ) {
         this.logger = logger;
         this.provider = provider;
-        this.options = options.Value;
+        this.serverOptions = serverOptions.Value;
         this.metricsService = metricsService;
         this.tickRateService = tickRateService;
     }
@@ -50,7 +52,7 @@ public class NetworkService : BackgroundService {
 
         // TODO
         var address = new Address();
-        address.SetAddress("::0", this.options.Port);
+        address.SetAddress("::0", this.serverOptions.Port);
 
         this.listenSocket = this.server.CreateListenSocket(ref address);
 
