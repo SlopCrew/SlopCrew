@@ -1,5 +1,5 @@
 # Use the official image as a parent image
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 42069/udp
 
@@ -16,7 +16,7 @@ ENV VCPKG_INSTALLED_DIR=/src/vcpkg_installed
 RUN ./vcpkg/vcpkg install
 
 # Use the SDK image to build the app
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 RUN mkdir -p libs/GameNetworkingSockets
 COPY --from=vcpkg /src/vcpkg_installed/x64-linux/lib/libGameNetworkingSockets.so /src/libs/GameNetworkingSockets

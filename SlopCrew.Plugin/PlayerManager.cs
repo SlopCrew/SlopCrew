@@ -10,34 +10,25 @@ using SlopCrew.Common.Proto;
 
 namespace SlopCrew.Plugin;
 
-public class PlayerManager : IHostedService {
+public class PlayerManager(ConnectionManager connectionManager, ManualLogSource logger, Config config)
+    : IHostedService {
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
 
     public bool SettingVisual;
     public bool PlayingAnimation;
 
-    private ManualLogSource logger;
-    private ConnectionManager connectionManager;
-    private Config config;
-
-    public PlayerManager(ConnectionManager connectionManager, ManualLogSource logger, Config config) {
-        this.connectionManager = connectionManager;
-        this.logger = logger;
-        this.config = config;
-    }
-
     public Task StartAsync(CancellationToken cancellationToken) {
         StageManager.OnStageInitialized += this.StageInit;
-        this.connectionManager.Disconnected += this.Disconnected;
-        this.connectionManager.MessageReceived += this.MessageReceived;
+        connectionManager.Disconnected += this.Disconnected;
+        connectionManager.MessageReceived += this.MessageReceived;
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
         StageManager.OnStageInitialized -= this.StageInit;
-        this.connectionManager.Disconnected -= this.Disconnected;
-        this.connectionManager.MessageReceived -= this.MessageReceived;
+        connectionManager.Disconnected -= this.Disconnected;
+        connectionManager.MessageReceived -= this.MessageReceived;
         this.CleanupPlayers();
         return Task.CompletedTask;
     }
@@ -60,8 +51,8 @@ public class PlayerManager : IHostedService {
                         // New player
                         this.Players.Add(player.Id, new AssociatedPlayer(
                                              this,
-                                             this.connectionManager,
-                                             this.config,
+                                             connectionManager,
+                                             config,
                                              player));
                     }
                 }
@@ -70,7 +61,7 @@ public class PlayerManager : IHostedService {
                 var packetPlayers = packet.PlayersUpdate.Players.Select(p => p.Id).ToList();
                 foreach (var id in this.Players.Keys.ToList()) {
                     if (!packetPlayers.Contains(id) && this.Players.TryGetValue(id, out var associatedPlayer)) {
-                        this.logger.LogDebug("supposed to be removing player " + id);
+                        logger.LogDebug("supposed to be removing player " + id);
                         associatedPlayer.Dispose();
                         this.Players.Remove(id);
                     }

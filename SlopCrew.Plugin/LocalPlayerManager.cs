@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Reptile;
@@ -10,36 +9,25 @@ using Player = SlopCrew.Common.Proto.Player;
 
 namespace SlopCrew.Plugin;
 
-public class LocalPlayerManager : IHostedService {
+public class LocalPlayerManager(Config config, ConnectionManager connectionManager) : IHostedService {
     public bool HelloRefreshQueued;
     public bool VisualRefreshQueued;
     public int CurrentOutfit;
-
-    private Config config;
-    private ConnectionManager connectionManager;
-
+    
     private Transform? lastTransform;
     private int? lastAnimation;
 
-    public LocalPlayerManager(
-        Config config,
-        ConnectionManager connectionManager
-    ) {
-        this.config = config;
-        this.connectionManager = connectionManager;
-    }
-
     public Task StartAsync(CancellationToken cancellationToken) {
-        this.connectionManager.Tick += this.Tick;
-        this.connectionManager.MessageReceived += this.MessageReceived;
+        connectionManager.Tick += this.Tick;
+        connectionManager.MessageReceived += this.MessageReceived;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         return Task.CompletedTask;
     }
 
 
     public Task StopAsync(CancellationToken cancellationToken) {
-        this.connectionManager.Tick -= this.Tick;
-        this.connectionManager.MessageReceived -= this.MessageReceived;
+        connectionManager.Tick -= this.Tick;
+        connectionManager.MessageReceived -= this.MessageReceived;
         StageManager.OnStagePostInitialization -= this.StagePostInit;
         return Task.CompletedTask;
     }
@@ -62,10 +50,10 @@ public class LocalPlayerManager : IHostedService {
 
     private void HandleRefreshes(Reptile.Player me) {
         if (this.HelloRefreshQueued) {
-            this.connectionManager.SendMessage(new ServerboundMessage {
+            connectionManager.SendMessage(new ServerboundMessage {
                 Hello = new ServerboundHello {
                     Player = new Player {
-                        Name = this.config.General.Username.Value,
+                        Name = config.General.Username.Value,
 
                         Transform = new Transform {
                             Position = new(me.tf.position.FromMentalDeficiency()),
@@ -88,7 +76,7 @@ public class LocalPlayerManager : IHostedService {
         }
 
         if (this.VisualRefreshQueued) {
-            this.connectionManager.SendMessage(new ServerboundMessage {
+            connectionManager.SendMessage(new ServerboundMessage {
                 VisualUpdate = new ServerboundVisualUpdate {
                     Update = new VisualUpdate {
                         Boostpack = (int) me.characterVisual.boostpackEffectMode,
@@ -123,12 +111,12 @@ public class LocalPlayerManager : IHostedService {
                 Velocity = new(newVel)
             };
 
-            this.connectionManager.SendMessage(new ServerboundMessage {
+            connectionManager.SendMessage(new ServerboundMessage {
                 PositionUpdate = new ServerboundPositionUpdate {
                     Update = new PositionUpdate {
                         Transform = newTransform,
-                        Tick = this.connectionManager.ServerTick,
-                        Latency = this.connectionManager.Latency
+                        Tick = connectionManager.ServerTick,
+                        Latency = connectionManager.Latency
                     }
                 }
             }, flags: SendFlags.Unreliable);
@@ -147,7 +135,7 @@ public class LocalPlayerManager : IHostedService {
         if (this.lastAnimation == anim) return;
         this.lastAnimation = anim;
 
-        this.connectionManager.SendMessage(new ServerboundMessage {
+        connectionManager.SendMessage(new ServerboundMessage {
             AnimationUpdate = new ServerboundAnimationUpdate {
                 Update = new AnimationUpdate {
                     Animation = anim,
