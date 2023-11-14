@@ -38,11 +38,15 @@ public class NetworkClient : IDisposable {
         this.encounterService = encounterService;
         this.serverOptions = serverOptions.Value;
         this.encounterOptions = encounterOptions.Value;
+
+        this.tickRateService.Tick += this.Tick;
     }
 
     public bool IsConnected() => this.networkService.Clients.Contains(this);
 
-    public void Dispose() { }
+    public void Dispose() {
+        this.tickRateService.Tick -= this.Tick;
+    }
 
     public void HandlePacket(ServerboundMessage packet) {
         switch (packet.MessageCase) {
@@ -141,7 +145,7 @@ public class NetworkClient : IDisposable {
             case ServerboundMessage.MessageOneofCase.CustomPacket: {
                 if (this.Player is null || this.Stage is null) return;
                 if (packet.CustomPacket.Packet.Data.Length > Constants.MaxCustomPacketSize) return;
-                
+
                 this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
                     CustomPacket = new ClientboundCustomPacket {
                         PlayerId = this.Player.Id,
@@ -257,4 +261,8 @@ public class NetworkClient : IDisposable {
 
     public void SendPacket(ClientboundMessage packet, SendFlags flags = SendFlags.Reliable) =>
         this.networkService.SendPacket(this.Connection, packet, flags);
+
+    private void Tick() {
+        if (this.CurrentEncounter is {Finished: true}) this.CurrentEncounter = null;
+    }
 }
