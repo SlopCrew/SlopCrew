@@ -96,7 +96,7 @@ public class AppSlopCrew : App {
         overlayBottomImage.localPosition = Vector2.down * 870.0f;
 
         var iconImage = slopCrewOverlay.transform.Find("Icons/AppIcon").GetComponent<Image>();
-        iconImage.sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
+        iconImage.sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 256, 256);
 
         // Status panel
         var status = musicApp.transform.Find("Content/StatusPanel").gameObject;
