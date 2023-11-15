@@ -15,6 +15,13 @@ services:
       - "42069:42069/udp"
     networks:
       - slopcrew-network
+    volumes:
+      - ./docker/slop:/slop
+    environment:
+      - Metrics__Host=graphite
+      - Database__DatabasePath=/slop/database.db
+    depends_on:
+      - graphite
 
   grafana:
     image: grafana/grafana:latest
@@ -25,7 +32,7 @@ services:
     networks:
       - slopcrew-network
     volumes:
-      - ./metrics/grafana/grafana:/var/lib/grafana
+      - ./docker/grafana/grafana:/var/lib/grafana
 
   graphite:
     image: graphiteapp/graphite-statsd
@@ -39,4 +46,4 @@ services:
     networks:
       - slopcrew-network
     volumes:
-      - ./metrics/graphite/storage:/opt/graphite/storage
+      - ./docker/graphite/storage:/opt/graphite/storage
