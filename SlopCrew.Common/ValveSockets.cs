@@ -318,7 +318,7 @@ public struct Configuration {
     }
 }
 
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct StatusInfo {
     private const int callback = Library.socketsCallbacks + 1;
     public Connection connection;
