@@ -17,7 +17,8 @@ public class EncounterManager : IHostedService {
     public ConnectionManager ConnectionManager;
     public ServerConfig ServerConfig;
     public Config Config;
-
+    public InputBlocker InputBlocker;
+    
     public Encounter? CurrentEncounter;
 
     public EncounterManager(
@@ -25,13 +26,15 @@ public class EncounterManager : IHostedService {
         PlayerManager playerManager,
         ConnectionManager connectionManager,
         ServerConfig serverConfig,
-        Config config
+        Config config,
+        InputBlocker inputBlocker
     ) {
         this.logger = logger;
         this.PlayerManager = playerManager;
         this.ConnectionManager = connectionManager;
         this.ServerConfig = serverConfig;
         this.Config = config;
+        this.InputBlocker = inputBlocker;
     }
 
     public Task StartAsync(CancellationToken cancellationToken) {
@@ -71,6 +74,11 @@ public class EncounterManager : IHostedService {
 
             case EncounterType.ComboBattle: {
                 this.CurrentEncounter = new ComboBattleEncounter(this, start);
+                break;
+            }
+
+            case EncounterType.Race: {
+                this.CurrentEncounter = new RaceEncounter(this, start);
                 break;
             }
         }
@@ -132,7 +140,6 @@ public class EncounterManager : IHostedService {
             }
 
             case ClientboundMessage.MessageOneofCase.EncounterEnd: {
-                this.logger.LogInfo("end");
                 this.CurrentEncounter?.HandleEnd(message.EncounterEnd);
                 break;
             }

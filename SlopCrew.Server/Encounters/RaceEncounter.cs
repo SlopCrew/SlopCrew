@@ -56,7 +56,7 @@ public class RaceEncounter : Encounter {
 
     public override void ProcessPacket(NetworkClient client, ServerboundEncounterUpdate packet) {
         if (packet.Type is EncounterType.Race && packet.DataCase is ServerboundEncounterUpdate.DataOneofCase.Race) {
-            if (packet.Race.MapPin > this.raceConfig.MapPins.Count) {
+            if (packet.Race.MapPin >= this.raceConfig.MapPins.Count) {
                 this.times[client] = (float) this.stopwatch.Elapsed.TotalSeconds;
 
                 foreach (var finished in this.times.Keys) {

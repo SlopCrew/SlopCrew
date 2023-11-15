@@ -27,11 +27,10 @@ public class Plugin : BaseUnityPlugin {
             AddSingletonHostedService<PatchManager>();
             AddSingletonHostedService<EncounterManager>();
             AddSingletonHostedService<ServerConfig>();
-
-            var config = new Config(this.Config);
-            services.AddSingleton(config);
-
+            
+            services.AddSingleton(new Config(this.Config));
             services.AddSingleton<SlopCrewAPI>();
+            services.AddSingleton<InputBlocker>();
         });
 
         Host = builder.Build();

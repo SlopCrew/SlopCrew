@@ -104,6 +104,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Encounters\Race\" />
       <Folder Include="UI\Phone\" />
     </ItemGroup>
 

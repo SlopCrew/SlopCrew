@@ -32,8 +32,9 @@ public class Lobby : IDisposable {
 
     public void Update() {
         this.clients = this.clients.Where(x => x.Stage == this.stage && x.IsConnected()).ToList();
-        if (this.clients.Count < 2) {
+        if (this.clients.Count < 1) {
             this.timer.Stop();
+            this.timeLeft = Constants.LobbyMaxWaitTime;
         }
     }
 
@@ -41,8 +42,9 @@ public class Lobby : IDisposable {
         switch (this.encounterType) {
             case EncounterType.Race: {
                 var config = this.encounterService.RaceConfigService.GetRaceConfig(this.stage);
-                var encounter = new RaceEncounter(this.clients, this.stage, config);
+                var encounter = new RaceEncounter(new List<NetworkClient>(this.clients), this.stage, config);
                 this.encounterService.TrackEncounter(encounter);
+                foreach (var client in this.clients) client.CurrentEncounter = encounter;
                 break;
             }
         }
