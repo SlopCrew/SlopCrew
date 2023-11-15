@@ -1,5 +1,5 @@
 # Use the official image as a parent image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
 EXPOSE 42069/udp
 
