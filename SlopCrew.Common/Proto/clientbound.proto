@@ -59,6 +59,7 @@ message ClientboundEncounterStart {
   EncounterType type = 1;
   oneof data {
     SimpleEncounterStartData simple = 2;
+    RaceEncounterStartData race = 3;
   }
 }
 
@@ -66,10 +67,15 @@ message SimpleEncounterStartData {
   uint32 player_id = 1;
 }
 
+message RaceEncounterStartData {
+  RaceConfig config = 1;
+}
+
 message ClientboundEncounterUpdate {
   EncounterType type = 1;
   oneof data {
     ClientboundSimpleEncounterUpdateData simple = 2;
+    ClientboundRaceEncounterUpdateData race = 3;
   }
 }
 
@@ -80,10 +86,15 @@ message ClientboundSimpleEncounterUpdateData {
   optional bool opponent_combo_dropped = 4;
 }
 
+message ClientboundRaceEncounterUpdateData {
+  repeated RaceTime times = 1;
+}
+
 message ClientboundEncounterEnd {
   EncounterType type = 1;
   oneof data {
     SimpleEncounterEndData simple = 2;
+    ClientboundRaceEncounterUpdateData race = 3; // just reuse this
   }
 }
 

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BepInEx.Logging;
@@ -61,7 +60,6 @@ public class PlayerManager(ConnectionManager connectionManager, ManualLogSource 
                 var packetPlayers = packet.PlayersUpdate.Players.Select(p => p.Id).ToList();
                 foreach (var id in this.Players.Keys.ToList()) {
                     if (!packetPlayers.Contains(id) && this.Players.TryGetValue(id, out var associatedPlayer)) {
-                        logger.LogDebug("supposed to be removing player " + id);
                         associatedPlayer.Dispose();
                         this.Players.Remove(id);
                     }

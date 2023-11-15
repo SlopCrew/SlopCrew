@@ -14,8 +14,13 @@ BindConfig<GraphiteOptions>("Graphite");
 BindConfig<EncounterOptions>("Encounter");
 
 // This is fucking stupid. I hate MSDI
-builder.Services.AddSingleton<NetworkService>();
-builder.Services.AddHostedService<NetworkService>(p => p.GetRequiredService<NetworkService>());
+void AddSingletonHostedService<T>() where T : class, IHostedService {
+    builder.Services.AddSingleton<T>();
+    builder.Services.AddHostedService<T>(p => p.GetRequiredService<T>());
+}
+
+AddSingletonHostedService<NetworkService>();
+AddSingletonHostedService<RaceConfigService>();
 
 builder.Services.AddTransient<NetworkClient>();
 builder.Services.AddSingleton<MetricsService>();

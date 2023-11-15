@@ -14,4 +14,8 @@ public class Constants {
 
     public const int SimpleEncounterStartTime = 3;
     public const int SimpleEncounterEndTime = 5;
+    public const int LobbyMaxWaitTime = 30;
+    public const int LobbyIncrementWaitTime = 5;
+    public const int RaceEncounterStartTime = 3;
+    public const int MaxRaceTime = 120;
 }

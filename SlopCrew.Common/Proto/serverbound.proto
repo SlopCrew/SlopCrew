@@ -57,11 +57,16 @@ message ServerboundEncounterUpdate {
   EncounterType type = 1;
   oneof data {
     ServerboundSimpleEncounterUpdateData simple = 2;
+    ServerboundRaceEncounterUpdateData race = 3;
   }
 }
 
 message ServerboundSimpleEncounterUpdateData {
   Score score = 1;
+}
+
+message ServerboundRaceEncounterUpdateData {
+  int32 map_pin = 1;
 }
 
 message ServerboundCustomPacket {

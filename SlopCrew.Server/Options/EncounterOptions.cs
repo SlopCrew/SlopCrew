@@ -5,4 +5,5 @@ public class EncounterOptions {
     public uint ScoreBattleLength { get; set; } = 180;
     public uint ComboBattleLength { get; set; } = 300;
     public uint ComboBattleGrace { get; set; } = 15;
+    public string? RaceConfigDirectory { get; set; } = null;
 }

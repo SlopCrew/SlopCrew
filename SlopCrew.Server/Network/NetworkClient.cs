@@ -124,12 +124,17 @@ public class NetworkClient : IDisposable {
             }
 
             case ServerboundMessage.MessageOneofCase.EncounterRequest: {
-                if (this.CurrentEncounter is not null) return;
+                if (this.CurrentEncounter is not null || this.Player is null || this.Stage is null) return;
                 var request = packet.EncounterRequest;
 
                 switch (request.Type) {
                     case EncounterType.ScoreBattle or EncounterType.ComboBattle: {
                         if (request.HasPlayerId) this.ProcessSimpleEncounterRequest(request.Type, request.PlayerId);
+                        break;
+                    }
+
+                    case EncounterType.Race: {
+                        this.encounterService.QueueIntoLobby(this, EncounterType.Race);
                         break;
                     }
                 }
