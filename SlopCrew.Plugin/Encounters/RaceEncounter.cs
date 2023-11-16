@@ -25,6 +25,7 @@ public class RaceEncounter : Encounter {
     private Stopwatch timer = new();
 
     public RaceEncounter(EncounterManager encounterManager, ClientboundEncounterStart start) {
+        this.Type = EncounterType.Race;
         this.encounterManager = encounterManager;
         this.raceConfig = start.Race.Config;
 

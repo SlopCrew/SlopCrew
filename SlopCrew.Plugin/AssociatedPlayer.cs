@@ -251,7 +251,6 @@ public class AssociatedPlayer : IDisposable {
             if (differentOutfit && !differentCharacter) {
                 this.ReptilePlayer.SetOutfit(player.CharacterInfo.Outfit);
             } else if (differentCharacter || differentOutfit) {
-                // New outfit
                 this.ProcessCharacterInfo(player.CustomCharacterInfo.ToList());
                 this.ReptilePlayer.SetCharacter(
                     (Characters) player.CharacterInfo.Character,
