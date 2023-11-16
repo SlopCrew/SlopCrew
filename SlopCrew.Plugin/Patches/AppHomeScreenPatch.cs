@@ -16,7 +16,7 @@ public class AppHomeScreenPatch {
         var newArr = new HomeScreenApp[arr.Length + 1];
         for (var i = 0; i < arr.Length; i++) newArr[i] = arr[i];
 
-        var sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
+        var sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 256, 256);
 
         var app = ScriptableObject.CreateInstance<HomeScreenApp>();
         app.m_AppName = "AppSlopCrew";
