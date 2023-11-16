@@ -10,7 +10,6 @@ using SlopCrew.Server.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders().AddConsole();
-builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
 
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
@@ -28,11 +27,15 @@ T BindConfig<T>(string name) where T : class, new() {
     return instance;
 }
 
-BindConfig<ServerOptions>("Server");
+var serverOptions = BindConfig<ServerOptions>("Server");
 BindConfig<GraphiteOptions>("Graphite");
 BindConfig<EncounterOptions>("Encounter");
 var databaseOptions = BindConfig<DatabaseOptions>("Database");
 var authOptions = BindConfig<AuthOptions>("Auth");
+
+if (serverOptions.QuieterLogs) {
+    builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
+}
 
 // This is fucking stupid. I hate MSDI
 void AddSingletonHostedService<T>() where T : class, IHostedService {
