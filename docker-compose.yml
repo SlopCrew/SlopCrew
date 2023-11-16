@@ -12,12 +12,14 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
+      - "8080:8080"
       - "42069:42069/udp"
     networks:
       - slopcrew-network
     volumes:
       - ./docker/slop:/slop
     environment:
+      - ASPNETCORE_URLS=http://*:8080
       - Metrics__Host=graphite
       - Database__DatabasePath=/slop/database.db
     depends_on:

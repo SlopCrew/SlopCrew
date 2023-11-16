@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using SlopCrew.Server.Database;
 
 namespace SlopCrew.Server.Api;
 
