@@ -37,3 +37,5 @@ jobs:
                   context: .
                   push: true
                   tags: ghcr.io/${{ env.REPO_OWNER }}/slopcrew-server:${{ env.IMAGE_TAG }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
