@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SlopCrew.API;
 using SlopCrew.Plugin.Encounters;
+using SlopCrew.Plugin.UI;
 
 namespace SlopCrew.Plugin;
 
@@ -27,7 +28,8 @@ public class Plugin : BaseUnityPlugin {
             AddSingletonHostedService<PatchManager>();
             AddSingletonHostedService<EncounterManager>();
             AddSingletonHostedService<ServerConfig>();
-            
+            AddSingletonHostedService<InterfaceUtility>();
+
             services.AddSingleton(new Config(this.Config));
             services.AddSingleton<SlopCrewAPI>();
             services.AddSingleton<InputBlocker>();

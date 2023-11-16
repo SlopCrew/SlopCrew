@@ -90,6 +90,10 @@
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>
         </Reference>
+		<Reference Include="DOTweenPro">
+            <HintPath>$(ManagedPath)/DOTweenPro.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
