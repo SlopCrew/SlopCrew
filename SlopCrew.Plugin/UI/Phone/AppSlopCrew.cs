@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RaceEncounter = SlopCrew.Plugin.Encounters.RaceEncounter;
 using Vector3 = UnityEngine.Vector3;
+using DG.Tweening;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
@@ -44,8 +45,8 @@ public class AppSlopCrew : App {
     private bool hasBannedMods;
     private string titleText = string.Empty;
     private string messageText = string.Empty;
-
-    private ManualLogSource log = BepInEx.Logging.Logger.CreateLogSource("Slop Crew App");
+    private float messageInitialX;
+    private Sequence messageTextSequence;
 
     private EncounterManager encounterManager = null!;
     private ConnectionManager connectionManager = null!;
@@ -115,6 +116,15 @@ public class AppSlopCrew : App {
         statusMessage = textContainer.Find("CurrentArtistLabel").GetComponent<TextMeshProUGUI>();
         statusMessage.transform.localPosition = new Vector2(0.0f, 64.0f);
         statusMessage.name = "CurrentStatusLabel";
+
+        messageInitialX = statusMessage.rectTransform.anchoredPosition.x;
+        statusMessage.rectTransform.anchoredPosition = statusMessage.rectTransform.anchoredPosition + Vector2.right * 256.0f;
+        statusMessage.alpha = 0.0f;
+
+        messageTextSequence = DOTween.Sequence();
+        messageTextSequence.SetAutoKill(false);
+        messageTextSequence.Append(statusMessage.rectTransform.DOAnchorPosX(messageInitialX, 0.2f));
+        messageTextSequence.Join(statusMessage.DOFade(1.0f, 0.2f));
 
         statusTitle.rectTransform.sizeDelta = statusMessage.rectTransform.sizeDelta = new Vector2(1000.0f, 128.0f);
 
@@ -383,6 +393,8 @@ public class AppSlopCrew : App {
         } else {
             SetStatusText("NEAREST PLAYER", playerName);
         }
+
+        messageTextSequence.Restart();
     }
 
     public bool IsActiveEncounter(EncounterType type) {
