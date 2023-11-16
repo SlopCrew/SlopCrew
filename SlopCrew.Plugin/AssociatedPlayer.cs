@@ -275,7 +275,7 @@ public class AssociatedPlayer : IDisposable {
 
     public void Update() {
         this.ProcessPositionUpdate();
-        if (this.MapPin != null) this.MapPin.UpdateLocation();
+        if (this.MapPin != null) this.MapPin.SetLocation();
     }
 
     // TODO: this interp code sucks. I don't understand how the previous interp code works anymore
