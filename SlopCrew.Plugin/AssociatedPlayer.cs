@@ -232,8 +232,17 @@ public class AssociatedPlayer : IDisposable {
     public void UpdateIfDifferent(Common.Proto.Player player) {
         if (this.ReptilePlayer == null) return;
 
-        // TODO: account for custom character info
-        var differentCharacter = this.SlopPlayer.CharacterInfo.Character != player.CharacterInfo.Character;
+        var anyDifferentCharacterInfo = player.CustomCharacterInfo.Count != this.SlopPlayer.CustomCharacterInfo.Count;
+        foreach (var info in player.CustomCharacterInfo) {
+            var oldInfo = this.SlopPlayer.CustomCharacterInfo.FirstOrDefault(i => i.Type == info.Type);
+            if (oldInfo == null || !oldInfo.Data.Equals(info.Data)) {
+                anyDifferentCharacterInfo = true;
+                break;
+            }
+        }
+
+        var differentCharacter = this.SlopPlayer.CharacterInfo.Character != player.CharacterInfo.Character
+                                 || anyDifferentCharacterInfo;
         var differentOutfit = this.SlopPlayer.CharacterInfo.Outfit != player.CharacterInfo.Outfit;
         var differentMoveStyle = this.SlopPlayer.CharacterInfo.MoveStyle != player.CharacterInfo.MoveStyle;
         var isDifferent = differentCharacter || differentOutfit || differentMoveStyle;
