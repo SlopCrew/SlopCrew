@@ -69,18 +69,20 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
             };
 
             await dbContext.Users.AddAsync(newUser);
+            await dbContext.SaveChangesAsync();
             return newUser;
         }
     }
 
-    public Task<string> RegenerateGameToken(User user) {
+    public async Task<string> RegenerateGameToken(User user) {
         // Dear UUID spec:
         // "Do not assume that UUIDs are hard to guess; they should not be used as security capabilities
         // (identifiers whose mere possession grants access), for example."
         // I don't care.
         var token = Guid.NewGuid().ToString();
         user.GameToken = token;
-        return Task.FromResult(token);
+        await dbContext.SaveChangesAsync();
+        return token;
     }
 
     public async Task RefreshDiscordToken(User user) {
@@ -105,12 +107,15 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task MakeCommunityContributor(string id) {
+    public async Task<bool> MakeCommunityContributor(string id) {
         var user = await GetUserById(id);
         if (user is not null) {
             user.IsCommunityContributor = true;
             await dbContext.SaveChangesAsync();
+            return true;
         }
+
+        return false;
     }
 
     public Task<User?> GetUserById(string id)

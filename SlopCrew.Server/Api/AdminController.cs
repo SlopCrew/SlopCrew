@@ -12,7 +12,7 @@ public class AdminController(UserService userService, ILogger<AdminController> l
     [HttpPost("make_community_contributor")]
     public async Task<StatusCodeResult> PostMakeCommunityContributor([FromQuery] string id) {
         if (!this.IsAdmin()) return this.Unauthorized();
-        await userService.MakeCommunityContributor(id);
+        if (!await userService.MakeCommunityContributor(id)) return this.NotFound();
         return this.NoContent();
     }
 
