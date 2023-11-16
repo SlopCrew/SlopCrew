@@ -1,6 +1,9 @@
 # Build artifacts
 bin/
 obj/
+vcpkg/
+vcpkg_installed/
+libs/GameNetworkingSockets/
 
 # IDE settings
 .idea/
@@ -16,8 +19,8 @@ out/
 
 # Server setup
 cert/
-metrics/grafana/
-metrics/graphite/
+docker/
+database.db*
 
 # GitHub Actions
 local/

@@ -1,0 +1,97 @@
+syntax = "proto3";
+package club.sloppers;
+option csharp_namespace = "SlopCrew.Common.Proto";
+
+message CharacterInfo {
+  int32 character = 1;
+  int32 outfit = 2;
+  int32 move_style = 3;
+}
+
+message CustomCharacterInfo {
+  CustomCharacterInfoType type = 1;
+  bytes data = 2;
+}
+
+enum CustomCharacterInfoType {
+  CrewBoom = 0;
+}
+
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message Quaternion {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  float w = 4;
+}
+
+message Transform {
+  Vector3 position = 1;
+  Quaternion rotation = 2;
+  Vector3 velocity = 3;
+}
+
+message Player {
+  optional uint32 id = 1;
+  string name = 2;
+  Transform transform = 3;
+  CharacterInfo character_info = 4;
+  repeated CustomCharacterInfo custom_character_info = 5;
+  bool is_community_contributor = 6;
+}
+
+message PositionUpdate {
+  optional uint32 player_id = 1;
+  Transform transform = 2;
+  uint64 tick = 3;
+  uint64 latency = 4;
+}
+
+message VisualUpdate {
+  optional uint32 player_id = 1;
+  int32 boostpack = 2;
+  int32 friction = 3;
+  bool spraycan = 4;
+  bool phone = 5;
+  int32 spraycan_state = 6;
+}
+
+message AnimationUpdate {
+  optional uint32 player_id = 1;
+  int32 animation = 2;
+  bool force_overwrite = 3;
+  bool instant = 4;
+  float time = 5;
+}
+
+enum EncounterType {
+  ScoreBattle = 0;
+  ComboBattle = 1;
+  Race = 2;
+}
+
+message Score {
+  int32 score = 1;
+  int32 base_score = 2;
+  int32 multiplier = 3;
+}
+
+message CustomPacket {
+  string id = 1;
+  bytes data = 2;
+}
+
+message RaceConfig {
+  Vector3 start_position = 1;
+  repeated Vector3 map_pins = 2;
+}
+
+message RaceTime {
+  uint32 player_id = 1;
+  float time = 2;
+}

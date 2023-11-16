@@ -1,15 +1,21 @@
-﻿using System.Collections.Generic;
-
-namespace SlopCrew.Common;
+﻿namespace SlopCrew.Common;
 
 public class Constants {
-    public const int TicksPerSecond = 10;
-    public const float TickRate = 1f / TicksPerSecond;
-    public const int NameLimit = 32;
+    public const uint NetworkVersion = 4;
+    public const int MaxCustomCharacterInfo = 5;
+    public const int MaxCustomPacketSize = 512;
+    
+    public const string DefaultName = "Big Slopper";
     public const string CensoredName = "Punished Slopper";
-    public const uint NetworkVersion = 3;
+    public const int NameLimit = 32;
 
-    public static List<string> SecretCodes = new() {
-        "8d2bb802bdb88399fc22e0445a83b410d8f23f9befc9a361aa68b48487acedb6"
-    };
+    public const int PingFrequency = 5000;
+    public const int ReconnectFrequency = 5000;
+
+    public const int SimpleEncounterStartTime = 3;
+    public const int SimpleEncounterEndTime = 5;
+    public const int LobbyMaxWaitTime = 30;
+    public const int LobbyIncrementWaitTime = 5;
+    public const int RaceEncounterStartTime = 3;
+    public const int MaxRaceTime = 120;
 }

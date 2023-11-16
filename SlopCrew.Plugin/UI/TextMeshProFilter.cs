@@ -1,4 +1,4 @@
-﻿using SlopCrew.Common;
+using SlopCrew.Common;
 using TMPro;
 using UnityEngine;
 

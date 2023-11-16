@@ -1,9 +1,11 @@
-﻿using HarmonyLib;
+using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.Patches;
 
+// Prevent AssociatedPlayers from fucking with the ambient lighting
 [HarmonyPatch(typeof(AmbientTrigger))]
 public class AmbientTriggerPatch {
     [HarmonyPrefix]
@@ -21,10 +23,15 @@ public class AmbientTriggerPatch {
     }
 
     private static AssociatedPlayer? GetAssociatedPlayer(Collider trigger) {
-        if (!Plugin.SlopConfig.FixAmbientColors.Value) return null;
+        var config = Plugin.Host.Services.GetRequiredService<Config>();
+        if (!config.Fixes.FixAmbientColors.Value) return null;
 
-        foreach (var player in Plugin.PlayerManager.AssociatedPlayers) {
-            var collider = player.ReptilePlayer.interactionCollider;
+        var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+        foreach (var player in playerManager.AssociatedPlayers) {
+            var reptilePlayer = player.ReptilePlayer;
+            if (reptilePlayer == null) continue;
+
+            var collider = reptilePlayer.interactionCollider;
             if (collider == trigger) return player;
         }
 

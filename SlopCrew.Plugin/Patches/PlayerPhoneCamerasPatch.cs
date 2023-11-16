@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using UnityEngine;
 
@@ -15,7 +16,8 @@ public class PlayerPhoneCamerasPatch {
             parent = parent.parent;
         }
 
-        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(parent.gameObject.GetComponent<Player>());
+        var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+        var associatedPlayer = playerManager.GetAssociatedPlayer(parent.gameObject.GetComponent<Player>());
         if (associatedPlayer is not null) {
             // Also turn the cameras off for good measure
             var rear = __instance.transform.Find("rearCamera").GetComponent<Camera>();

@@ -1,8 +1,10 @@
 using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using SlopCrew.Plugin.Encounters;
+using RaceEncounter = SlopCrew.Plugin.Encounters.RaceEncounter;
 
-namespace SlopCrew.Plugin.Patches; 
+namespace SlopCrew.Plugin.Patches;
 
 [HarmonyPatch(typeof(MovementMotor))]
 public class MovementMotorPatch {
@@ -16,7 +18,7 @@ public class MovementMotorPatch {
     public static bool HaveCollision(bool have) {
         var worldHandler = WorldHandler.instance;
         var currentPlayer = worldHandler.GetCurrentPlayer();
-
-        return Plugin.CurrentEncounter is not SlopRaceEncounter {IsBusy: true} || !currentPlayer.CanStartGrind();
+        var encounterManager = Plugin.Host.Services.GetRequiredService<EncounterManager>();
+        return encounterManager.CurrentEncounter is not RaceEncounter {IsBusy: true} || !currentPlayer.CanStartGrind();
     }
 }

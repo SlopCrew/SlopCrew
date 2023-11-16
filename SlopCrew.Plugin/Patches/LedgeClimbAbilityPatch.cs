@@ -12,8 +12,7 @@ internal class LedgeClimbAbilityPatch {
     [HarmonyPatch("CheckActivation")]
     private static bool CheckActivation(LedgeClimbAbility __instance) {
         var p = WorldHandler.instance.GetCurrentPlayer();
-        var climbableHeightFromPos =
-            Traverse.Create(__instance).Field("climbableHeightFromPos").GetValue<float>();
+        var climbableHeightFromPos = __instance.climbableHeightFromPos;
 
         // Decompiled way to check if we will hit a checkpoint
         const int layerMask1 = 1;

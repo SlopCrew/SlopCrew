@@ -1,0 +1,74 @@
+syntax = "proto3";
+package club.sloppers;
+option csharp_namespace = "SlopCrew.Common.Proto";
+
+import "common.proto";
+
+message ServerboundMessage {
+  oneof message {
+    ServerboundVersion version = 1;
+    ServerboundHello hello = 2;
+    ServerboundPositionUpdate position_update = 3;
+    ServerboundPing ping = 4;
+    ServerboundVisualUpdate visual_update = 5;
+    ServerboundAnimationUpdate animation_update = 6;
+
+    ServerboundEncounterRequest encounter_request = 7;
+    ServerboundEncounterUpdate encounter_update = 8;
+
+    ServerboundCustomPacket custom_packet = 9;
+  }
+}
+
+message ServerboundVersion {
+  uint32 protocol_version = 1;
+  string plugin_version = 2;
+}
+
+message ServerboundHello {
+  Player player = 1;
+  optional string key = 2;
+  int32 stage = 3;
+}
+
+message ServerboundPositionUpdate {
+  PositionUpdate update = 1;
+}
+
+message ServerboundPing {
+  uint32 id = 1;
+  uint64 time = 2;
+}
+
+message ServerboundVisualUpdate {
+  VisualUpdate update = 1;
+}
+
+message ServerboundAnimationUpdate {
+  AnimationUpdate update = 1;
+}
+
+message ServerboundEncounterRequest {
+  EncounterType type = 1;
+  optional uint32 player_id = 2;
+}
+
+message ServerboundEncounterUpdate {
+  EncounterType type = 1;
+  oneof data {
+    ServerboundSimpleEncounterUpdateData simple = 2;
+    ServerboundRaceEncounterUpdateData race = 3;
+  }
+}
+
+message ServerboundSimpleEncounterUpdateData {
+  Score score = 1;
+}
+
+message ServerboundRaceEncounterUpdateData {
+  int32 map_pin = 1;
+}
+
+message ServerboundCustomPacket {
+  CustomPacket packet = 1;
+}

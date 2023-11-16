@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
-using Reptile.Phone;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SlopCrew.Plugin.Encounters.Race;
 
@@ -12,8 +13,8 @@ public class RaceCheckpoint : MonoBehaviour {
     private bool activated;
 
     public BoxCollider Collider = null!;
-    public MapPin Pin;
-    public Player.UIIndicatorData UIIndicator;
+    public MapPin Pin = null!;
+    public Player.UIIndicatorData UIIndicator = null!;
 
     private void Awake() {
         this.Collider = this.gameObject.AddComponent<BoxCollider>();
@@ -24,15 +25,19 @@ public class RaceCheckpoint : MonoBehaviour {
         this.CreateMapPin();
     }
 
+    private void OnDestroy() {
+        if (this.Collider != null) Object.Destroy(this.Collider);
+        if (this.Pin != null) Object.Destroy(this.Pin.gameObject);
+        if (this.UIIndicator.uiObject != null) Object.Destroy(this.UIIndicator.uiObject);
+    }
+
     private void CreateUIIndicator() {
         this.UIIndicator = new Player.UIIndicatorData();
         this.UIIndicator.trans = this.transform;
         this.UIIndicator.isActive = true;
 
         var player = WorldHandler.instance.GetCurrentPlayer();
-        var phone = Traverse.Create(player).Field("phone").GetValue<Phone>();
-        var storySpotUI = Traverse.Create(phone).Field("storySpotUI").GetValue<GameObject>();
-        var obj = Instantiate(storySpotUI, phone.dynamicGameplayScreen, false);
+        var obj = Instantiate(player.phone.storySpotUI, player.phone.dynamicGameplayScreen, false);
         obj.transform.localScale = Vector2.one;
         obj.SetActive(false);
 
@@ -42,10 +47,7 @@ public class RaceCheckpoint : MonoBehaviour {
 
     private void CreateMapPin() {
         var mapController = Mapcontroller.Instance;
-        this.Pin = Traverse.Create(mapController)
-            .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
-            .GetValue<MapPin>();
-
+        this.Pin = mapController.CreatePin(MapPin.PinType.StoryObjectivePin);
         this.Pin.AssignGameplayEvent(this.gameObject);
         this.Pin.InitMapPin(MapPin.PinType.StoryObjectivePin);
         this.Pin.OnPinEnable();
@@ -62,14 +64,14 @@ public class RaceCheckpoint : MonoBehaviour {
         var currentPlayer = WorldHandler.instance.GetCurrentPlayer();
         var uIIndicatorPos = this.UIIndicator.trans.position;
 
-        this.UIIndicator.inView = Traverse.Create(currentPlayer)
-            .Method("InView", this.UIIndicator, uIIndicatorPos)
-            .GetValue<bool>();
+        this.UIIndicator.inView = currentPlayer.InView(this.UIIndicator, uIIndicatorPos);
         this.UIIndicator.isOccluded = true; // looks terrible otherwise
 
-        Traverse.Create(currentPlayer)
-            .Method("UpdateUIIndicatorAnimation", this.UIIndicator.inView, this.UIIndicator, Vector3.zero)
-            .GetValue();
+        currentPlayer.UpdateUIIndicatorAnimation(
+            this.UIIndicator.inView,
+            this.UIIndicator,
+            Vector3.zero
+        );
     }
 
     public void Activate() {
@@ -93,18 +95,16 @@ public class RaceCheckpoint : MonoBehaviour {
     private void OnTriggerEnter(Collider other) {
         if (!this.activated) return;
 
-        if (Plugin.CurrentEncounter is not SlopRaceEncounter raceEncounter) return;
+        var encounterManager = Plugin.Host.Services.GetRequiredService<EncounterManager>();
+        if (encounterManager.CurrentEncounter is not RaceEncounter raceEncounter) return;
 
         // Don't trigger if race hasn't started
         if (raceEncounter.IsStarting()) {
             return;
         }
 
-        if (other.gameObject != WorldHandler.instance.GetCurrentPlayer().gameObject) {
-            Plugin.Log.LogInfo(other.name);
-            return;
-        }
-
+        if (other.gameObject != WorldHandler.instance.GetCurrentPlayer().gameObject) return;
+        
         var res = raceEncounter.OnCheckpointReached(this);
         if (res) this.Deactivate();
     }

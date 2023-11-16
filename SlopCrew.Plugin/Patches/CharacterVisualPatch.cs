@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
+using UnityEngine.UIElements;
 
 namespace SlopCrew.Plugin.Patches;
 
@@ -28,10 +30,12 @@ public class CharacterVisualPatch {
         CharacterVisual __instance, BoostpackEffectMode set, float overrideScale = -1f
     ) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             LastBoostpackEffectMode = characterVisual.boostpackEffectMode;
         } else if (GetAssociatedPlayer(__instance) is not null) {
-            return Plugin.PlayerManager.IsSettingVisual;
+            var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+            return playerManager.SettingVisual;
         }
 
         return true;
@@ -43,9 +47,13 @@ public class CharacterVisualPatch {
         CharacterVisual __instance, BoostpackEffectMode set, float overrideScale = -1f
     ) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             var different = LastBoostpackEffectMode != set;
-            if (different) Plugin.PlayerManager.IsVisualRefreshQueued = true;
+            if (different) {
+                var localPlayerManager = Plugin.Host.Services.GetRequiredService<LocalPlayerManager>();
+                localPlayerManager.VisualRefreshQueued = true;
+            }
         }
     }
 
@@ -53,10 +61,12 @@ public class CharacterVisualPatch {
     [HarmonyPatch("SetFrictionEffect")]
     public static bool SetFrictionEffect_Prefix(CharacterVisual __instance, FrictionEffectMode set) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             LastFrictionEffectMode = characterVisual.frictionEffectMode;
         } else if (GetAssociatedPlayer(__instance) is not null) {
-            return Plugin.PlayerManager.IsSettingVisual;
+            var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+            return playerManager.SettingVisual;
         }
 
         return true;
@@ -66,9 +76,13 @@ public class CharacterVisualPatch {
     [HarmonyPatch("SetFrictionEffect")]
     public static void SetFrictionEffect_Postfix(CharacterVisual __instance, FrictionEffectMode set) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             var different = LastFrictionEffectMode != set;
-            if (different) Plugin.PlayerManager.IsVisualRefreshQueued = true;
+            if (different) {
+                var localPlayerManager = Plugin.Host.Services.GetRequiredService<LocalPlayerManager>();
+                localPlayerManager.VisualRefreshQueued = true;
+            }
         }
     }
 
@@ -76,10 +90,12 @@ public class CharacterVisualPatch {
     [HarmonyPatch("SetSpraycan")]
     public static bool SetSpraycan_Prefix(CharacterVisual __instance, bool set, Characters c = Characters.NONE) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             LastSpraycan = characterVisual.VFX.spraycan;
         } else if (GetAssociatedPlayer(__instance) is not null) {
-            return Plugin.PlayerManager.IsSettingVisual;
+            var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+            return playerManager.SettingVisual;
         }
 
         return true;
@@ -89,9 +105,13 @@ public class CharacterVisualPatch {
     [HarmonyPatch("SetSpraycan")]
     public static void SetSpraycan_Postfix(CharacterVisual __instance, bool set, Characters c = Characters.NONE) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             var different = LastSpraycan != set;
-            if (different) Plugin.PlayerManager.IsVisualRefreshQueued = true;
+            if (different) {
+                var localPlayerManager = Plugin.Host.Services.GetRequiredService<LocalPlayerManager>();
+                localPlayerManager.VisualRefreshQueued = true;
+            }
         }
     }
 
@@ -99,10 +119,12 @@ public class CharacterVisualPatch {
     [HarmonyPatch("SetPhone")]
     public static bool SetPhone_Prefix(CharacterVisual __instance, bool set) {
         var characterVisual = GetMyCharacterVisual();
+        
         if (__instance == characterVisual) {
             LastPhone = characterVisual.VFX.phone;
         } else if (GetAssociatedPlayer(__instance) is not null) {
-            return Plugin.PlayerManager.IsSettingVisual;
+            var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+            return playerManager.SettingVisual;
         }
 
         return true;
@@ -114,26 +136,25 @@ public class CharacterVisualPatch {
         var characterVisual = GetMyCharacterVisual();
         if (__instance == characterVisual) {
             var different = LastPhone != set;
-            if (different) Plugin.PlayerManager.IsVisualRefreshQueued = true;
+            if (different) {
+                var localPlayerManager = Plugin.Host.Services.GetRequiredService<LocalPlayerManager>();
+                localPlayerManager.VisualRefreshQueued = true;
+            }
         }
     }
 
-    private static CharacterVisual? GetMyCharacterVisual() {
-        var me = WorldHandler.instance?.GetCurrentPlayer();
-        if (me is null) return null;
-
-        var traverse = Traverse.Create(me);
-        var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
-        return characterVisual;
-    }
+    private static CharacterVisual GetMyCharacterVisual()
+        => WorldHandler.instance.GetCurrentPlayer().characterVisual;
 
     private static AssociatedPlayer? GetAssociatedPlayer(CharacterVisual instance) {
-        var associatedPlayers = Plugin.PlayerManager.AssociatedPlayers;
+        var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+        var associatedPlayers = playerManager.AssociatedPlayers;
 
         foreach (var associatedPlayer in associatedPlayers) {
             var reptilePlayer = associatedPlayer.ReptilePlayer;
-            var traverse = Traverse.Create(reptilePlayer);
-            var characterVisual = traverse.Field<CharacterVisual>("characterVisual").Value;
+            if (reptilePlayer == null) continue;
+
+            var characterVisual = reptilePlayer.characterVisual;
             if (characterVisual == instance) return associatedPlayer;
         }
 

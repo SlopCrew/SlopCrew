@@ -1,0 +1,44 @@
+on: [push, pull_request]
+
+name: Server builds
+
+jobs:
+    server:
+        name: Build server
+        runs-on: windows-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+              with:
+                  submodules: true
+
+            - name: Install .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: 8.0.x
+
+            - name: Build GameNetworkingSockets
+              uses: lukka/run-vcpkg@v11
+              with:
+                  vcpkgGitCommitId: 61f610845fb206298a69f708104a51d651872877
+                  runVcpkgInstall: true
+              env:
+                  VCPKG_INSTALLED_DIR: ${{ github.workspace }}/vcpkg_installed
+
+            - name: Copy GameNetworkingSockets
+              run: Copy-Item -Path ./vcpkg_installed/*/bin/* -Destination ./libs/GameNetworkingSockets -Recurse -Force
+
+            - name: Install dependencies
+              run: dotnet restore
+
+            - name: Setup Bomb Rush Cyberfunk dependencies
+              run: ./scripts/gha.ps1
+
+            - name: Build
+              run: dotnet build SlopCrew.Server --configuration Release --no-restore
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: server-windows
+                  path: ./SlopCrew.Server/bin/Release/net8.0

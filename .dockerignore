@@ -1,4 +1,16 @@
 **/bin/
 **/obj/
+vcpkg/
+vcpkg_installed/
+libs/GameNetworkingSockets/
+
+.idea/
+.vs/
+.vscode/
+*.user
+
+thunderstore/
+out/
+
 metrics/
-config.docker.toml
+docker/

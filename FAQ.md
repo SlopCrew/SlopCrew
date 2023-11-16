@@ -20,12 +20,12 @@ No. This would not only open up a near infinite amount of vulnerabilities, but a
 
 - GOG/Steam Deck/Manual installs: Inside of the BepInEx folder in your game install.
 - r2modman: See image.
+
 ![](https://xboxlive.party/i/gg8o8hxg.png)
 
 ## How do I change my name?
 
-Edit the config file. Manual installs can find it in `<game location>/BepInEx/config`, and r2modman users can open the dedicated config editor on the left sidebar. 
-
+Edit the config file. Manual installs can find it in `<game location>/BepInEx/config`, and r2modman users can open the dedicated config editor on the left sidebar.
 
 ## How do I get colors in my name?
 
@@ -49,7 +49,7 @@ That means your name tripped the profanity filter. The filter is not intended to
 
 In order to not burn myself or our contributors out, and to not make more promises than I can deliver, I don't plan ahead on development. The only things that are planned are on [GitHub issues](https://github.com/SlopCrew/SlopCrew/issues).
 
-I may look into certain features in the future, but it's not guaranteed. I go at my own pace. 
+I may look into certain features in the future, but it's not guaranteed. I go at my own pace.
 
 ## Will you add text chat?
 
@@ -73,4 +73,5 @@ Open the Slop Crew app on your phone. Press up/down to cycle modes, and press ri
 Your current score/multiplier will be reset when starting a battle. Please note some players may have plugins installed that change score mechanics, which may result in an unfair battle.
 
 ## How do I save a debug log?
+
 Press **Ctrl**+**S**+**C**+**L** (**S**lop **C**rew **L**og) - it will open the File Explorer with the debug log selected. Upload this file in the `#⁠troubleshooting` channel in our [Discord server](https://discord.gg/a2nVaZGGNz) if you need help with something.

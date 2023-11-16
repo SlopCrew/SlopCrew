@@ -1,11 +1,13 @@
-﻿using Reptile;
+using Reptile;
 using UnityEngine;
 
 namespace SlopCrew.Plugin.UI;
 
 public class UINameplate : MonoBehaviour {
+    public bool Billboard;
+    
     private void Update() {
-        if (Plugin.SlopConfig.BillboardNameplates.Value) {
+        if (this.Billboard) {
             var camera = WorldHandler.instance.CurrentCamera;
             if (camera is null) return;
 

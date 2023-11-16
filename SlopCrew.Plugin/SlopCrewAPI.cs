@@ -1,38 +1,43 @@
-using System;
+﻿using System;
 using SlopCrew.API;
 
 namespace SlopCrew.Plugin;
 
 public class SlopCrewAPI : ISlopCrewAPI {
-    public int PlayerCount { get; set; }
-    public string ServerAddress { get; set; } = Plugin.SlopConfig.Address.Value;
-    public bool Connected { get; set; }
-
-    private int? stageOverride;
-
-    public int? StageOverride {
-        get => this.stageOverride;
-        set {
-            this.stageOverride = value;
-            Plugin.PlayerManager.IsHelloRefreshQueued = true;
-        }
-    }
-
+    public string ServerAddress { get; internal set; } = string.Empty;
+    public int PlayerCount { get; internal set; } = 0;
     public event Action<int>? OnPlayerCountChanged;
+
+    public bool Connected { get; internal set; } = false;
     public event Action? OnConnected;
     public event Action? OnDisconnected;
 
-    internal void UpdatePlayerCount(int count) {
-        this.PlayerCount = count;
-        this.OnPlayerCountChanged?.Invoke(count);
-    }
+    public int? StageOverride { get; set; }
 
-    internal void UpdateConnected(bool connected) {
-        this.Connected = connected;
-        if (connected) {
+    public void SendCustomPacket(string id, byte[] data) {
+        this.OnCustomPacketSent?.Invoke(id, data);
+    }
+    
+    internal event Action<string, byte[]>? OnCustomPacketSent;
+    public event Action<uint, string, byte[]>? OnCustomPacketReceived;
+
+    internal void ChangeConnected(bool value) {
+        if (this.Connected == value) return;
+        this.Connected = value;
+
+        if (value) {
             this.OnConnected?.Invoke();
         } else {
             this.OnDisconnected?.Invoke();
         }
+    }
+
+    internal void ChangePlayerCount(int count) {
+        this.PlayerCount = count;
+        this.OnPlayerCountChanged?.Invoke(count);
+    }
+
+    internal void DispatchCustomPacket(uint player, string id, byte[] data) {
+        this.OnCustomPacketReceived?.Invoke(player, id, data);
     }
 }

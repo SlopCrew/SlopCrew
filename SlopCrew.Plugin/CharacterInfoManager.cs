@@ -1,33 +1,34 @@
-﻿using System;
-using SlopCrew.Common;
+using System;
+using System.Collections.Generic;
+using Google.Protobuf;
+using SlopCrew.Common.Proto;
 
 namespace SlopCrew.Plugin;
 
 public class CharacterInfoManager {
-    public CustomCharacterInfo GetCharacterInfo(int character) {
+    public List<CustomCharacterInfo> GetCharacterInfo(int character) {
+        var infos = new List<CustomCharacterInfo>();
+        
         if (CrewBoomAPI.CrewBoomAPIDatabase.IsInitialized &&
             CrewBoomAPI.CrewBoomAPIDatabase.GetUserGuidForCharacter(character, out var guid)) {
-            //Plugin.Log.LogInfo($"Using CrewBoom, GUID {guid}");
-
-            return new CustomCharacterInfo {
-                Method = CustomCharacterInfo.CustomCharacterMethod.CrewBoom,
-                Data = guid.ToString()
-            };
+            infos.Add(new CustomCharacterInfo {
+                Type = CustomCharacterInfoType.CrewBoom,
+                Data = ByteString.CopyFrom(guid.ToByteArray())
+            });
         }
 
-        return new CustomCharacterInfo {
-            Method = CustomCharacterInfo.CustomCharacterMethod.None,
-            Data = string.Empty
-        };
+        return infos;
     }
 
-    public void SetNextCharacterInfo(CustomCharacterInfo info) {
-        switch (info.Method) {
-            case CustomCharacterInfo.CustomCharacterMethod.CrewBoom: {
-                var guid = Guid.Parse(info.Data);
-                //Plugin.Log.LogInfo($"Overriding with CrewBoom, GUID {guid}");
-                CrewBoomAPI.CrewBoomAPIDatabase.OverrideNextCharacterLoadedWithGuid(guid);
-                break;
+
+    public void ProcessCharacterInfo(List<CustomCharacterInfo> infos) {
+        foreach (var info in infos) {
+            switch (info.Type) {
+                case CustomCharacterInfoType.CrewBoom: {
+                    var guid = new Guid(info.Data.ToByteArray());
+                    CrewBoomAPI.CrewBoomAPIDatabase.OverrideNextCharacterLoadedWithGuid(guid);
+                    break;
+                }
             }
         }
     }

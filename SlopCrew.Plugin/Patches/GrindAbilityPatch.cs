@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 
 namespace SlopCrew.Plugin.Patches;
@@ -10,7 +11,8 @@ public class GrindAbilityPatch {
     [HarmonyPrefix]
     [HarmonyPatch("SetToLine")]
     public static bool SetToLine(GrindAbility __instance, GrindLine setGrindLine) {
-        var associatedPlayer = Plugin.PlayerManager.GetAssociatedPlayer(__instance.p);
+        var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+        var associatedPlayer = playerManager.GetAssociatedPlayer(__instance.p);
         return associatedPlayer == null;
     }
 }

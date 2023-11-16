@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using SlopCrew.Common;
 using TMPro;
@@ -19,7 +20,8 @@ public class VersionUIHandlerPatch {
 
         obj.alignment = TextAlignmentOptions.BottomLeft;
 
-        var username = PlayerNameFilter.DoFilter(Plugin.SlopConfig.Username.Value);
+        var config = Plugin.Host.Services.GetRequiredService<Config>();
+        var username = PlayerNameFilter.DoFilter(config.General.Username.Value);
         obj.text = $"<color=\"purple\">SlopCrew v{PluginInfo.PLUGIN_VERSION} - <color=\"white\">{username}\n"
                    + $"<color=#{hex}>" + verText;
     }

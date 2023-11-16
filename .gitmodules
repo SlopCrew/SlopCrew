@@ -1,5 +1,3 @@
-[submodule "libs/BrcCustomCharactersAPI"]
+[submodule "libs/CrewBoomAPI"]
 	path = libs/CrewBoomAPI
-	url = https://github.com/SGiygas/BrcCustomCharactersAPI.git
-[submodule "libs/CrewBoomAPI/"]
 	url = https://github.com/SGiygas/CrewBoomAPI.git

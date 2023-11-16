@@ -1,5 +1,7 @@
 using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
+using SlopCrew.Plugin.Encounters;
 
 namespace SlopCrew.Plugin.Patches;
 
@@ -9,6 +11,7 @@ public class PoliceCutscenesPatch {
     [HarmonyPatch("PlaySequenceForStars")]
     public static bool PlaySequenceForStars(int stars) {
         // Skip cop cutscenes when you're in a battle
-        return Plugin.CurrentEncounter is not {IsBusy: true};
+        var encounterManager = Plugin.Host.Services.GetRequiredService<EncounterManager>();
+        return encounterManager.CurrentEncounter is not {IsBusy: true};
     }
 }

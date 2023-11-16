@@ -1,110 +1,91 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
-using SlopCrew.Common;
+using SlopCrew.Common.Proto;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-using Player = Reptile.Player;
-using Transform = SlopCrew.Common.Transform;
+using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
 
-public class AssociatedPlayer {
-    public Common.Player SlopPlayer;
+public class AssociatedPlayer : IDisposable {
+    public Common.Proto.Player SlopPlayer;
     public Reptile.Player ReptilePlayer;
     public MapPin? MapPin;
 
-    public int Score;
-    public int BaseScore;
-    public int Multiplier;
-    public bool PhoneOut;
-    public Player.SpraycanState SpraycanState;
+    private PlayerManager playerManager;
+    private ConnectionManager connectionManager;
+    private Config config;
+    private CharacterInfoManager characterInfoManager;
 
-    public Queue<Transform> TransformUpdates = new();
-    public Transform TargetTransform;
-    public Transform PrevTarget;
-    public Vector3 FromPosition;
-    public Quaternion FromRotation;
-    public float TimeElapsed;
-    public float TimeToTarget;
-    public float LerpAmount;
+    private UnityEngine.Vector3 velocity = new();
+    private PositionUpdate? targetUpdate = null;
+    private float? targetPosSpeed = null;
+    private float? targetRotSpeed = null;
 
-    public CharacterVisual visual;
-    private Vector3 newPos;
-    private Quaternion newRot;
-    private Vector3 velocity;
-
-    private UnityEngine.Transform? emptyTransform;
-
-    public AssociatedPlayer(Common.Player slopPlayer) {
-        this.emptyTransform = new GameObject("SlopCrew_EmptyTransform").transform;
-        this.SlopPlayer = slopPlayer;
-
-        this.SetNextCharacterInfo(slopPlayer.CharacterInfo);
-
-        var moveStyle = (MoveStyle) slopPlayer.MoveStyle;
-
-        // SPECIAL_SKATEBOARD makes people error out ~Sylvie
-        // It's also blocked server-side
-        if (moveStyle == MoveStyle.SPECIAL_SKATEBOARD)
-            moveStyle = MoveStyle.SKATEBOARD;
-
-        var player = WorldHandler.instance.SetupAIPlayerAt(
-            this.emptyTransform,
-            (Characters) slopPlayer.Character,
-            PlayerType.NONE,
-            outfit: slopPlayer.Outfit,
-            moveStyleEquipped: moveStyle
-        );
-
-        player.motor.gravity = 0;
-        this.ReptilePlayer = player;
-
-        // Can't seem to safely remove these but don't need to use em
-        this.ReptilePlayer.motor.SetKinematic(true);
-        this.ReptilePlayer.motor.enabled = false;
-
-        var startTransform = new Transform {
-            Position = slopPlayer.Transform.Position,
-            Rotation = slopPlayer.Transform.Rotation,
-            Velocity = slopPlayer.Transform.Velocity,
-            Stopped = true,
-            Tick = 0,
-            Latency = 0
-        };
-
-        this.visual = player.GetComponentInChildren<CharacterVisual>();
-        this.TargetTransform = startTransform;
-        this.PrevTarget = startTransform;
-        newPos = startTransform.Position.ToMentalDeficiency();
-        newRot = startTransform.Rotation.ToMentalDeficiency();
-
-        if (Plugin.SlopConfig.ShowPlayerNameplates.Value) {
-            this.SpawnNameplate();
-        }
-
-        if (Plugin.SlopConfig.ShowPlayerMapPins.Value) {
-            this.SpawnMapPin();
-        }
-    }
-
-    public void SetNextCharacterInfo(CustomCharacterInfo characterInfo) {
-        try {
-            Plugin.CharacterInfoManager.SetNextCharacterInfo(characterInfo);
-        } catch (Exception e) {
-            Plugin.Log.LogError($"Failed to set character info for {this.SlopPlayer.Name}: {e}");
-        }
-    }
+    public bool PhoneOut = false;
 
     private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
     private static Material? NameplateFontMaterial;
     private const float NameplateHeightFactor = 1.33f;
 
+    // This is bad. I don't know what's better.
+    public AssociatedPlayer(
+        PlayerManager playerManager,
+        ConnectionManager connectionManager,
+        Config config,
+        CharacterInfoManager characterInfoManager,
+        Common.Proto.Player slopPlayer
+    ) {
+        this.playerManager = playerManager;
+        this.connectionManager = connectionManager;
+        this.config = config;
+        this.characterInfoManager = characterInfoManager;
+        this.SlopPlayer = slopPlayer;
+
+        var emptyGameObject = new GameObject("SlopCrew_EmptyGameObject");
+        var emptyTransform = emptyGameObject.transform;
+        emptyTransform.position = ((System.Numerics.Vector3) slopPlayer.Transform.Position).ToMentalDeficiency();
+        emptyTransform.rotation = ((System.Numerics.Quaternion) slopPlayer.Transform.Rotation).ToMentalDeficiency();
+
+        var character = (Characters) slopPlayer.CharacterInfo.Character;
+        var outfit = slopPlayer.CharacterInfo.Outfit;
+        var moveStyle = (MoveStyle) slopPlayer.CharacterInfo.MoveStyle;
+
+        this.ProcessCharacterInfo(slopPlayer.CustomCharacterInfo.ToList());
+        this.ReptilePlayer = WorldHandler.instance.SetupAIPlayerAt(
+            emptyTransform,
+            character,
+            PlayerType.NONE,
+            outfit,
+            moveStyle
+        );
+
+        this.ReptilePlayer.motor.gravity = 0;
+        this.ReptilePlayer.motor.SetKinematic(true);
+        this.ReptilePlayer.motor.enabled = false;
+
+        if (this.config.General.ShowPlayerNameplates.Value) {
+            this.SpawnNameplate();
+        }
+
+        if (this.config.General.ShowPlayerMapPins.Value) {
+            this.SpawnMapPin();
+        }
+
+        Object.Destroy(emptyGameObject);
+    }
+
+    public void ProcessCharacterInfo(List<CustomCharacterInfo> infos)
+        => this.characterInfoManager.ProcessCharacterInfo(infos);
+
+    // FIXME: nameplates sink into player in millenium square???
     private void SpawnNameplate() {
         var container = new GameObject("SlopCrew_NameplateContainer");
 
@@ -115,14 +96,13 @@ public class AssociatedPlayer {
         nameplate.AddComponent<TextMeshProFilter>();
 
         // Yoink the font from somewhere else because I guess asset loading is impossible
-        var uiManager = Core.Instance.UIManager;
-        var gameplay = Traverse.Create(uiManager).Field<GameplayUI>("gameplay").Value;
+        var gameplay = Core.Instance.UIManager.gameplay;
         tmp.font = gameplay.trickNameLabel.font;
 
         tmp.alignment = TextAlignmentOptions.Midline;
         tmp.fontSize = 2.5f;
 
-        if (Plugin.SlopConfig.OutlineNameplates.Value) {
+        if (this.config.General.OutlineNameplates.Value) {
             // Lazy load the material so there's not a million material instances floating in memory
             if (NameplateFontMaterial == null) {
                 NameplateFontMaterial = tmp.fontMaterial;
@@ -135,10 +115,13 @@ public class AssociatedPlayer {
                 NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.2f);
                 NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.0f);
             }
+
             tmp.fontMaterial = NameplateFontMaterial;
         }
 
-        if (this.SlopPlayer.IsDeveloper) {
+        nameplate.transform.parent = container.transform;
+
+        if (this.SlopPlayer.IsCommunityContributor) {
             var heat = gameplay.wanted1;
             var icon = heat.GetComponent<Image>();
 
@@ -149,14 +132,13 @@ public class AssociatedPlayer {
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = icon.sprite;
 
-            // center it
             var localPosition = devIcon.transform.localPosition;
-            localPosition -= new Vector3(0, localPosition.y / 2, 0);
+            localPosition -= new UnityEngine.Vector3(0, localPosition.y / 2, 0);
             devIcon.transform.localPosition = localPosition;
 
             devIcon.transform.parent = container.transform;
-            devIcon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            devIcon.transform.position += new Vector3(0, 0.25f, 0);
+            devIcon.transform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 0.1f);
+            devIcon.transform.position += new UnityEngine.Vector3(0, 0.25f, 0);
             devIcon.AddComponent<UISpinny>();
         }
 
@@ -165,16 +147,16 @@ public class AssociatedPlayer {
 
         var capsule = this.ReptilePlayer.interactionCollider as CapsuleCollider;
         // float * float before float * vector is faster because reasons
-        container.transform.localPosition = Vector3.up * (capsule.height * NameplateHeightFactor);
+        container.transform.localPosition = UnityEngine.Vector3.up * (capsule!.height * NameplateHeightFactor);
         container.transform.Rotate(0, 180, 0);
-        container.AddComponent<UINameplate>();
+
+        var uiNameplate = container.AddComponent<UINameplate>();
+        uiNameplate.Billboard = this.config.General.BillboardNameplates.Value;
     }
 
     private void SpawnMapPin() {
         var mapController = Mapcontroller.Instance;
-        this.MapPin = Traverse.Create(mapController)
-            .Method("CreatePin", MapPin.PinType.StoryObjectivePin)
-            .GetValue<MapPin>();
+        this.MapPin = mapController.CreatePin(MapPin.PinType.StoryObjectivePin);
 
         this.MapPin.AssignGameplayEvent(this.ReptilePlayer.gameObject);
         this.MapPin.InitMapPin(MapPin.PinType.StoryObjectivePin);
@@ -198,63 +180,152 @@ public class AssociatedPlayer {
         pinInMat.color = new Color(1f, 1f, 0.85f);
     }
 
-    public void FuckingObliterate() {
-        WorldHandler.instance.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
-
-        if (this.ReptilePlayer.gameObject is not null)
+    public void Dispose() {
+        if (this.ReptilePlayer != null) {
+            var worldHandler = WorldHandler.instance;
+            if (worldHandler != null) worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
             Object.Destroy(this.ReptilePlayer.gameObject);
+        }
 
-        if (this.ReptilePlayer is not null)
-            Object.Destroy(this.ReptilePlayer);
-
-        if (this.MapPin?.gameObject is not null)
+        if (this.MapPin != null) {
             Object.Destroy(this.MapPin.gameObject);
-
-        if (this.MapPin is not null)
-            Object.Destroy(this.MapPin);
-
-        if (this.emptyTransform?.gameObject is not null)
-            Object.Destroy(this.emptyTransform.gameObject);
-
-        if (this.emptyTransform is not null)
-            Object.Destroy(this.emptyTransform);
-    }
-
-    public void ResetPlayer(Common.Player slopPlayer) {
-        this.SlopPlayer = slopPlayer;
-        //this.FuckingObliterate();
-        //this.ReptilePlayer = PlayerManager.SpawnReptilePlayer(slopPlayer);
-    }
-
-    public void SetPos(Transform tf) {
-        if (this.ReptilePlayer is not null) {
-            this.TransformUpdates.Enqueue(tf);
         }
     }
 
-    public void InterpolatePosition() {
-        var target = this.TargetTransform.Position.ToMentalDeficiency();
+    public void HandleVisualUpdate(VisualUpdate update) {
+        if (this.ReptilePlayer == null) return;
 
-        // Use SmoothDamp to get physics-y interpolation that scales with speed
-        newPos = Vector3.SmoothDamp(this.ReptilePlayer.transform.position, target, ref velocity, this.TimeToTarget);
+        var characterVisual = this.ReptilePlayer.characterVisual;
+        var prevSpraycanState = this.ReptilePlayer.spraycanState;
 
-        this.ReptilePlayer.transform.position = newPos;
+        var boostpackEffect = (BoostpackEffectMode) update.Boostpack;
+        var frictionEffect = (FrictionEffectMode) update.Friction;
+        var spraycan = update.Spraycan;
+        var phone = update.Phone;
+        var spraycanState = (Reptile.Player.SpraycanState) update.SpraycanState;
+
+        characterVisual.hasEffects = true;
+        characterVisual.hasBoostPack = true;
+
+        this.playerManager.SettingVisual = true;
+        characterVisual.SetBoostpackEffect(boostpackEffect);
+        characterVisual.SetFrictionEffect(frictionEffect);
+        characterVisual.SetSpraycan(spraycan);
+        characterVisual.SetPhone(phone);
+
+        if (prevSpraycanState != spraycanState) {
+            this.ReptilePlayer.SetSpraycanState(spraycanState);
+        }
+
+        this.PhoneOut = phone;
+        this.playerManager.SettingVisual = false;
     }
 
-    public void InterpolateRotation() {
-        var target = this.TargetTransform.Rotation.ToMentalDeficiency();
+    public void HandleAnimationUpdate(AnimationUpdate update) {
+        if (this.ReptilePlayer == null) return;
 
-        newRot = Quaternion.RotateTowards(this.ReptilePlayer.transform.rotation, target, 360 * Time.deltaTime);
-
-        this.ReptilePlayer.transform.rotation = newRot;
-
-        // Apply the rotation separately to the visual for upside down grinds.
-        // & check for null in case they swap characters and we lose the reference for a moment
-        if (visual != null)
-            this.visual.transform.rotation = newRot;
+        this.playerManager.PlayingAnimation = true;
+        this.ReptilePlayer.PlayAnim(update.Animation, update.ForceOverwrite, update.Instant, update.Time);
+        this.playerManager.PlayingAnimation = false;
     }
 
-    public bool IsValid() {
-        return this.ReptilePlayer != null;
+    public void UpdateIfDifferent(Common.Proto.Player player) {
+        if (this.ReptilePlayer == null) return;
+
+        var anyDifferentCharacterInfo = player.CustomCharacterInfo.Count != this.SlopPlayer.CustomCharacterInfo.Count;
+        foreach (var info in player.CustomCharacterInfo) {
+            var oldInfo = this.SlopPlayer.CustomCharacterInfo.FirstOrDefault(i => i.Type == info.Type);
+            if (oldInfo == null || !oldInfo.Data.Equals(info.Data)) {
+                anyDifferentCharacterInfo = true;
+                break;
+            }
+        }
+
+        var differentCharacter = this.SlopPlayer.CharacterInfo.Character != player.CharacterInfo.Character
+                                 || anyDifferentCharacterInfo;
+        var differentOutfit = this.SlopPlayer.CharacterInfo.Outfit != player.CharacterInfo.Outfit;
+        var differentMoveStyle = this.SlopPlayer.CharacterInfo.MoveStyle != player.CharacterInfo.MoveStyle;
+        var isDifferent = differentCharacter || differentOutfit || differentMoveStyle;
+
+        if (isDifferent) {
+            if (differentOutfit && !differentCharacter) {
+                this.ReptilePlayer.SetOutfit(player.CharacterInfo.Outfit);
+            } else if (differentCharacter || differentOutfit) {
+                // New outfit
+                this.ProcessCharacterInfo(player.CustomCharacterInfo.ToList());
+                this.ReptilePlayer.SetCharacter(
+                    (Characters) player.CharacterInfo.Character,
+                    player.CharacterInfo.Outfit
+                );
+            }
+
+            if (differentMoveStyle) {
+                var moveStyle = (MoveStyle) player.CharacterInfo.MoveStyle;
+                var equipped = moveStyle != MoveStyle.ON_FOOT;
+                this.ReptilePlayer.SetCurrentMoveStyleEquipped(moveStyle);
+                this.ReptilePlayer.SwitchToEquippedMovestyle(equipped);
+            }
+
+            this.SlopPlayer = player;
+        }
+    }
+
+    public void QueuePositionUpdate(PositionUpdate newUpdate) {
+        if (this.ReptilePlayer == null) return;
+
+        this.targetUpdate = newUpdate;
+        var latency = newUpdate.Latency / 1000f;
+        var timeToMove = this.connectionManager.TickRate!.Value + latency;
+
+        var currentPos = this.ReptilePlayer.tf.position;
+        var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
+        var posDiff = targetPos - currentPos;
+        var posVelocity = posDiff / timeToMove;
+
+        var currentRot = this.ReptilePlayer.tf.rotation;
+        var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
+        var rotDiff = UnityEngine.Quaternion.Angle(currentRot, targetRot);
+        var rotVelocity = rotDiff / timeToMove;
+
+        this.targetPosSpeed = posVelocity.magnitude;
+        this.targetRotSpeed = rotVelocity;
+    }
+
+    public void Update() {
+        this.ProcessPositionUpdate();
+        if (this.MapPin != null) this.MapPin.SetLocation();
+    }
+
+    // TODO: this interp code sucks. I don't understand how the previous interp code works anymore
+    // but I can't seem to get fluid feeling movement working anymore - help appreciated :D
+    public void ProcessPositionUpdate() {
+        if (this.targetUpdate is null || this.ReptilePlayer == null) return;
+
+        var latency = this.targetUpdate.Latency / 1000f;
+        var timeToMove = this.connectionManager.TickRate!.Value + latency;
+
+        var currentPos = this.ReptilePlayer.tf.position;
+        var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
+
+        var newPos = UnityEngine.Vector3.MoveTowards(
+            currentPos,
+            targetPos,
+            this.targetPosSpeed!.Value * Time.deltaTime
+        );
+        this.ReptilePlayer.tf.position = newPos;
+
+        var currentRot = this.ReptilePlayer.tf.rotation;
+        var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
+
+        var newRot = UnityEngine.Quaternion.RotateTowards(
+            currentRot,
+            targetRot,
+            this.targetRotSpeed!.Value * Time.deltaTime
+        );
+        this.ReptilePlayer.tf.rotation = newRot;
+
+        if (this.ReptilePlayer.characterVisual != null) {
+            this.ReptilePlayer.characterVisual.transform.rotation = newRot;
+        }
     }
 }
