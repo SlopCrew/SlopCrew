@@ -67,8 +67,9 @@ public class Lobby : IDisposable {
     }
 
     public void AddPlayer(NetworkClient client) {
-        this.clients.Add(client);
         if (!this.timer.Enabled) this.StartTimer();
+        if (this.clients.Contains(client)) return;
+        this.clients.Add(client);
         this.timeLeft = Math.Min(Constants.LobbyMaxWaitTime, this.timeLeft + Constants.LobbyIncrementWaitTime);
     }
 }

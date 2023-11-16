@@ -39,7 +39,7 @@ public class RaceEncounter : Encounter {
     public override void Update() {
         base.Update();
         if (this.stopwatch.Elapsed.TotalSeconds > Constants.MaxRaceTime
-            || this.BuildTimes().Count() == this.Clients.Count) this.Stop();
+            || this.BuildTimes().Count() >= this.Clients.Count) this.Stop();
     }
 
     private void StartStopwatch(object? e, ElapsedEventArgs args) {

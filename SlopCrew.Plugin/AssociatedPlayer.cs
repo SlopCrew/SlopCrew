@@ -78,7 +78,6 @@ public class AssociatedPlayer : IDisposable {
 
     // FIXME: nameplates sink into player in millenium square???
     private void SpawnNameplate() {
-        Debug.Log("Spawning nameplate");
         var container = new GameObject("SlopCrew_NameplateContainer");
 
         // Setup the nameplate itself
