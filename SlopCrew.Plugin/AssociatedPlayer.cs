@@ -256,6 +256,7 @@ public class AssociatedPlayer : IDisposable {
                     (Characters) player.CharacterInfo.Character,
                     player.CharacterInfo.Outfit
                 );
+                this.ReptilePlayer.InitVisual();
             }
 
             if (differentMoveStyle) {
