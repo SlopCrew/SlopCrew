@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SlopCrew.Server.Options;
 
@@ -32,7 +33,7 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
             {"code", code},
             {"redirect_uri", options.Value.DiscordRedirectUri}
         });
-        
+
         var exchangeRequest = await client.SendAsync(exchangeRequestUri);
         exchangeRequest.EnsureSuccessStatusCode();
         var exchangeResponse = await exchangeRequest.Content.ReadFromJsonAsync<DiscordTokenExchangeResponse>();
@@ -40,7 +41,7 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
 
         var meRequestUri = new HttpRequestMessage(HttpMethod.Get, "https://discord.com/api/users/@me");
         meRequestUri.Headers.Authorization = new AuthenticationHeaderValue("Bearer", exchangeResponse.AccessToken);
-        
+
         var meRequest = await client.SendAsync(meRequestUri);
         meRequest.EnsureSuccessStatusCode();
         var meResponse = await meRequest.Content.ReadFromJsonAsync<DiscordMeResponse>();
@@ -91,16 +92,30 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
             {"refresh_token", user.DiscordRefreshToken},
             {"redirect_uri", options.Value.DiscordRedirectUri}
         });
-        
+
         var refreshRequest = await client.SendAsync(refreshRequestUri);
         refreshRequest.EnsureSuccessStatusCode();
         var refreshResponse = await refreshRequest.Content.ReadFromJsonAsync<DiscordTokenExchangeResponse>();
         if (refreshResponse is null) throw new Exception("Error refreshing token");
-        
+
         user.DiscordToken = refreshResponse.AccessToken;
         user.DiscordRefreshToken = refreshResponse.RefreshToken;
         user.DiscordTokenExpires = DateTime.UtcNow.AddSeconds(refreshResponse.ExpiresIn);
-        
+
         await dbContext.SaveChangesAsync();
     }
+
+    public async Task MakeCommunityContributor(string id) {
+        var user = await GetUserById(id);
+        if (user is not null) {
+            user.IsCommunityContributor = true;
+            await dbContext.SaveChangesAsync();
+        }
+    }
+
+    public Task<User?> GetUserById(string id)
+        => dbContext.Users.FirstOrDefaultAsync(u => u.DiscordId == id);
+
+    public User? GetUserByKey(string key)
+        => dbContext.Users.FirstOrDefault(u => u.GameToken == key);
 }

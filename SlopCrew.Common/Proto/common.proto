@@ -42,6 +42,7 @@ message Player {
   Transform transform = 3;
   CharacterInfo character_info = 4;
   repeated CustomCharacterInfo custom_character_info = 5;
+  bool is_community_contributor = 6;
 }
 
 message PositionUpdate {

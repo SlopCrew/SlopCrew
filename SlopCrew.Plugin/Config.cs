@@ -98,5 +98,12 @@ public class Config(ConfigFile config) {
             (ushort) 42069,
             "Port to connect to."
         );
+
+        public ConfigEntry<string> Key = config.Bind(
+            "Server",
+            "Key",
+            "",
+            "Authentication key to link your Discord account to Slop Crew."
+        );
     }
 }

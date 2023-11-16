@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
+using SlopCrew.Server.Database;
 using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
 
@@ -16,6 +17,7 @@ public class NetworkClient : IDisposable {
     public int? Stage;
     public string? Key;
     public ulong Latency;
+    public bool IsCommunityContributor;
 
     public Dictionary<EncounterType, List<NetworkClient>> EncounterRequests = new();
     public Encounter? CurrentEncounter;
@@ -25,19 +27,22 @@ public class NetworkClient : IDisposable {
     private EncounterService encounterService;
     private ServerOptions serverOptions;
     private EncounterOptions encounterOptions;
+    private UserService userService;
 
     public NetworkClient(
         NetworkService networkService,
         TickRateService tickRateService,
         EncounterService encounterService,
         IOptions<ServerOptions> serverOptions,
-        IOptions<EncounterOptions> encounterOptions
+        IOptions<EncounterOptions> encounterOptions,
+        UserService userService
     ) {
         this.networkService = networkService;
         this.tickRateService = tickRateService;
         this.encounterService = encounterService;
         this.serverOptions = serverOptions.Value;
         this.encounterOptions = encounterOptions.Value;
+        this.userService = userService;
 
         this.tickRateService.Tick += this.Tick;
     }
@@ -208,11 +213,15 @@ public class NetworkClient : IDisposable {
         var oldStage = this.Stage;
         this.Stage = hello.Stage;
 
-        if (this.Player?.Id is null) {
-            player.Id = this.networkService.GetNextFreeID();
-        } else {
-            player.Id = this.Player.Id;
+        player.Id = this.Player?.Id ?? this.networkService.GetNextFreeID();
+
+        if (hello.HasKey && this.Key is null) {
+            this.Key = hello.Key;
+            var user = this.userService.GetUserByKey(this.Key);
+            this.IsCommunityContributor = user?.IsCommunityContributor ?? false;
         }
+        
+        player.IsCommunityContributor = this.IsCommunityContributor;
 
         // Cap a few things for people who are naughty
         var customCharacterInfo = player.CustomCharacterInfo.ToList();

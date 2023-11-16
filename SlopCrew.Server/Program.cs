@@ -10,6 +10,8 @@ using SlopCrew.Server.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders().AddConsole();
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
 var appsettings = Path.Combine(

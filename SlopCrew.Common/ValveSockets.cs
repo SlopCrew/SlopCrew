@@ -318,7 +318,7 @@ public struct Configuration {
     }
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential, Pack = Native.PackSize)]
 public struct StatusInfo {
     private const int callback = Library.socketsCallbacks + 1;
     public Connection connection;
@@ -860,6 +860,12 @@ internal static class Native {
     private const string nativeLibrary = "GameNetworkingSockets.dll";
 #else
     private const string nativeLibrary = "libGameNetworkingSockets.so";
+#endif
+
+#if WINDOWS
+    public const int PackSize = 8;
+#else
+    public const int PackSize = 4;
 #endif
 
     [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]

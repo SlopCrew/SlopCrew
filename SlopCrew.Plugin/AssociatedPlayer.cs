@@ -6,6 +6,7 @@ using SlopCrew.Common.Proto;
 using SlopCrew.Plugin.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 using Vector3 = System.Numerics.Vector3;
 
@@ -112,7 +113,7 @@ public class AssociatedPlayer : IDisposable {
 
         nameplate.transform.parent = container.transform;
 
-        /*if (this.SlopPlayer.IsDeveloper) {
+        if (this.SlopPlayer.IsCommunityContributor) {
             var heat = gameplay.wanted1;
             var icon = heat.GetComponent<Image>();
 
@@ -123,16 +124,15 @@ public class AssociatedPlayer : IDisposable {
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = icon.sprite;
 
-            // center it
             var localPosition = devIcon.transform.localPosition;
-            localPosition -= new Vector3(0, localPosition.y / 2, 0);
+            localPosition -= new UnityEngine.Vector3(0, localPosition.y / 2, 0);
             devIcon.transform.localPosition = localPosition;
 
             devIcon.transform.parent = container.transform;
-            devIcon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            devIcon.transform.position += new Vector3(0, 0.25f, 0);
+            devIcon.transform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 0.1f);
+            devIcon.transform.position += new UnityEngine.Vector3(0, 0.25f, 0);
             devIcon.AddComponent<UISpinny>();
-        }*/
+        }
 
         container.transform.SetParent(this.ReptilePlayer.interactionCollider.transform, false);
         nameplate.transform.SetParent(container.transform, false);

@@ -50,6 +50,7 @@ public class LocalPlayerManager(Config config, ConnectionManager connectionManag
 
     private void HandleRefreshes(Reptile.Player me) {
         if (this.HelloRefreshQueued) {
+            var key = config.Server.Key.Value ?? string.Empty;
             connectionManager.SendMessage(new ServerboundMessage {
                 Hello = new ServerboundHello {
                     Player = new Player {
@@ -68,7 +69,8 @@ public class LocalPlayerManager(Config config, ConnectionManager connectionManag
                         }
                     },
 
-                    Stage = APIManager.API!.StageOverride ?? (int) Core.instance.baseModule.CurrentStage
+                    Stage = APIManager.API!.StageOverride ?? (int) Core.instance.baseModule.CurrentStage,
+                    Key = key
                 }
             });
 
