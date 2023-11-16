@@ -1,6 +1,6 @@
 # Slop Crew
 
-![Players online](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsloppers.club%2Fapi%2Fmetrics&query=%24.connections&label=players%20online) [![Server builds](https://github.com/SlopCrew/SlopCrew/actions/workflows/server-build.yml/badge.svg?branch=main)](https://github.com/SlopCrew/SlopCrew/actions/workflows/server-build.yml) [![Build and push Docker image](https://github.com/SlopCrew/SlopCrew/actions/workflows/docker-build.yml/badge.svg)](https://github.com/SlopCrew/SlopCrew/actions/workflows/docker-build.yml)
+![Players online](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsloppers.club%2Fapi%2Fmetrics&query=%24.connections&label=players%20online) [![Server builds](https://github.com/SlopCrew/SlopCrew/actions/workflows/server.yml/badge.svg?branch=main)](https://github.com/SlopCrew/SlopCrew/actions/workflows/server.yml) [![Build and push Docker image](https://github.com/SlopCrew/SlopCrew/actions/workflows/docker.yml/badge.svg)](https://github.com/SlopCrew/SlopCrew/actions/workflows/docker.yml)
 
 <h3 align="center">
   <a href="https://discord.gg/a2nVaZGGNz">Discord</a>
