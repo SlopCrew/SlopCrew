@@ -6,6 +6,7 @@ using BepInEx.Logging;
 using Microsoft.Extensions.Hosting;
 using Reptile;
 using SlopCrew.Common.Proto;
+using SlopCrew.Plugin.UI;
 
 namespace SlopCrew.Plugin;
 
@@ -13,11 +14,13 @@ public class PlayerManager(
     ConnectionManager connectionManager,
     Config config,
     CharacterInfoManager characterInfoManager,
+    InterfaceUtility interfaceUtility,
     ManualLogSource logger
 )
     : IHostedService {
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
+    public readonly InterfaceUtility InterfaceUtility = interfaceUtility;
 
     public bool SettingVisual;
     public bool PlayingAnimation;
@@ -48,61 +51,61 @@ public class PlayerManager(
     private void MessageReceived(ClientboundMessage packet) {
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.PlayersUpdate: {
-                foreach (var player in packet.PlayersUpdate.Players) {
-                    if (this.Players.TryGetValue(player.Id, out var associatedPlayer)) {
-                        associatedPlayer.UpdateIfDifferent(player);
-                    } else {
-                        // New player
-                        this.Players.Add(player.Id, new AssociatedPlayer(
-                                             this,
-                                             connectionManager,
-                                             config,
-                                             characterInfoManager,
-                                             player));
+                    foreach (var player in packet.PlayersUpdate.Players) {
+                        if (this.Players.TryGetValue(player.Id, out var associatedPlayer)) {
+                            associatedPlayer.UpdateIfDifferent(player);
+                        } else {
+                            // New player
+                            this.Players.Add(player.Id, new AssociatedPlayer(
+                                                 this,
+                                                 connectionManager,
+                                                 config,
+                                                 characterInfoManager,
+                                                 player));
+                        }
                     }
-                }
 
-                // Remove players that are no longer here
-                var packetPlayers = packet.PlayersUpdate.Players.Select(p => p.Id).ToList();
-                foreach (var id in this.Players.Keys.ToList()) {
-                    if (!packetPlayers.Contains(id) && this.Players.TryGetValue(id, out var associatedPlayer)) {
-                        associatedPlayer.Dispose();
-                        this.Players.Remove(id);
+                    // Remove players that are no longer here
+                    var packetPlayers = packet.PlayersUpdate.Players.Select(p => p.Id).ToList();
+                    foreach (var id in this.Players.Keys.ToList()) {
+                        if (!packetPlayers.Contains(id) && this.Players.TryGetValue(id, out var associatedPlayer)) {
+                            associatedPlayer.Dispose();
+                            this.Players.Remove(id);
+                        }
                     }
-                }
 
-                break;
-            }
+                    break;
+                }
 
             case ClientboundMessage.MessageOneofCase.PositionUpdate: {
-                foreach (var update in packet.PositionUpdate.Updates) {
-                    if (this.Players.TryGetValue(update.PlayerId, out var player)) {
-                        player.QueuePositionUpdate(update);
+                    foreach (var update in packet.PositionUpdate.Updates) {
+                        if (this.Players.TryGetValue(update.PlayerId, out var player)) {
+                            player.QueuePositionUpdate(update);
+                        }
                     }
-                }
 
-                break;
-            }
+                    break;
+                }
 
             case ClientboundMessage.MessageOneofCase.VisualUpdate: {
-                foreach (var update in packet.VisualUpdate.Updates) {
-                    if (this.Players.TryGetValue(update.PlayerId, out var player)) {
-                        player.HandleVisualUpdate(update);
+                    foreach (var update in packet.VisualUpdate.Updates) {
+                        if (this.Players.TryGetValue(update.PlayerId, out var player)) {
+                            player.HandleVisualUpdate(update);
+                        }
                     }
-                }
 
-                break;
-            }
+                    break;
+                }
 
             case ClientboundMessage.MessageOneofCase.AnimationUpdate: {
-                foreach (var update in packet.AnimationUpdate.Updates) {
-                    if (this.Players.TryGetValue(update.PlayerId, out var player)) {
-                        player.HandleAnimationUpdate(update);
+                    foreach (var update in packet.AnimationUpdate.Updates) {
+                        if (this.Players.TryGetValue(update.PlayerId, out var player)) {
+                            player.HandleAnimationUpdate(update);
+                        }
                     }
-                }
 
-                break;
-            }
+                    break;
+                }
         }
     }
 

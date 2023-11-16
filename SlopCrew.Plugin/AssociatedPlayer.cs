@@ -31,8 +31,6 @@ public class AssociatedPlayer : IDisposable {
 
     public bool PhoneOut = false;
 
-    private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-    private static Material? NameplateFontMaterial;
     private const float NameplateHeightFactor = 1.33f;
 
     // This is bad. I don't know what's better.
@@ -72,7 +70,7 @@ public class AssociatedPlayer : IDisposable {
         this.ReptilePlayer.motor.enabled = false;
 
         if (this.config.General.ShowPlayerNameplates.Value) {
-            this.SpawnNameplate();
+            this.SpawnNameplate(playerManager.InterfaceUtility);
         }
 
         if (this.config.General.ShowPlayerMapPins.Value) {
@@ -85,8 +83,7 @@ public class AssociatedPlayer : IDisposable {
     public void ProcessCharacterInfo(List<CustomCharacterInfo> infos)
         => this.characterInfoManager.ProcessCharacterInfo(infos);
 
-    // FIXME: nameplates sink into player in millenium square???
-    private void SpawnNameplate() {
+    private void SpawnNameplate(InterfaceUtility interfaceUtility) {
         var container = new GameObject("SlopCrew_NameplateContainer");
 
         // Setup the nameplate itself
@@ -95,42 +92,20 @@ public class AssociatedPlayer : IDisposable {
         tmp.text = this.SlopPlayer.Name;
         nameplate.AddComponent<TextMeshProFilter>();
 
-        // Yoink the font from somewhere else because I guess asset loading is impossible
-        var gameplay = Core.Instance.UIManager.gameplay;
-        tmp.font = gameplay.trickNameLabel.font;
-
+        tmp.font = interfaceUtility.NameplateFont;
+        tmp.fontMaterial = interfaceUtility.NameplateFontMaterial;
         tmp.alignment = TextAlignmentOptions.Midline;
         tmp.fontSize = 2.5f;
-
-        if (this.config.General.OutlineNameplates.Value) {
-            // Lazy load the material so there's not a million material instances floating in memory
-            if (NameplateFontMaterial == null) {
-                NameplateFontMaterial = tmp.fontMaterial;
-                NameplateFontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, NamePlateOutlineColor);
-                NameplateFontMaterial.SetColor(ShaderUtilities.ID_UnderlayColor, NamePlateOutlineColor);
-                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.1f);
-                NameplateFontMaterial.EnableKeyword(ShaderUtilities.Keyword_Underlay);
-                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayDilate, 0.1f);
-                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, 0.2f);
-                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.2f);
-                NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.0f);
-            }
-
-            tmp.fontMaterial = NameplateFontMaterial;
-        }
 
         nameplate.transform.parent = container.transform;
 
         if (this.SlopPlayer.IsCommunityContributor) {
-            var heat = gameplay.wanted1;
-            var icon = heat.GetComponent<Image>();
-
             var devIcon = new GameObject("SlopCrew_DevIcon");
             devIcon.name = "SlopCrew_DevIcon";
             devIcon.SetActive(true);
 
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = icon.sprite;
+            spriteRenderer.sprite = interfaceUtility.HeatStar;
 
             var localPosition = devIcon.transform.localPosition;
             localPosition -= new UnityEngine.Vector3(0, localPosition.y / 2, 0);
