@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Reptile.Phone;
 using SlopCrew.Common.Proto;
@@ -55,7 +56,7 @@ internal class SlopCrewButton : PhoneScrollButton {
         this.confirmArrow = confirmArrow;
         this.normalButtonSprite = normalButtonSprite;
         this.selectedButtonSprite = selectedButtonSprite;
-        
+
         this.encounterManager = Plugin.Host.Services.GetRequiredService<EncounterManager>();
     }
 
@@ -111,8 +112,6 @@ internal class SlopCrewButton : PhoneScrollButton {
         if (this.encounterManager?.CurrentEncounter?.IsBusy == true) {
             this.SetUnavailable(!this.app!.IsActiveEncounter(this.encounterType));
             return;
-        } else {
-            this.SetUnavailable(false);
         }
 
         switch (encounterType) {
@@ -121,6 +120,7 @@ internal class SlopCrewButton : PhoneScrollButton {
                 this.SetUnavailable(!this.app!.HasNearbyPlayer, "No player nearby");
                 break;
             case EncounterType.Race:
+                this.SetUnavailable(false);
                 break;
         }
     }
@@ -130,7 +130,6 @@ internal class SlopCrewButton : PhoneScrollButton {
         if (this.Unavailable) return;
 
         this.statusLabel!.gameObject.SetActive(status != AppSlopCrew.EncounterStatus.None);
-
         switch (status) {
             case AppSlopCrew.EncounterStatus.WaitingStart:
                 statusLabel.SetText("Waiting...");
@@ -153,7 +152,7 @@ internal class SlopCrewButton : PhoneScrollButton {
                 this.statusLabel!.gameObject.SetActive(true);
                 statusLabel.SetText($"<color=red>{message}");
             }
-            
+
             this.canvasGroup!.alpha = 0.5f;
         } else {
             this.canvasGroup!.alpha = 1.0f;

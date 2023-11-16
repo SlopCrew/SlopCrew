@@ -36,7 +36,7 @@ public class AppSlopCrew : App {
 
     private AssociatedPlayer? nearestPlayer;
     private EncounterType currentEncounter;
-    private bool isWaitingForEncounter = false;
+    public bool isWaitingForEncounter = false;
     private bool isDisplayingForcedText = false;
 
     private bool notifInitialized;
@@ -262,11 +262,6 @@ public class AppSlopCrew : App {
             this.EndWaitingForEncounter();
         }
 
-        if (isWaitingForEncounter && currentEncounter == EncounterType.Race) {
-            this.EndWaitingForEncounter();
-            return;
-        }
-
         if (this.hasBannedMods) return;
 
         if (this.encounterManager.CurrentEncounter?.IsBusy == true) {
@@ -275,12 +270,11 @@ public class AppSlopCrew : App {
             } else {
                 SetEncounterStatus(EncounterStatus.InProgress);
             }
-            this.SetEncounterStatus(EncounterStatus.InProgress);
             return;
         }
 
         // This happens when literally no encounter is going on or one just ended
-        this.SetEncounterStatus(EncounterStatus.None);
+        if (!this.isWaitingForEncounter) this.SetEncounterStatus(EncounterStatus.None);
 
         if (!this.playerLocked) {
             var position = player.transform.position;

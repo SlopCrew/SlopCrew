@@ -4,7 +4,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Google.Protobuf.Collections;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using SlopCrew.Plugin.Encounters.Race;
 using SlopCrew.Plugin.UI.Phone;
@@ -79,8 +82,6 @@ public class RaceEncounter : Encounter {
 
                 var phone = WorldHandler.instance.GetCurrentPlayer().phone;
                 var app = phone.GetAppInstance<AppSlopCrew>();
-                app.EndWaitingForEncounter();
-
                 break;
             }
 
@@ -105,10 +106,37 @@ public class RaceEncounter : Encounter {
         this.encounterManager.InputBlocker.ShouldIgnoreInput = false;
     }
 
-    public override void HandleUpdate(ClientboundEncounterUpdate update) { }
+    public override void HandleUpdate(ClientboundEncounterUpdate update) {
+        this.UpdateRaceResults(update.Race.Times);
+    }
 
     public override void HandleEnd(ClientboundEncounterEnd end) {
+        this.UpdateRaceResults(end.Race.Times);
         this.Stop();
+    }
+
+    private void UpdateRaceResults(RepeatedField<RaceTime> times) {
+        var player = WorldHandler.instance.GetCurrentPlayer();
+        var app = player.phone.GetAppInstance<AppSlopCrew>();
+        var sorted = times.OrderBy(x => x.Time).ToList();
+
+        var str = string.Empty;
+        var playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
+        var config = Plugin.Host.Services.GetRequiredService<Config>();
+        foreach (var kvp in sorted) {
+            var id = kvp.PlayerId;
+            var timeStr = "<color=white>: " + this.NiceTimerString(kvp.Time) + "\n";
+
+            if (playerManager.Players.TryGetValue(id, out var associatedPlayer)) {
+                var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
+                str += name + timeStr;
+            } else {
+                // Assume players not in our players list is us
+                str += config.General.Username.Value + timeStr;
+            }
+        }
+
+        app.SetForcedText("Race Results", str.Trim());
     }
 
     public bool OnCheckpointReached(RaceCheckpoint checkpoint) {
