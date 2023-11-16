@@ -107,12 +107,15 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task MakeCommunityContributor(string id) {
+    public async Task<bool> MakeCommunityContributor(string id) {
         var user = await GetUserById(id);
         if (user is not null) {
             user.IsCommunityContributor = true;
             await dbContext.SaveChangesAsync();
+            return true;
         }
+
+        return false;
     }
 
     public Task<User?> GetUserById(string id)
