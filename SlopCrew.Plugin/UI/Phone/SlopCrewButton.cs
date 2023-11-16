@@ -94,7 +94,7 @@ internal class SlopCrewButton : PhoneScrollButton {
         this.buttonBackground!.sprite = selectedButtonSprite;
         this.modeLabel!.color = selectedModeColor;
         this.descriptionLabel!.color = selectedModeColor;
-        this.statusLabel!.color = selectedModeColor;
+        this.statusLabel!.color = normalModeColor;
         this.confirmArrow!.SetActive(true);
     }
 
@@ -103,7 +103,7 @@ internal class SlopCrewButton : PhoneScrollButton {
         this.buttonBackground!.sprite = normalButtonSprite;
         this.modeLabel!.color = normalModeColor;
         this.descriptionLabel!.color = normalModeColor;
-        this.statusLabel!.color = normalModeColor;
+        this.statusLabel!.color = selectedModeColor;
         this.confirmArrow!.SetActive(false);
     }
 
