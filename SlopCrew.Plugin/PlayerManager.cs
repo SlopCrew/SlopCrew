@@ -9,7 +9,12 @@ using SlopCrew.Common.Proto;
 
 namespace SlopCrew.Plugin;
 
-public class PlayerManager(ConnectionManager connectionManager, ManualLogSource logger, Config config)
+public class PlayerManager(
+    ConnectionManager connectionManager,
+    Config config,
+    CharacterInfoManager characterInfoManager,
+    ManualLogSource logger
+)
     : IHostedService {
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
@@ -52,6 +57,7 @@ public class PlayerManager(ConnectionManager connectionManager, ManualLogSource 
                                              this,
                                              connectionManager,
                                              config,
+                                             characterInfoManager,
                                              player));
                     }
                 }

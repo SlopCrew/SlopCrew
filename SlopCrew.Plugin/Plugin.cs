@@ -31,6 +31,7 @@ public class Plugin : BaseUnityPlugin {
             services.AddSingleton(new Config(this.Config));
             services.AddSingleton<SlopCrewAPI>();
             services.AddSingleton<InputBlocker>();
+            services.AddSingleton<CharacterInfoManager>();
         });
 
         Host = builder.Build();

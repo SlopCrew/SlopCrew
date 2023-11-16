@@ -9,11 +9,15 @@ using Player = SlopCrew.Common.Proto.Player;
 
 namespace SlopCrew.Plugin;
 
-public class LocalPlayerManager(Config config, ConnectionManager connectionManager) : IHostedService {
+public class LocalPlayerManager(
+    Config config,
+    ConnectionManager connectionManager,
+    CharacterInfoManager characterInfoManager
+) : IHostedService {
     public bool HelloRefreshQueued;
     public bool VisualRefreshQueued;
     public int CurrentOutfit;
-    
+
     private Transform? lastTransform;
     private int? lastAnimation;
 
@@ -51,6 +55,8 @@ public class LocalPlayerManager(Config config, ConnectionManager connectionManag
     private void HandleRefreshes(Reptile.Player me) {
         if (this.HelloRefreshQueued) {
             var key = config.Server.Key.Value ?? string.Empty;
+            var infos = characterInfoManager.GetCharacterInfo((int) me.character);
+
             connectionManager.SendMessage(new ServerboundMessage {
                 Hello = new ServerboundHello {
                     Player = new Player {
@@ -66,7 +72,9 @@ public class LocalPlayerManager(Config config, ConnectionManager connectionManag
                             Character = (int) me.character,
                             Outfit = this.CurrentOutfit,
                             MoveStyle = (int) me.moveStyle
-                        }
+                        },
+
+                        CustomCharacterInfo = {infos}
                     },
 
                     Stage = APIManager.API!.StageOverride ?? (int) Core.instance.baseModule.CurrentStage,

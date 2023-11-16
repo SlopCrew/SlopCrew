@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using Microsoft.Extensions.DependencyInjection;
 using Reptile;
@@ -20,6 +22,7 @@ public class AssociatedPlayer : IDisposable {
     private PlayerManager playerManager;
     private ConnectionManager connectionManager;
     private Config config;
+    private CharacterInfoManager characterInfoManager;
 
     private UnityEngine.Vector3 velocity = new();
     private PositionUpdate? targetUpdate = null;
@@ -37,11 +40,13 @@ public class AssociatedPlayer : IDisposable {
         PlayerManager playerManager,
         ConnectionManager connectionManager,
         Config config,
+        CharacterInfoManager characterInfoManager,
         Common.Proto.Player slopPlayer
     ) {
         this.playerManager = playerManager;
         this.connectionManager = connectionManager;
         this.config = config;
+        this.characterInfoManager = characterInfoManager;
         this.SlopPlayer = slopPlayer;
 
         var emptyGameObject = new GameObject("SlopCrew_EmptyGameObject");
@@ -53,6 +58,7 @@ public class AssociatedPlayer : IDisposable {
         var outfit = slopPlayer.CharacterInfo.Outfit;
         var moveStyle = (MoveStyle) slopPlayer.CharacterInfo.MoveStyle;
 
+        this.ProcessCharacterInfo(slopPlayer.CustomCharacterInfo.ToList());
         this.ReptilePlayer = WorldHandler.instance.SetupAIPlayerAt(
             emptyTransform,
             character,
@@ -75,6 +81,9 @@ public class AssociatedPlayer : IDisposable {
 
         Object.Destroy(emptyGameObject);
     }
+
+    public void ProcessCharacterInfo(List<CustomCharacterInfo> infos)
+        => this.characterInfoManager.ProcessCharacterInfo(infos);
 
     // FIXME: nameplates sink into player in millenium square???
     private void SpawnNameplate() {
@@ -234,6 +243,7 @@ public class AssociatedPlayer : IDisposable {
                 this.ReptilePlayer.SetOutfit(player.CharacterInfo.Outfit);
             } else if (differentCharacter || differentOutfit) {
                 // New outfit
+                this.ProcessCharacterInfo(player.CustomCharacterInfo.ToList());
                 this.ReptilePlayer.SetCharacter(
                     (Characters) player.CharacterInfo.Character,
                     player.CharacterInfo.Outfit
@@ -253,11 +263,11 @@ public class AssociatedPlayer : IDisposable {
 
     public void QueuePositionUpdate(PositionUpdate newUpdate) {
         if (this.ReptilePlayer == null) return;
-        
+
         this.targetUpdate = newUpdate;
         var latency = newUpdate.Latency / 1000f;
         var timeToMove = this.connectionManager.TickRate!.Value + latency;
-        
+
         var currentPos = this.ReptilePlayer.tf.position;
         var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
         var posDiff = targetPos - currentPos;
@@ -267,7 +277,7 @@ public class AssociatedPlayer : IDisposable {
         var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
         var rotDiff = UnityEngine.Quaternion.Angle(currentRot, targetRot);
         var rotVelocity = rotDiff / timeToMove;
-        
+
         this.targetPosSpeed = posVelocity.magnitude;
         this.targetRotSpeed = rotVelocity;
     }
@@ -287,7 +297,7 @@ public class AssociatedPlayer : IDisposable {
 
         var currentPos = this.ReptilePlayer.tf.position;
         var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
-        
+
         var newPos = UnityEngine.Vector3.MoveTowards(
             currentPos,
             targetPos,
