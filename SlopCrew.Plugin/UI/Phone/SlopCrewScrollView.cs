@@ -79,8 +79,8 @@ public class SlopCrewScrollView : PhoneScroll {
                                         buttonDescription,
                                         buttonStatus,
                                         confirmArrow,
-                                        spriteSheet.ButtonSpriteNormal!,
-                                        spriteSheet.ButtonSpriteSelected!);
+                                        spriteSheet.EncounterButtonSpriteNormal!,
+                                        spriteSheet.EncounterButtonSpriteSelected!);
 
         m_AppButtonPrefab = slopCrewButton.gameObject;
         m_AppButtonPrefab.SetActive(false);
