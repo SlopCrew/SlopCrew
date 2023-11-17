@@ -167,10 +167,12 @@ public class NetworkClient : IDisposable {
 
             case ServerboundMessage.MessageOneofCase.QuickChat: {
                 if (this.Player is null || this.Stage is null) return;
+                var quickChat = packet.QuickChat.QuickChat;
+                if (quickChat.Index >= Constants.QuickChatMessages[quickChat.Category].Count) return;
                 this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
                     QuickChat = new ClientboundQuickChat {
                         PlayerId = this.Player.Id,
-                        QuickChat = packet.QuickChat.QuickChat
+                        QuickChat = quickChat
                     }
                 });
                 break;
