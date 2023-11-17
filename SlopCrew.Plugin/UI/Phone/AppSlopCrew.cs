@@ -30,6 +30,7 @@ public class AppSlopCrew : App {
     public static ClientboundEncounterRequest? LastRequest;
 
     public bool HasNearbyPlayer => nearestPlayer != null;
+    public AppSpriteSheet? SpriteSheet { get; private set; }
 
     private SlopCrewScrollView? scrollView;
     private TextMeshProUGUI? statusTitle;
@@ -62,6 +63,8 @@ public class AppSlopCrew : App {
         this.playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
         this.config = Plugin.Host.Services.GetRequiredService<Config>();
         this.serverConfig = Plugin.Host.Services.GetRequiredService<ServerConfig>();
+
+        SpriteSheet = new AppSpriteSheet(EncounterCount);
 
         base.Awake();
     }
@@ -145,12 +148,11 @@ public class AppSlopCrew : App {
         scrollView = scrollViewObject.AddComponent<SlopCrewScrollView>();
         scrollView.Initialize(this, confirmArrow.gameObject, titleLabel);
         scrollView.InitalizeScrollView();
+        scrollView.SetListContent(EncounterCount);
     }
 
     public override void OnAppEnable() {
         base.OnAppEnable();
-
-        scrollView.SetListContent(EncounterCount);
 
         // I don't think anyone's going to just disable or enable banned mods while the game is running?
         // So we can probably cache the result when opening the app instead of asking every frame
