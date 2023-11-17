@@ -145,12 +145,11 @@ public class AppSlopCrew : App {
         scrollView = scrollViewObject.AddComponent<SlopCrewScrollView>();
         scrollView.Initialize(this, confirmArrow.gameObject, titleLabel);
         scrollView.InitalizeScrollView();
+        scrollView.SetListContent(EncounterCount);
     }
 
     public override void OnAppEnable() {
         base.OnAppEnable();
-
-        scrollView.SetListContent(EncounterCount);
 
         // I don't think anyone's going to just disable or enable banned mods while the game is running?
         // So we can probably cache the result when opening the app instead of asking every frame
