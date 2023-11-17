@@ -10,10 +10,6 @@ namespace SlopCrew.Plugin.UI.Phone;
 public class SlopCrewScrollView : PhoneScroll {
     private AppSlopCrew? slopCrewApp;
 
-    private Sprite? buttonSprite;
-    private Sprite? buttonSpriteSelected;
-    private Sprite?[] buttonIcons = new Sprite?[AppSlopCrew.EncounterCount];
-
     private const float ButtonScale = 2.0f;
     private const float IconScale = 2.0f;
 
@@ -22,7 +18,7 @@ public class SlopCrewScrollView : PhoneScroll {
 
     public CanvasGroup? CanvasGroup { get; private set; }
 
-    private void CreatePrefabs(GameObject arrowObject, TextMeshProUGUI titleObject) {
+    private void CreatePrefabs(AppSpriteSheet spriteSheet, GameObject arrowObject, TextMeshProUGUI titleObject) {
         var scaledButtonSize = AppSpriteSheet.ButtonSpriteSize * ButtonScale;
         var scaledIconSize = AppSpriteSheet.IconSpriteSize * IconScale;
 
@@ -83,8 +79,8 @@ public class SlopCrewScrollView : PhoneScroll {
                                         buttonDescription,
                                         buttonStatus,
                                         confirmArrow,
-                                        buttonSprite!,
-                                        buttonSpriteSelected!);
+                                        spriteSheet.ButtonSpriteNormal!,
+                                        spriteSheet.ButtonSpriteSelected!);
 
         m_AppButtonPrefab = slopCrewButton.gameObject;
         m_AppButtonPrefab.SetActive(false);
@@ -102,7 +98,7 @@ public class SlopCrewScrollView : PhoneScroll {
         this.m_ButtonContainer = this.gameObject.GetComponent<RectTransform>();
         this.CanvasGroup = this.gameObject.AddComponent<CanvasGroup>();
 
-        this.CreatePrefabs(arrowObject, titleObject);
+        this.CreatePrefabs(app.SpriteSheet, arrowObject, titleObject);
     }
 
     public override void OnButtonCreated(PhoneScrollButton newButton) {
@@ -115,7 +111,8 @@ public class SlopCrewScrollView : PhoneScroll {
 
     public override void SetButtonContent(PhoneScrollButton button, int contentIndex) {
         var slopCrewButton = (SlopCrewButton) button;
-        slopCrewButton.SetButtonContents((EncounterType) contentIndex, this.buttonIcons[contentIndex]!);
+        var encounterType = (EncounterType) contentIndex;
+        slopCrewButton.SetButtonContents(encounterType, this.slopCrewApp.SpriteSheet.GetEncounterIcon(encounterType));
     }
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {

@@ -13,8 +13,8 @@ namespace SlopCrew.Plugin.UI.Phone {
         public static readonly Vector2 IconSpriteSize = new Vector2(116.0f, 101.0f);
         public static readonly float IconSpriteGridHeight = SpriteSheetSize.y - (ButtonSpriteSize.y + SpriteSheetPadding) * 2.0f - IconSpriteSize.y;
 
-        public Sprite? ButtonSpriteNormal { get; private set; }
-        public Sprite? ButtonSpriteSelected { get; private set; }
+        public Sprite ButtonSpriteNormal { get; private set; }
+        public Sprite ButtonSpriteSelected { get; private set; }
 
         private Sprite?[] encounterIconSprites;
 
