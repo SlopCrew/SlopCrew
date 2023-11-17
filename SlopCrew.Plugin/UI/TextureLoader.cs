@@ -15,7 +15,7 @@ public class TextureLoader {
             read += stream.Read(bytes, read, bytes.Length - read);
         }
 
-        var texture = new Texture2D(width, height, TextureFormat.RGBA32, generateMipMaps ? -1 : 0, false);
+        var texture = new Texture2D(width, height, TextureFormat.RGBA32, generateMipMaps, false);
         texture.LoadImage(bytes);
         texture.Apply();
 
