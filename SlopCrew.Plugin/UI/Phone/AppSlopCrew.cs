@@ -30,6 +30,7 @@ public class AppSlopCrew : App {
     public static ClientboundEncounterRequest? LastRequest;
 
     public bool HasNearbyPlayer => nearestPlayer != null;
+    public AppSpriteSheet? SpriteSheet { get; private set; }
 
     private SlopCrewScrollView? scrollView;
     private TextMeshProUGUI? statusTitle;
@@ -62,6 +63,8 @@ public class AppSlopCrew : App {
         this.playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
         this.config = Plugin.Host.Services.GetRequiredService<Config>();
         this.serverConfig = Plugin.Host.Services.GetRequiredService<ServerConfig>();
+
+        SpriteSheet = new AppSpriteSheet(EncounterCount);
 
         base.Awake();
     }
