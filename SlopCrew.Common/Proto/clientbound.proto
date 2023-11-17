@@ -19,6 +19,7 @@ message ClientboundMessage {
     ClientboundEncounterEnd encounter_end = 10;
 
     ClientboundCustomPacket custom_packet = 11;
+    ClientboundQuickChat quick_chat = 12;
   }
 }
 
@@ -107,4 +108,9 @@ message SimpleEncounterEndData {
 message ClientboundCustomPacket {
   uint32 player_id = 1;
   CustomPacket packet = 2;
+}
+
+message ClientboundQuickChat {
+  uint32 player_id = 1;
+  QuickChat quick_chat = 2;
 }

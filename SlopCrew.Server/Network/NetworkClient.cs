@@ -164,6 +164,17 @@ public class NetworkClient : IDisposable {
                 });
                 break;
             }
+
+            case ServerboundMessage.MessageOneofCase.QuickChat: {
+                if (this.Player is null || this.Stage is null) return;
+                this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
+                    QuickChat = new ClientboundQuickChat {
+                        PlayerId = this.Player.Id,
+                        QuickChat = packet.QuickChat.QuickChat
+                    }
+                });
+                break;
+            }
         }
     }
 
@@ -220,7 +231,7 @@ public class NetworkClient : IDisposable {
             var user = this.userService.GetUserByKey(this.Key);
             this.IsCommunityContributor = user?.IsCommunityContributor ?? false;
         }
-        
+
         player.IsCommunityContributor = this.IsCommunityContributor;
 
         // Cap a few things for people who are naughty
