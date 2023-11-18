@@ -11,16 +11,10 @@ public class PhonePatch {
     [HarmonyPrefix]
     [HarmonyPatch("PhoneInit")]
     public static void PhoneInit(Phone __instance, Player setPlayer) {
-        var apps = __instance.transform.Find("OpenCanvas/PhoneContainerOpen/MainScreen/Apps");
+        var appRoot = __instance.transform.Find("OpenCanvas/PhoneContainerOpen/MainScreen/Apps") as RectTransform;
 
-        var slopAppObj = new GameObject("AppSlopCrew");
-        slopAppObj.layer = Layers.Phone;
-
-        slopAppObj.AddComponent<AppSlopCrew>();
-        slopAppObj.transform.SetParent(apps, false);
-
-        // why are these zero? idk!
-        slopAppObj.transform.localScale = new(1, 1, 1);
-        slopAppObj.SetActive(true);
+        AppUtility.Create<AppSlopCrew>("AppSlopCrew", appRoot!);
+        AppUtility.Create<AppQuickChat>("AppQuickChat", appRoot!);
+        AppUtility.Create<AppEncounters>("AppEncounters", appRoot!);
     }
 }

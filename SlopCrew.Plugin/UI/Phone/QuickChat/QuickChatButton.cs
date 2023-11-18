@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
-internal class SlopCrewButton : PhoneScrollButton {
+internal class QuickChatButton : PhoneScrollButton {
     // Fields need to be serialized if Instantiate() should copy them
     [SerializeField] private Image? buttonBackground;
     [SerializeField] private Image? buttonIcon;
@@ -55,7 +55,6 @@ internal class SlopCrewButton : PhoneScrollButton {
     public override void OnSelect(bool skipAnimations = false) {
         base.OnSelect(skipAnimations);
         this.buttonBackground!.sprite = selectedButtonSprite;
-        this.buttonIcon!.color = selectedModeColor;
         this.label!.color = selectedModeColor;
         this.confirmArrow!.SetActive(true);
     }
@@ -63,7 +62,6 @@ internal class SlopCrewButton : PhoneScrollButton {
     public override void OnDeselect(bool skipAnimations = false) {
         base.OnDeselect(skipAnimations);
         this.buttonBackground!.sprite = normalButtonSprite;
-        this.buttonIcon!.color = normalModeColor;
         this.label!.color = normalModeColor;
         this.confirmArrow!.SetActive(false);
     }
