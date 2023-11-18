@@ -8,49 +8,19 @@ using UnityEngine.UI;
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class SlopCrewScrollView : PhoneScroll {
-    private float buttonSpacing = 55.0f;
-    private float buttonTopMargin = -110.0f;
     private AppSlopCrew? slopCrewApp;
 
-    private Sprite? buttonSprite;
-    private Sprite? buttonSpriteSelected;
-    private Sprite?[] buttonIcons = new Sprite?[3];
+    private const float ButtonScale = 2.0f;
+    private const float IconScale = 2.0f;
 
-    private static readonly Vector2 ButtonSize = new Vector2(535.0f, 175.0f);
-    private static readonly Vector2 IconSize = new Vector2(147.0f, 129.0f);
-    private const float ButtonScale = 1.9f;
-    private const float IconScale = 1.666f;
+    private const float ButtonSpacing = 40.0f;
+    private static readonly float ButtonTopMargin = -120.0f;
 
     public CanvasGroup? CanvasGroup { get; private set; }
 
-    private void LoadSprites() {
-        var phoneSheet =
-            TextureLoader.LoadResourceAsTexture("SlopCrew.Plugin.res.phone_app_sheet.png", 1024, 1024, false);
-
-        var centerPivot = new Vector2(0.5f, 0.5f);
-        var height = phoneSheet.height;
-
-        buttonSpriteSelected =
-            Sprite.Create(phoneSheet, new Rect(11.0f, height - 25.0f - ButtonSize.y, ButtonSize.x, ButtonSize.y),
-                          centerPivot, 100.0f);
-        buttonSprite =
-            Sprite.Create(phoneSheet, new Rect(11.0f, height - 231.0f - ButtonSize.y, ButtonSize.x, ButtonSize.y),
-                          centerPivot, 100.0f);
-
-        buttonIcons[0] =
-            Sprite.Create(phoneSheet, new Rect(337.0f, height - 437.0f - IconSize.y, IconSize.x, IconSize.y),
-                          centerPivot, 100.0f);
-        buttonIcons[1] =
-            Sprite.Create(phoneSheet, new Rect(175.0f, height - 437.0f - IconSize.y, IconSize.x, IconSize.y),
-                          centerPivot, 100.0f);
-        buttonIcons[2] =
-            Sprite.Create(phoneSheet, new Rect(333.0f, height - 727.0f - IconSize.y, IconSize.x, IconSize.y),
-                          centerPivot, 100.0f);
-    }
-
-    private void CreatePrefabs(GameObject arrowObject, TextMeshProUGUI titleObject) {
-        var scaledButtonSize = ButtonSize * ButtonScale;
-        var scaledIconSize = IconSize * IconScale;
+    private void CreatePrefabs(AppSpriteSheet spriteSheet, GameObject arrowObject, TextMeshProUGUI titleObject) {
+        var scaledButtonSize = AppSpriteSheet.ButtonSpriteSize * ButtonScale;
+        var scaledIconSize = AppSpriteSheet.IconSpriteSize * IconScale;
 
         // Main button
         GameObject button = new GameObject("SlopCrew Button");
@@ -109,8 +79,8 @@ public class SlopCrewScrollView : PhoneScroll {
                                         buttonDescription,
                                         buttonStatus,
                                         confirmArrow,
-                                        buttonSprite!,
-                                        buttonSpriteSelected!);
+                                        spriteSheet.EncounterButtonSpriteNormal!,
+                                        spriteSheet.EncounterButtonSpriteSelected!);
 
         m_AppButtonPrefab = slopCrewButton.gameObject;
         m_AppButtonPrefab.SetActive(false);
@@ -128,8 +98,7 @@ public class SlopCrewScrollView : PhoneScroll {
         this.m_ButtonContainer = this.gameObject.GetComponent<RectTransform>();
         this.CanvasGroup = this.gameObject.AddComponent<CanvasGroup>();
 
-        this.LoadSprites();
-        this.CreatePrefabs(arrowObject, titleObject);
+        this.CreatePrefabs(app.SpriteSheet, arrowObject, titleObject);
     }
 
     public override void OnButtonCreated(PhoneScrollButton newButton) {
@@ -142,16 +111,17 @@ public class SlopCrewScrollView : PhoneScroll {
 
     public override void SetButtonContent(PhoneScrollButton button, int contentIndex) {
         var slopCrewButton = (SlopCrewButton) button;
-        slopCrewButton.SetButtonContents((EncounterType) contentIndex, this.buttonIcons[contentIndex]!);
+        var encounterType = (EncounterType) contentIndex;
+        slopCrewButton.SetButtonContents(encounterType, this.slopCrewApp.SpriteSheet.GetEncounterIcon(encounterType));
     }
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
-        var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + this.buttonSpacing;
+        var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
         var rectTransform = button.RectTransform();
 
         var newPosition = new Vector2 {
             x = rectTransform.anchoredPosition.x,
-            y = this.buttonTopMargin - ((posIndex - (this.SCROLL_RANGE / 2.0f)) * buttonSize) -
+            y = ButtonTopMargin - ((posIndex - (this.SCROLL_RANGE / 2.0f)) * buttonSize) -
                 (this.SCROLL_RANGE % 2.0f == 0.0f ? buttonSize / 2.0f : 0.0f)
         };
 

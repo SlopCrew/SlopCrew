@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SlopCrew.Plugin.UI;
 
 public class TextureLoader {
-    public static Texture2D LoadResourceAsTexture(string path, int width, int height, bool generateMipMaps = true) {
+    public static Texture2D LoadResourceAsTexture(string path, int width, int height, bool generateMipMaps = true, TextureWrapMode wrapMode = TextureWrapMode.Repeat) {
         var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
         if (stream is null) throw new Exception($"Could not load texture at path: {path}");
 
@@ -16,6 +16,7 @@ public class TextureLoader {
         }
 
         var texture = new Texture2D(width, height, TextureFormat.RGBA32, generateMipMaps, false);
+        texture.wrapMode = wrapMode;
         texture.LoadImage(bytes);
         texture.Apply();
 
@@ -23,7 +24,7 @@ public class TextureLoader {
     }
 
     public static Sprite LoadResourceAsSprite(string path, int width, int height, float pivotX = 0.5f, float pivotY = 0.5f) {
-        Texture2D texture = LoadResourceAsTexture(path, width, height, false);
+        Texture2D texture = LoadResourceAsTexture(path, width, height, false, TextureWrapMode.Clamp);
         return Sprite.Create(texture, new Rect(0.0f, 0.0f, texture.width, texture.height), new Vector2(pivotX, pivotY), 100.0f);
     }
 }
