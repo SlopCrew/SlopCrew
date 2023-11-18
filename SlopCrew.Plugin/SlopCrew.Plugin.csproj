@@ -53,6 +53,7 @@
         <Reference Include="Unity.TextMeshPro">
             <HintPath>$(ManagedPath)/Unity.TextMeshPro.dll</HintPath>
             <Private>false</Private>
+            <Publicize>true</Publicize>
         </Reference>
         <Reference Include="UnityEngine.UI">
             <HintPath>$(ManagedPath)/UnityEngine.UI.dll</HintPath>
@@ -90,7 +91,7 @@
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>
         </Reference>
-		<Reference Include="DOTweenPro">
+        <Reference Include="DOTweenPro">
             <HintPath>$(ManagedPath)/DOTweenPro.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -108,8 +109,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Encounters\Race\" />
-      <Folder Include="UI\Phone\" />
+        <Folder Include="Encounters\Race\"/>
+        <Folder Include="UI\Phone\"/>
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

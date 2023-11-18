@@ -24,3 +24,7 @@ It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends. **Se
 - See other people's movements, animations, and visual effects
 - Go against players in score battles, combo battles, and races
 - See other players wearing custom character models you have installed (via [CrewBoom](https://github.com/SGiygas/CrewBoom))
+
+## Credits
+
+Slop Crew uses [Mutant Standard](https://mutant.tech/) emoji, licensed [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
