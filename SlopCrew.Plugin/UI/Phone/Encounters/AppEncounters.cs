@@ -38,6 +38,12 @@ public class AppEncounters : App {
     private bool hasBannedMods;
     private bool notificationInitialized;
 
+    private Image? bigTextBackground;
+    private TextMeshProUGUI? bigTextTitleLabel;
+    private TextMeshProUGUI? bigTextMessageLabel;
+    private bool isShowingBigText;
+    private Sequence? bigTextSequence;
+
     private TextMeshProUGUI? titleLabel;
     private TextMeshProUGUI? opponentNameLabel;
     private float initialOpponentNameX;
@@ -60,8 +66,67 @@ public class AppEncounters : App {
 
         scrollView = ExtendedPhoneScroll.Create<EncounterView>("EncounterScrollView", this, Content);
         AddOverlay();
+        AddBigText();
 
         NearestPlayerChanged(null);
+    }
+
+    private void AddBigText() {
+        var musicApp = MyPhone.GetAppInstance<AppMusicPlayer>();
+        var musicButtonPrefab = musicApp.m_TrackList.m_AppButtonPrefab;
+
+        var confirmArrow = musicButtonPrefab.transform.Find("PromptArrow");
+
+        var textContainer = musicApp.transform.Find("Content/StatusPanel/RightSide");
+        var label = textContainer.Find("CurrentTitleLabel").GetComponent<TextMeshProUGUI>();
+
+        var bigTextBackgroundObject = new GameObject("Big Text");
+        this.bigTextBackground = bigTextBackgroundObject.AddComponent<Image>();
+        this.bigTextBackground.color = Color.clear;
+        var bigTextBackgroundRect = bigTextBackground.rectTransform;
+        bigTextBackgroundRect.SetParent(Content, false);
+        bigTextBackgroundRect.SetSiblingIndex(scrollView!.transform.GetSiblingIndex() + 1);
+        bigTextBackgroundRect.StretchToFillParent();
+        // Offset for overlay
+        var scrollViewRect = scrollView.RectTransform();
+        bigTextBackgroundRect.offsetMin = scrollViewRect.offsetMin;
+        bigTextBackgroundRect.offsetMax = scrollViewRect.offsetMax;
+
+        float textSize = MyPhone.ScreenSize.x - 64.0f;
+        float textPosition = 64.0f;
+
+        this.bigTextTitleLabel = new GameObject("Title Label").AddComponent<TextMeshProUGUI>();
+        this.bigTextTitleLabel.font = label.font;
+        this.bigTextTitleLabel.fontSize = label.fontSize * 1.25f;
+        this.bigTextTitleLabel.fontSharedMaterial = label.fontSharedMaterial;
+        this.bigTextTitleLabel.alpha = 0.0f;
+        var bigTextTitleRect = this.bigTextTitleLabel.rectTransform;
+        bigTextTitleRect.SetParent(bigTextBackgroundRect, false);
+        bigTextTitleRect.SetAnchorAndPivot(0.0f, 1.0f);
+        bigTextTitleRect.sizeDelta = new Vector2(textSize + 256.0f, this.bigTextTitleLabel.fontSize);
+        bigTextTitleRect.anchoredPosition = new Vector2(textPosition + 256.0f, -64.0f);
+
+        this.bigTextMessageLabel = Instantiate(bigTextTitleLabel, bigTextBackgroundRect);
+        this.bigTextMessageLabel.fontSize = label.fontSize;
+        var bigTextMessageRect = this.bigTextMessageLabel.rectTransform;
+        bigTextMessageRect.anchoredPosition = new Vector2(textPosition + 256.0f, bigTextTitleRect.anchoredPosition.y - 128.0f);
+
+        // Arrow to indicate pressing right = confirm
+        var arrow = (RectTransform) Instantiate(confirmArrow);
+        arrow.SetParent(bigTextBackgroundRect, false);
+        arrow.SetAnchorAndPivot(1.0f, 0.0f);
+        arrow.anchoredPosition = new Vector2(-64, 64.0f);
+        arrow.gameObject.SetActive(true);
+
+        bigTextSequence = DOTween.Sequence();
+        bigTextSequence.SetAutoKill(false);
+        bigTextSequence.Append(bigTextBackground.DOFade(0.95f, 0.2f));
+        bigTextSequence.Append(bigTextTitleLabel.DOFade(1.0f, 0.1f));
+        bigTextSequence.Join(bigTextTitleRect.DOAnchorPosX(textPosition, 0.1f));
+        bigTextSequence.Append(bigTextMessageLabel.DOFade(1.0f, 0.1f));
+        bigTextSequence.Join(bigTextMessageRect.DOAnchorPosX(textPosition, 0.1f));
+
+        bigTextBackground!.gameObject.SetActive(false);
     }
 
     private void AddOverlay() {
@@ -102,6 +167,9 @@ public class AppEncounters : App {
     public override void OnAppTerminate() {
         if (nameDisplaySequence != null) {
             nameDisplaySequence.Kill();
+        }
+        if (bigTextSequence != null) {
+            bigTextSequence.Kill();
         }
     }
 
@@ -213,6 +281,11 @@ public class AppEncounters : App {
     }
 
     public override void OnPressRight() {
+        if (this.isShowingBigText) {
+            DismissBigText();
+            return;
+        }
+
         if (this.hasBannedMods) {
             return;
         }
@@ -273,7 +346,22 @@ public class AppEncounters : App {
     }
 
     public void SetBigText(string title, string message) {
-        // TODO
+        isShowingBigText = true;
+
+        bigTextBackground!.gameObject.SetActive(true);
+
+        bigTextTitleLabel!.SetText(title);
+        bigTextMessageLabel!.SetText(message);
+
+        bigTextSequence.Restart();
+    }
+
+    private void DismissBigText() {
+        isShowingBigText = false;
+
+        bigTextBackground!.gameObject.SetActive(false);
+
+        m_AudioManager.PlaySfxUI(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
     }
 
     private void NearestPlayerChanged(AssociatedPlayer? player) {
