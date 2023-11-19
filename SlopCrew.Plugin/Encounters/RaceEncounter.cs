@@ -126,7 +126,7 @@ public class RaceEncounter : Encounter {
         var config = Plugin.Host.Services.GetRequiredService<Config>();
         foreach (var kvp in sorted) {
             var id = kvp.PlayerId;
-            var timeStr = "<noparse>: " + this.NiceTimerString(kvp.Time) + "\n";
+            var timeStr = $"<noparse>: {this.NiceTimerString(kvp.Time)}</noparse>\n";
 
             if (playerManager.Players.TryGetValue(id, out var associatedPlayer)) {
                 var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
