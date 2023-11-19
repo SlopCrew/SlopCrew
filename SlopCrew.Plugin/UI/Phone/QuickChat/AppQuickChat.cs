@@ -57,11 +57,7 @@ public class AppQuickChat : App {
     }
 
     public override void OnReleaseRight() {
-        if (this.scrollView!.SelectedButtton == null) return;
-        
-        var contentIndex = this.scrollView.GetContentIndex();
-        var buttonAssignStartIndex = this.scrollView.m_ButtonAssignStartIndex; // wtf?
-        var button = (QuickChatButton) this.scrollView.GetButtonByRelativeIndex(contentIndex - buttonAssignStartIndex);
+        var button = (QuickChatButton) scrollView!.SelectedButtton;
 
         button.GetMessage(out var category, out var index);
         SendQuickChatMessage(category, index);

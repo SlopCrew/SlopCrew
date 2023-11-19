@@ -220,7 +220,7 @@ public class AppEncounters : App {
         int contentIndex = scrollView!.GetContentIndex();
         var currentSelectedMode = (EncounterType) contentIndex;
 
-        var selectedButton = scrollView!.GetButtonByRelativeIndex(contentIndex) as EncounterButton;
+        var selectedButton = (EncounterButton) scrollView!.SelectedButtton;
         if (selectedButton!.Unavailable) {
             return;
         }
@@ -242,7 +242,7 @@ public class AppEncounters : App {
         var contentIndex = scrollView!.GetContentIndex();
         var currentSelectedMode = (EncounterType) contentIndex;
 
-        var selectedButton = scrollView!.GetButtonByRelativeIndex(contentIndex) as EncounterButton;
+        var selectedButton = (EncounterButton) scrollView!.SelectedButtton;
         if (selectedButton.Unavailable) {
             return;
         }
