@@ -23,6 +23,7 @@ public class RaceEncounter : Encounter {
         this.stopwatch = new Stopwatch();
         this.timer.Interval = Constants.RaceEncounterStartTime;
         this.timer.Elapsed += this.StartStopwatch;
+        this.timer.Start();
 
         foreach (var client in this.Clients) {
             client.SendPacket(new ClientboundMessage {
