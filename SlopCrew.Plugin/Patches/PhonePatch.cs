@@ -13,8 +13,8 @@ public class PhonePatch {
     public static void PhoneInit(Phone __instance, Player setPlayer) {
         var appRoot = __instance.transform.Find("OpenCanvas/PhoneContainerOpen/MainScreen/Apps") as RectTransform;
 
-        AppUtility.Create<AppSlopCrew>("AppSlopCrew", appRoot!);
-        AppUtility.Create<AppQuickChat>("AppQuickChat", appRoot!);
-        AppUtility.Create<AppEncounters>("AppEncounters", appRoot!);
+        AppUtility.CreateApp<AppSlopCrew>("AppSlopCrew", appRoot!);
+        AppUtility.CreateApp<AppQuickChat>("AppQuickChat", appRoot!);
+        AppUtility.CreateApp<AppEncounters>("AppEncounters", appRoot!);
     }
 }

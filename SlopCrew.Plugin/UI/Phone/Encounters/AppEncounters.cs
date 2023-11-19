@@ -25,13 +25,13 @@ public class AppEncounters : App {
     }
 
     public EncounterType ActiveEncounter { get; private set; }
-    public bool HasNearbyPlayer => nearestPlayer != null;
+    public bool HasNearbyPlayer => closestPlayer != null;
 
     public static ClientboundEncounterRequest? PreviousEncounterRequest;
 
     private EncounterView? scrollView;
 
-    private AssociatedPlayer? nearestPlayer;
+    private AssociatedPlayer? closestPlayer;
     private bool isWaitingForEncounter = false;
 
     private bool opponentLocked;
@@ -49,15 +49,16 @@ public class AppEncounters : App {
     private Config config = null!;
     private ServerConfig serverConfig = null!;
 
-    public override void OnAppInit() {
-        scrollView = ExtendedPhoneScroll.Create<EncounterView>("EncounterScrollView", this, Content);
+    private const string ClosestPlayerTitle = "CLOSEST PLAYER";
 
+    public override void OnAppInit() {
         this.encounterManager = Plugin.Host.Services.GetRequiredService<EncounterManager>();
         this.connectionManager = Plugin.Host.Services.GetRequiredService<ConnectionManager>();
         this.playerManager = Plugin.Host.Services.GetRequiredService<PlayerManager>();
         this.config = Plugin.Host.Services.GetRequiredService<Config>();
         this.serverConfig = Plugin.Host.Services.GetRequiredService<ServerConfig>();
 
+        scrollView = ExtendedPhoneScroll.Create<EncounterView>("EncounterScrollView", this, Content);
         AddOverlay();
 
         NearestPlayerChanged(null);
@@ -66,63 +67,48 @@ public class AppEncounters : App {
     private void AddOverlay() {
         var musicApp = MyPhone.GetAppInstance<AppMusicPlayer>();
 
-        // Overlay
-        var overlay = musicApp.transform.Find("Content/Overlay").gameObject;
-        GameObject slopCrewOverlay = Instantiate(overlay, Content);
-
-        var icons = slopCrewOverlay.transform.Find("Icons");
-        Destroy(icons.gameObject);
-
-        var overlayHeaderImage = slopCrewOverlay.transform.Find("OverlayTop");
-        Destroy(overlayHeaderImage.gameObject);
-        var overlayBottomImage = slopCrewOverlay.transform.Find("OverlayBottom");
-        overlayBottomImage.localPosition = Vector2.down * 870.0f;
+        AppUtility.CreateAppOverlay(musicApp, true, Content, "Activities", AppSlopCrew.SpriteSheet.MainIcon,
+                                    out _, out RectTransform footer, scrollView.RectTransform());
 
         // Status panel
-        var status = musicApp.transform.Find("Content/StatusPanel").gameObject;
-        GameObject slopCrewStatusPanel = Instantiate(status, Content);
+        var statusPanel = musicApp.transform.Find("Content/StatusPanel").gameObject;
 
-        // Get rid of music player UI stuff we don't need
-        Destroy(slopCrewStatusPanel.GetComponent<MusicPlayerStatusPanel>());
-        Destroy(slopCrewStatusPanel.transform.Find("Progress").gameObject);
-        Destroy(slopCrewStatusPanel.transform.Find("ShuffleControl").gameObject);
-        Destroy(slopCrewStatusPanel.transform.Find("LeftSide").gameObject);
+        var textContainer = statusPanel.transform.Find("RightSide");
+        var label = textContainer.Find("CurrentTitleLabel").GetComponent<TextMeshProUGUI>();
 
-        var textContainer = slopCrewStatusPanel.transform.Find("RightSide");
-        textContainer.localPosition = new Vector2(-480.0f, 150.7f);
+        this.titleLabel = new GameObject("Title Label").AddComponent<TextMeshProUGUI>();
+        this.titleLabel.font = label.font;
+        this.titleLabel.fontSize = label.fontSize;
+        this.titleLabel.fontSharedMaterial = label.fontSharedMaterial;
+        var titleRect = this.titleLabel.rectTransform;
+        titleRect.SetParent(footer, false);
+        titleRect.SetAnchorAndPivot(0.0f, 1.0f);
+        titleRect.sizeDelta = new Vector2(footer.sizeDelta.x - 32.0f, this.titleLabel.fontSize);
+        titleRect.anchoredPosition = new Vector2(32.0f, -165.0f);
 
-        titleLabel = textContainer.Find("CurrentTitleLabel").GetComponent<TextMeshProUGUI>();
-        opponentNameLabel = textContainer.Find("CurrentArtistLabel").GetComponent<TextMeshProUGUI>();
-        opponentNameLabel.transform.localPosition = new Vector2(0.0f, 64.0f);
-        opponentNameLabel.name = "CurrentStatusLabel";
+        this.opponentNameLabel = Instantiate(titleLabel, footer);
+        this.opponentNameLabel.alpha = 0.0f;
+        var opponentNameRect = this.opponentNameLabel.rectTransform;
+        opponentNameRect.anchoredPosition = new Vector2(titleRect.anchoredPosition.x + 256.0f, titleRect.anchoredPosition.y - 70.0f);
 
-        initialOpponentNameX = opponentNameLabel.rectTransform.anchoredPosition.x;
-        opponentNameLabel.rectTransform.anchoredPosition = opponentNameLabel.rectTransform.anchoredPosition + Vector2.right * 256.0f;
-        opponentNameLabel.alpha = 0.0f;
+        initialOpponentNameX = titleRect.anchoredPosition.x;
 
         nameDisplaySequence = DOTween.Sequence();
         nameDisplaySequence.SetAutoKill(false);
-        nameDisplaySequence.Append(opponentNameLabel.rectTransform.DOAnchorPosX(initialOpponentNameX, 0.2f));
+        nameDisplaySequence.Join(opponentNameLabel.rectTransform.DOAnchorPosX(initialOpponentNameX, 0.2f));
         nameDisplaySequence.Join(opponentNameLabel.DOFade(1.0f, 0.2f));
-
-        titleLabel.rectTransform.sizeDelta = opponentNameLabel.rectTransform.sizeDelta = new Vector2(1000.0f, 128.0f);
     }
 
-    private void SetText(string title, string messsage) {
-        if (titleLabel!.text != title) {
-            titleLabel.SetText(title);
+    public override void OnAppTerminate() {
+        if (nameDisplaySequence != null) {
+            nameDisplaySequence.Kill();
         }
-        if (opponentNameLabel!.text != messsage) {
-            opponentNameLabel.SetText(messsage);
-        }
-    }
-
-    public void SetBigText(string title, string message) {
-        // TODO
     }
 
     public override void OnAppEnable() {
         base.OnAppEnable();
+
+        PlayEnableAnimation();
 
         this.hasBannedMods = HasBannedMods();
         if (this.hasBannedMods) {
@@ -134,6 +120,21 @@ public class AppEncounters : App {
             scrollView.enabled = false;
 
             return;
+        }
+    }
+
+    private void PlayEnableAnimation() {
+        nameDisplaySequence.Restart();
+        Sequence enableAnimation = DOTween.Sequence();
+
+        for (int i = 0; i < scrollView!.GetScrollRange(); i++) {
+            var button = (EncounterButton) scrollView.GetButtonByRelativeIndex(i);
+            RectTransform buttonRect = button.RectTransform();
+
+            var targetPosition = scrollView.GetButtonPosition(i);
+            if (i != scrollView.GetSelectorPos()) targetPosition.x = 70.0f;
+            buttonRect.anchoredPosition = new Vector2(MyPhone.ScreenSize.x, buttonRect.anchoredPosition.y);
+            enableAnimation.Append(buttonRect.DOAnchorPos(targetPosition, 0.08f));
         }
     }
 
@@ -168,7 +169,7 @@ public class AppEncounters : App {
                 .OrderBy(x => Vector3.Distance(x.ReptilePlayer.transform.position, position))
                 .FirstOrDefault();
 
-            if (newNearestPlayer != this.nearestPlayer) {
+            if (newNearestPlayer != this.closestPlayer) {
                 this.NearestPlayerChanged(newNearestPlayer);
             }
         }
@@ -177,7 +178,7 @@ public class AppEncounters : App {
     public override void OpenContent(AUnlockable unlockable, bool appAlreadyOpen) {
         if (PreviousEncounterRequest is not null) {
             if (this.playerManager.Players.TryGetValue(PreviousEncounterRequest.PlayerId, out var player)) {
-                this.nearestPlayer = player;
+                this.closestPlayer = player;
 
                 if (this.config.Phone.StartEncountersOnRequest.Value) {
                     this.SendEncounterRequest(PreviousEncounterRequest.Type);
@@ -262,28 +263,41 @@ public class AppEncounters : App {
         }
     }
 
+    private void SetText(string title, string messsage) {
+        if (titleLabel!.text != title) {
+            titleLabel.SetText(title);
+        }
+        if (opponentNameLabel!.text != messsage) {
+            opponentNameLabel.SetText(messsage);
+        }
+    }
+
+    public void SetBigText(string title, string message) {
+        // TODO
+    }
+
     private void NearestPlayerChanged(AssociatedPlayer? player) {
-        this.nearestPlayer = player;
+        this.closestPlayer = player;
 
         if (player == null) {
             if (this.opponentLocked) this.opponentLocked = false;
-            SetText("NEAREST PLAYER", "None found.");
+            SetText(ClosestPlayerTitle, "None found.");
             return;
         }
 
         string playerName = PlayerNameFilter.DoFilter(player.SlopPlayer.Name);
-        SetText("NEAREST PLAYER", playerName);
+        SetText(ClosestPlayerTitle, playerName);
 
         nameDisplaySequence!.Restart();
     }
 
     private bool SendEncounterRequest(EncounterType encounter) {
         // TODO: races
-        if (encounter is not EncounterType.Race && this.nearestPlayer == null) return false;
+        if (encounter is not EncounterType.Race && this.closestPlayer == null) return false;
         if (this.encounterManager.CurrentEncounter?.IsBusy == true) return false;
         if (hasBannedMods) return false;
 
-        var id = this.nearestPlayer?.SlopPlayer.Id;
+        var id = this.closestPlayer?.SlopPlayer.Id;
 
         var encounterRequest = new ServerboundEncounterRequest {
             Type = encounter

@@ -21,6 +21,7 @@ public class AppSpriteSheet {
     private const int EncounterIconColumnCount = 4;
     private const int CategoryIconColumnCount = 4;
 
+    public readonly Sprite MainIcon = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 128, 128);
     public Sprite EncounterButtonSpriteNormal { get; private set; }
     public Sprite EncounterButtonSpriteSelected { get; private set; }
     public Sprite ChatSpriteNormal { get; private set; }

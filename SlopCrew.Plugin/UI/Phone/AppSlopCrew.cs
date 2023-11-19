@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static SlopCrew.Plugin.UI.Phone.AppEncounters;
+using DG.Tweening;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
@@ -27,26 +28,28 @@ public class AppSlopCrew : App {
         this.m_Unlockables = Array.Empty<AUnlockable>();
 
         this.scrollView = ExtendedPhoneScroll.Create<SlopCrewScrollView>("Categories", this, Content);
+
         var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
-        AddOverlay(musicApp, Content);
+        AppUtility.CreateAppOverlay(musicApp, false, Content, "Slop Crew", SpriteSheet.MainIcon, out _, out _, scrollView.RectTransform());
     }
 
-    private void AddOverlay(AppMusicPlayer musicApp, RectTransform root) {
-        // Overlay
-        var overlay = musicApp.transform.Find("Content/Overlay").gameObject;
-        GameObject slopCrewOverlay = Instantiate(overlay, root);
+    public override void OnAppEnable() {
+        PlayEnableAnimation();
+    }
 
-        var title = slopCrewOverlay.transform.Find("Icons/HeaderLabel").GetComponent<TextMeshProUGUI>();
-        Destroy(title.GetComponent<TMProLocalizationAddOn>());
-        title.SetText("Slop Crew");
+    private void PlayEnableAnimation() {
+        Sequence enableAnimation = DOTween.Sequence();
 
-        var overlayHeaderImage = slopCrewOverlay.transform.Find("OverlayTop");
-        overlayHeaderImage.localPosition = Vector2.up * 870.0f;
-        var overlayBottomImage = slopCrewOverlay.transform.Find("OverlayBottom");
-        Destroy(overlayBottomImage.gameObject);
+        for (int i = 0; i < scrollView!.GetScrollRange(); i++) {
+            var button = (SlopCrewButton) scrollView.GetButtonByRelativeIndex(i);
+            RectTransform buttonRect = button.RectTransform();
 
-        var iconImage = slopCrewOverlay.transform.Find("Icons/AppIcon").GetComponent<Image>();
-        iconImage.sprite = TextureLoader.LoadResourceAsSprite("SlopCrew.Plugin.res.phone_icon.png", 256, 256);
+            var targetPosition = scrollView.GetButtonPosition(i);
+            if (i != scrollView.GetSelectorPos()) targetPosition.x = 70.0f;
+            button.ToggleBackground(true);
+            buttonRect.anchoredPosition = new Vector2(MyPhone.ScreenSize.x, buttonRect.anchoredPosition.y);
+            enableAnimation.Append(buttonRect.DOAnchorPos(targetPosition, 0.08f));
+        }
     }
 
     public override void OnPressUp() {
@@ -58,18 +61,41 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressRight() {
-        int contentIndex = scrollView!.GetContentIndex();
-        var selectedCategory = (Category) contentIndex;
-        var button = scrollView!.GetButtonByRelativeIndex(contentIndex);
-
         scrollView!.HoldAnimationSelectedButton();
     }
 
     public override void OnReleaseRight() {
         int contentIndex = scrollView!.GetContentIndex();
         var selectedCategory = (Category) contentIndex;
-        var button = scrollView!.GetButtonByRelativeIndex(contentIndex);
+
+        PlayAppSelectedAnimation(selectedCategory);
 
         scrollView!.ActivateAnimationSelectedButton();
+        m_AudioManager.PlaySfxUI(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
+    }
+
+    private void PlayAppSelectedAnimation(Category selectedCategory) {
+        Sequence disableAnimation = DOTween.Sequence();
+
+        for (int i = 0; i < scrollView!.GetScrollRange(); i++) {
+            var button = (SlopCrewButton) scrollView.GetButtonByRelativeIndex(i);
+            RectTransform buttonRect = button.RectTransform();
+            if (i != scrollView.GetSelectorPos()) {
+                button.ToggleBackground(false);
+                disableAnimation.Append(buttonRect.DOAnchorPosX(-MyPhone.ScreenSize.x, 0.1f));
+            }
+        }
+        disableAnimation.AppendCallback(() => OpenApp(selectedCategory));
+    }
+
+    private void OpenApp(Category app) {
+        switch (app) {
+            case Category.Chat:
+                MyPhone.OpenApp(typeof(AppQuickChat));
+                break;
+            case Category.Encounters:
+                MyPhone.OpenApp(typeof(AppEncounters));
+                break;
+        }
     }
 }

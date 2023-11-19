@@ -9,11 +9,9 @@ public abstract class ExtendedPhoneScroll : PhoneScroll {
         var viewObject = new GameObject(name);
         viewObject.layer = Layers.Phone;
 
-        Vector2 viewSize = new(1070, 1775);
         var rect = viewObject.AddComponent<RectTransform>();
         rect.SetParent(root, false);
-        rect.SetAnchorAndPivot(1.0f, 0.5f);
-        rect.sizeDelta = viewSize;
+        rect.StretchToFillParent();
 
         var view = viewObject.AddComponent<T>();
         view.Initialize(associatedApp, root);
@@ -22,12 +20,4 @@ public abstract class ExtendedPhoneScroll : PhoneScroll {
     }
 
     public abstract void Initialize(App associatedApp, RectTransform root);
-
-    public virtual void Show() {
-        this.gameObject.SetActive(true);
-    }
-    public virtual void Hide(System.Action callback) {
-        this.gameObject.SetActive(false);
-        callback?.Invoke();
-    }
 }

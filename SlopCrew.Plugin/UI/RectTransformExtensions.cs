@@ -26,4 +26,10 @@ public static class RectTransformExtensions {
         rect.anchorMax = point;
         rect.pivot = point;
     }
+
+    public static void StretchToFillParent(this RectTransform rect) {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.SetBounds(0, 0, 0, 0);
+    }
 }

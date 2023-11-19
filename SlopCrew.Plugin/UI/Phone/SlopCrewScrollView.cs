@@ -1,10 +1,8 @@
 using Reptile;
 using Reptile.Phone;
-using SlopCrew.Common.Proto;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static Rewired.Integration.UnityUI.RewiredPointerInputModule;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
@@ -15,7 +13,7 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
     private const float IconScale = 2.0f;
 
     private const float ButtonSpacing = 24.0f;
-    private const float ButtonTopMargin = 450.0f;
+    private const float ButtonTopMargin = -ButtonSpacing;
 
     public override void Initialize(App associatedApp, RectTransform root) {
         this.app = associatedApp as AppSlopCrew;
@@ -48,7 +46,8 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
         // Main button
         GameObject button = new GameObject("Category Button");
         var rectTransform = button.AddComponent<RectTransform>();
-        rectTransform.SetAnchorAndPivot(1.0f, 0.5f);
+        // Align to the top
+        rectTransform.SetAnchorAndPivot(1.0f, 1.0f);
         rectTransform.sizeDelta = scaledButtonSize;
 
         // Button background
@@ -103,15 +102,15 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
     }
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
-        var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
         var rectTransform = button.RectTransform();
+        rectTransform.anchoredPosition = GetButtonPosition(posIndex);
+    }
 
-        var newPosition = new Vector2 {
-            x = rectTransform.anchoredPosition.x,
-            y = ButtonTopMargin - ((posIndex - (this.SCROLL_RANGE / 2.0f)) * buttonSize) -
-                (this.SCROLL_RANGE % 2.0f == 0.0f ? buttonSize / 2.0f : 0.0f)
+    public Vector2 GetButtonPosition(float positionIndex) {
+        var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
+        return new Vector2 {
+            x = 0.0f,
+            y = ButtonTopMargin - (positionIndex * buttonSize)
         };
-
-        rectTransform.anchoredPosition = newPosition;
     }
 }

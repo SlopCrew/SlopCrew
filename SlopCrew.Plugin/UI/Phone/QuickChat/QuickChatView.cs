@@ -26,8 +26,6 @@ public class QuickChatView : ExtendedPhoneScroll {
 
         this.m_ButtonContainer = this.gameObject.GetComponent<RectTransform>();
 
-        var homeApp = this.app!.MyPhone.GetAppInstance<AppHomeScreen>();
-
         this.CreatePrefabs(AppSlopCrew.SpriteSheet);
     }
 

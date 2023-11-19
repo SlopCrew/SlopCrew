@@ -14,15 +14,15 @@ public class EncounterView : ExtendedPhoneScroll {
     private const float ButtonScale = 2.0f;
     private const float IconScale = 2.0f;
 
-    private const float ButtonSpacing = 40.0f;
-    private static readonly float ButtonTopMargin = -120.0f;
+    private const float ButtonSpacing = 36.0f;
+    private static readonly float ButtonTopMargin = -ButtonSpacing;
 
     public CanvasGroup? CanvasGroup { get; private set; }
 
     public override void Initialize(App associatedApp, RectTransform root) {
         this.app = associatedApp as AppEncounters;
 
-        this.SCROLL_RANGE = AppSlopCrew.EncounterCount;
+        this.SCROLL_RANGE = 3;
         this.SCROLL_AMOUNT = 1;
         this.OVERFLOW_BUTTON_AMOUNT = 1;
         this.SCROLL_DURATION = 0.25f;
@@ -50,7 +50,8 @@ public class EncounterView : ExtendedPhoneScroll {
         // Main button
         GameObject button = new GameObject("Encounter Button");
         var rectTransform = button.AddComponent<RectTransform>();
-        rectTransform.SetAnchor(1.0f, 0.0f);
+        // Align to the top
+        rectTransform.SetAnchorAndPivot(1.0f, 1.0f);
         rectTransform.sizeDelta = scaledButtonSize;
 
         CanvasGroup canvasGroup = button.AddComponent<CanvasGroup>();
@@ -65,35 +66,43 @@ public class EncounterView : ExtendedPhoneScroll {
         var buttonIconObject = new GameObject("Button Icon");
         buttonIconObject.transform.SetParent(rectTransform, false);
         var buttonIcon = buttonIconObject.AddComponent<Image>();
-        buttonIcon.rectTransform.sizeDelta = scaledIconSize;
-        buttonIcon.rectTransform.localPosition = new Vector2(-scaledButtonSize.x * 0.353f, scaledButtonSize.y * 0.111f);
+        var buttonIconRect = buttonIcon.rectTransform;
+        buttonIconRect.sizeDelta = scaledIconSize;
+        buttonIconRect.SetAnchor(0.0f, 0.5f);
+        buttonIconRect.anchoredPosition = new Vector2(150.0f, 40.0f);
+
+        var buttonTextX = (buttonIconRect.anchoredPosition.x + buttonIconRect.sizeDelta.x * 0.5f) + 16.0f;
 
         // Mode title
         var buttonTitle = Instantiate(titleLabel);
-        buttonTitle.transform.SetParent(rectTransform, false);
-        buttonTitle.transform.localPosition = new Vector2(scaledButtonSize.x * 0.119f, scaledButtonSize.y * 0.342f);
+        var buttonTitleRect = buttonTitle.rectTransform;
+        buttonTitleRect.SetParent(rectTransform, false);
+        buttonTitleRect.SetAnchorAndPivot(0.0f, 0.5f);
+        buttonTitleRect.sizeDelta = new Vector2(scaledButtonSize.x - buttonTextX, buttonTitle.fontSize);
+        buttonTitleRect.anchoredPosition = new Vector2(buttonTextX, 100.0f);
         buttonTitle.SetText("Encounter");
 
         // Mode description
-        var buttonDescription = Instantiate(titleLabel);
-        buttonDescription.transform.SetParent(rectTransform, false);
-        buttonDescription.transform.localPosition =
-            new Vector2(scaledButtonSize.x * 0.113f, scaledButtonSize.y * 0.111f);
+        var buttonDescription = Instantiate(buttonTitle);
+        var buttonDescriptionRect = buttonDescription.rectTransform;
+        buttonDescriptionRect.SetParent(rectTransform, false);
+        buttonDescriptionRect.anchoredPosition = new Vector2(buttonTextX, 32.0f);
         buttonDescription.SetText("Description");
 
         // Encounter status label
-        var buttonStatus = Instantiate(titleLabel);
-        buttonStatus.transform.SetParent(rectTransform, false);
-        buttonStatus.transform.localPosition = new Vector2(scaledButtonSize.x * 0.0598f, -scaledButtonSize.y * 0.385f);
-        buttonStatus.rectTransform.sizeDelta = new Vector2(scaledButtonSize.x * 0.95f, scaledButtonSize.y * 0.471f);
+        var buttonStatus = Instantiate(buttonTitle);
+        var buttonStatusRect = buttonStatus.rectTransform;
+        buttonStatusRect.SetParent(rectTransform, false);
+        buttonStatusRect.sizeDelta = new Vector2(scaledButtonSize.x - 64.0f, buttonStatus.fontSize);
+        buttonStatusRect.anchoredPosition = new Vector2(64.0f, -130.0f);
         buttonStatus.SetText("Status");
         buttonStatus.gameObject.SetActive(false);
 
         // Arrow to indicate pressing right = confirm
-        var arrow = Instantiate(confirmArrow);
-        arrow.transform.SetParent(rectTransform, false);
-        arrow.transform.localPosition = new Vector2(scaledButtonSize.x - scaledButtonSize.x * 0.1f,
-                                                           scaledButtonSize.y - scaledButtonSize.y * 0.1f);
+        var arrow = (RectTransform) Instantiate(confirmArrow);
+        arrow.SetParent(rectTransform, false);
+        arrow.SetAnchorAndPivot(1.0f, 1.0f);
+        arrow.anchoredPosition = Vector2.one * -32.0f;
 
         var slopCrewButton = button.AddComponent<EncounterButton>();
         slopCrewButton.InitializeButton(canvasGroup,
@@ -125,15 +134,15 @@ public class EncounterView : ExtendedPhoneScroll {
     }
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
-        var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
         var rectTransform = button.RectTransform();
+        rectTransform.anchoredPosition = GetButtonPosition(posIndex);
+    }
 
-        var newPosition = new Vector2 {
-            x = rectTransform.anchoredPosition.x,
-            y = ButtonTopMargin - ((posIndex - (this.SCROLL_RANGE / 2.0f)) * buttonSize) -
-                (this.SCROLL_RANGE % 2.0f == 0.0f ? buttonSize / 2.0f : 0.0f)
+    public Vector2 GetButtonPosition(float positionIndex) {
+        var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
+        return new Vector2 {
+            x = 0.0f,
+            y = ButtonTopMargin - (positionIndex * buttonSize)
         };
-
-        rectTransform.anchoredPosition = newPosition;
     }
 }

@@ -62,9 +62,14 @@ internal class SlopCrewButton : PhoneScrollButton {
 
     public override void OnDeselect(bool skipAnimations = false) {
         base.OnDeselect(skipAnimations);
+        this.buttonBackground!.enabled = true;
         this.buttonBackground!.sprite = normalButtonSprite;
         this.buttonIcon!.color = normalModeColor;
         this.label!.color = normalModeColor;
         this.confirmArrow!.SetActive(false);
+    }
+
+    public void ToggleBackground(bool visible) {
+        this.buttonBackground!.enabled = visible;
     }
 }
