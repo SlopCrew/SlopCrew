@@ -36,20 +36,20 @@ public static class QuickChatUtility {
         tmp.spriteAsset = interfaceUtility.EmojiAsset;
 
         var capsule = player.interactionCollider as CapsuleCollider;
-        var pos = capsule!.transform.position;
-        var height = capsule.height;
+        var height = capsule!.height;
 
-        var startPos = pos + (Vector3.up * (height * QuickChatStartHeightFactor));
-        var restPos = pos + (Vector3.up * (height * QuickChatRestHeightFactor));
-        var endPos = pos + (Vector3.up * (height * QuickChatEndHeightFactor));
+        var startPos = Vector3.up * (height * QuickChatStartHeightFactor);
+        var restPos = Vector3.up * (height * QuickChatRestHeightFactor);
+        var endPos = Vector3.up * (height * QuickChatEndHeightFactor);
 
-        quickChat.transform.position = startPos;
+        quickChat.transform.SetParent(capsule.transform, false);
+        quickChat.transform.localPosition = startPos;
 
         var sequence = DOTween.Sequence();
 
         // Fade the text in and slide it up a bit
         sequence.Append(tmp.DOFade(1, QuickChatIntroDuration));
-        var moveInTween = quickChat.transform.DOMoveY(restPos.y, QuickChatIntroDuration);
+        var moveInTween = quickChat.transform.DOLocalMoveY(restPos.y, QuickChatIntroDuration);
         moveInTween.SetEase(Ease.OutCubic);
         sequence.Join(moveInTween);
 
@@ -58,7 +58,7 @@ public static class QuickChatUtility {
 
         // Fade the text out and slide it up a bit
         sequence.Append(tmp.DOFade(0, QuickChatOutroDuration));
-        var moveOutTween = quickChat.transform.DOMoveY(endPos.y, QuickChatOutroDuration);
+        var moveOutTween = quickChat.transform.DOLocalMoveY(endPos.y, QuickChatOutroDuration);
         moveOutTween.SetEase(Ease.InCubic);
         sequence.Join(moveOutTween);
 
