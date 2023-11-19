@@ -12,7 +12,6 @@ public class InterfaceUtility(Config config) : IHostedService {
     public TMP_FontAsset? NameplateFont { get; private set; }
     public TMP_FontAsset? QuickChatFont { get; private set; }
     public Material? NameplateFontMaterial { get; private set; }
-    public Sprite? HeatStar { get; private set; }
     public TMP_SpriteAsset? EmojiAsset { get; private set; }
 
     public static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
@@ -24,7 +23,6 @@ public class InterfaceUtility(Config config) : IHostedService {
         var gameplayUIroot = assets.LoadAssetFromBundle<GameObject>("in_game_assets", "gameplayui");
         var gameplayUI = gameplayUIroot.GetComponentInChildren<GameplayUI>(true);
 
-        this.HeatStar = gameplayUI.wanted1.GetComponent<UnityEngine.UI.Image>().sprite;
         this.QuickChatFont = gameplayUI.scoreTrickLabel.font;
 
         {

@@ -109,7 +109,8 @@ public class AppEncounters : App {
         this.bigTextMessageLabel = Instantiate(bigTextTitleLabel, bigTextBackgroundRect);
         this.bigTextMessageLabel.fontSize = label.fontSize;
         var bigTextMessageRect = this.bigTextMessageLabel.rectTransform;
-        bigTextMessageRect.anchoredPosition = new Vector2(textPosition + 256.0f, bigTextTitleRect.anchoredPosition.y - 128.0f);
+        bigTextMessageRect.anchoredPosition =
+            new Vector2(textPosition + 256.0f, bigTextTitleRect.anchoredPosition.y - 128.0f);
 
         // Arrow to indicate pressing right = confirm
         var arrow = (RectTransform) Instantiate(confirmArrow);
@@ -154,7 +155,8 @@ public class AppEncounters : App {
         this.opponentNameLabel = Instantiate(titleLabel, footer);
         this.opponentNameLabel.alpha = 0.0f;
         var opponentNameRect = this.opponentNameLabel.rectTransform;
-        opponentNameRect.anchoredPosition = new Vector2(titleRect.anchoredPosition.x + 256.0f, titleRect.anchoredPosition.y - 70.0f);
+        opponentNameRect.anchoredPosition =
+            new Vector2(titleRect.anchoredPosition.x + 256.0f, titleRect.anchoredPosition.y - 70.0f);
 
         initialOpponentNameX = titleRect.anchoredPosition.x;
 
@@ -373,7 +375,9 @@ public class AppEncounters : App {
             return;
         }
 
-        string playerName = PlayerNameFilter.DoFilter(player.SlopPlayer.Name);
+
+        var playerName = PlayerNameFilter.DoFilter(player.SlopPlayer.Name);
+        playerName = PlayerNameFilter.CloseAll(playerName);
         SetText(ClosestPlayerTitle, playerName);
 
         nameDisplaySequence!.Restart();

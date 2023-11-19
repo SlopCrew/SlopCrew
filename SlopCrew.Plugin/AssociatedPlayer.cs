@@ -105,7 +105,10 @@ public class AssociatedPlayer : IDisposable {
             devIcon.SetActive(true);
 
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = interfaceUtility.HeatStar;
+
+            // Caching this seems to break
+            var gameplay = Core.Instance.UIManager.gameplay;
+            spriteRenderer.sprite = gameplay.wanted1.GetComponent<Image>().sprite;
 
             var localPosition = devIcon.transform.localPosition;
             localPosition -= new UnityEngine.Vector3(0, localPosition.y / 2, 0);

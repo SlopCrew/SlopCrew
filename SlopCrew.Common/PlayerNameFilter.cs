@@ -87,12 +87,12 @@ public class PlayerNameFilter {
         }
 
         var len = Math.Min(Constants.NameLimit, regexed.Length);
+        return regexed.Substring(0, len);
+    }
 
-        StringBuilder stringBuilder = new StringBuilder(regexed.Substring(0, len));
-        foreach (var tag in ClosingTags) {
-            stringBuilder.Append(tag);
-        }
-
+    public static string CloseAll(string name) {
+        var stringBuilder = new StringBuilder(name);
+        foreach (var tag in ClosingTags) stringBuilder.Append(tag);
         return stringBuilder.ToString();
     }
 

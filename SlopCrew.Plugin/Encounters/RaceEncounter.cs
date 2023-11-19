@@ -130,6 +130,7 @@ public class RaceEncounter : Encounter {
 
             if (playerManager.Players.TryGetValue(id, out var associatedPlayer)) {
                 var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
+                name = PlayerNameFilter.CloseAll(name);
                 str += name + timeStr;
             } else {
                 // Assume players not in our players list is us
