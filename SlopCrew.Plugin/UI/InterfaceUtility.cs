@@ -14,7 +14,7 @@ public class InterfaceUtility(Config config) : IHostedService {
     public Sprite? HeatStar { get; private set; }
     public TMP_SpriteAsset? EmojiAsset { get; private set; }
 
-    private static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+    public static readonly Color NamePlateOutlineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
 
     public void LoadAssets() {
         var assets = Core.Instance.Assets;
