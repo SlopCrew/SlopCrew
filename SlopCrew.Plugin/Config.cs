@@ -50,6 +50,13 @@ public class Config(ConfigFile config) {
             true,
             "Show players on the phone map."
         );
+
+        public ConfigEntry<bool> ShowQuickChat = config.Bind(
+            "General",
+            "ShowQuickChat",
+            true,
+            "Show quick chat messages."
+        );
     }
 
     public class ConfigFixes(ConfigFile config) {

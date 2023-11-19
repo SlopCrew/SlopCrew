@@ -108,7 +108,8 @@ public class PlayerManager(
             }
 
             case ClientboundMessage.MessageOneofCase.QuickChat: {
-                if (this.Players.TryGetValue(packet.QuickChat.PlayerId, out var player)) {
+                if (this.Players.TryGetValue(packet.QuickChat.PlayerId, out var player)
+                    && config.General.ShowQuickChat.Value) {
                     var quickChat = packet.QuickChat.QuickChat;
                     QuickChatUtility.SpawnQuickChat(player.ReptilePlayer, quickChat.Category, quickChat.Index);
                 }
