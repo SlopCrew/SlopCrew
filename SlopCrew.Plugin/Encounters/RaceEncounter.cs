@@ -56,7 +56,8 @@ public class RaceEncounter : Encounter {
 
         // Respawn all boost pickups
         UnityEngine.Object.FindObjectsOfType<Pickup>()
-            .Where(pickup => pickup.pickupType is Pickup.PickUpType.BOOST_CHARGE or Pickup.PickUpType.BOOST_BIG_CHARGE)
+            .Where(pickup => pickup.pickupType is Pickup.PickUpType.BOOST_CHARGE or Pickup.PickUpType.BOOST_BIG_CHARGE
+                                 && pickup.pickupObject != null)
             .ToList()
             .ForEach(boost => { boost.SetPickupActive(true); });
 
