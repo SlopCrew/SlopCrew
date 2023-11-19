@@ -25,7 +25,8 @@ public class EncounterView : ExtendedPhoneScroll {
         this.SCROLL_RANGE = 3;
         this.SCROLL_AMOUNT = 1;
         this.OVERFLOW_BUTTON_AMOUNT = 1;
-        this.SCROLL_DURATION = 0.25f;
+        this.SCROLL_DURATION = 0.1f;
+        this.RESELECT_WAITS_ON_SCROLL = false;
         this.LIST_LOOPS = false;
 
         this.m_ButtonContainer = this.gameObject.GetComponent<RectTransform>();

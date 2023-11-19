@@ -23,7 +23,8 @@ public class QuickChatView : ExtendedPhoneScroll {
         this.SCROLL_RANGE = 8;
         this.SCROLL_AMOUNT = 1;
         this.OVERFLOW_BUTTON_AMOUNT = 1;
-        this.SCROLL_DURATION = 0.25f;
+        this.SCROLL_DURATION = 0.1f;
+        this.RESELECT_WAITS_ON_SCROLL = false;
         this.LIST_LOOPS = false;
 
         this.m_ButtonContainer = this.gameObject.GetComponent<RectTransform>();
@@ -70,7 +71,7 @@ public class QuickChatView : ExtendedPhoneScroll {
         buttonTextRect.sizeDelta = new Vector2(scaledButtonSize.x, scaledButtonSize.y);
         buttonTextRect.anchoredPosition = new Vector2(48.0f, 0.0f);
         buttonText.SetText("Message");
-        
+
         var interfaceUtility = Plugin.Host.Services.GetRequiredService<InterfaceUtility>();
         buttonText.spriteAsset = interfaceUtility.EmojiAsset;
 
@@ -100,8 +101,8 @@ public class QuickChatView : ExtendedPhoneScroll {
         var quickChatButton = (QuickChatButton) button;
 
         var categoryIndex = 0;
-        for (var i = 0; i < Constants.QuickChatMessages.Count; i++) {
-            var messageCount = Constants.QuickChatMessages[(QuickChatCategory) i].Count;
+        foreach (var keyValuePair in Constants.QuickChatMessages) {
+            var messageCount = keyValuePair.Value.Count;
             if (contentIndex >= messageCount) {
                 contentIndex -= messageCount;
                 categoryIndex++;
