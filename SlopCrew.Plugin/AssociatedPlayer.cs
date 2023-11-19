@@ -125,8 +125,9 @@ public class AssociatedPlayer : IDisposable {
         container.transform.localPosition = UnityEngine.Vector3.up * (capsule!.height * NameplateHeightFactor);
         container.transform.Rotate(0, 180, 0);
 
-        var uiNameplate = container.AddComponent<UINameplate>();
-        uiNameplate.Billboard = this.config.General.BillboardNameplates.Value;
+        if (this.config.General.BillboardNameplates.Value) {
+            container.AddComponent<UIBillboard>();
+        }
     }
 
     private void SpawnMapPin() {

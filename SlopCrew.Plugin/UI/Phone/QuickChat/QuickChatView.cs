@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using Reptile.Phone;
 using SlopCrew.Common;
@@ -19,7 +20,7 @@ public class QuickChatView : ExtendedPhoneScroll {
     public override void Initialize(App associatedApp, RectTransform root) {
         this.app = associatedApp as AppQuickChat;
 
-        this.SCROLL_RANGE = 6;
+        this.SCROLL_RANGE = 8;
         this.SCROLL_AMOUNT = 1;
         this.OVERFLOW_BUTTON_AMOUNT = 1;
         this.SCROLL_DURATION = 0.25f;
@@ -69,6 +70,9 @@ public class QuickChatView : ExtendedPhoneScroll {
         buttonTextRect.sizeDelta = new Vector2(scaledButtonSize.x, scaledButtonSize.y);
         buttonTextRect.anchoredPosition = new Vector2(48.0f, 0.0f);
         buttonText.SetText("Message");
+        
+        var interfaceUtility = Plugin.Host.Services.GetRequiredService<InterfaceUtility>();
+        buttonText.spriteAsset = interfaceUtility.EmojiAsset;
 
         // Arrow to indicate pressing right = confirm
         var arrow = Instantiate(confirmArrow).rectTransform;
@@ -95,8 +99,8 @@ public class QuickChatView : ExtendedPhoneScroll {
     public override void SetButtonContent(PhoneScrollButton button, int contentIndex) {
         var quickChatButton = (QuickChatButton) button;
 
-        int categoryIndex = 0;
-        for (int i = 0; i < Constants.QuickChatMessages.Count; i++) {
+        var categoryIndex = 0;
+        for (var i = 0; i < Constants.QuickChatMessages.Count; i++) {
             var messageCount = Constants.QuickChatMessages[(QuickChatCategory) i].Count;
             if (contentIndex >= messageCount) {
                 contentIndex -= messageCount;

@@ -10,6 +10,7 @@ namespace SlopCrew.Plugin.UI;
 
 public class InterfaceUtility(Config config) : IHostedService {
     public TMP_FontAsset? NameplateFont { get; private set; }
+    public TMP_FontAsset? QuickChatFont { get; private set; }
     public Material? NameplateFontMaterial { get; private set; }
     public Sprite? HeatStar { get; private set; }
     public TMP_SpriteAsset? EmojiAsset { get; private set; }
@@ -24,6 +25,7 @@ public class InterfaceUtility(Config config) : IHostedService {
         var gameplayUI = gameplayUIroot.GetComponentInChildren<GameplayUI>(true);
 
         this.HeatStar = gameplayUI.wanted1.GetComponent<UnityEngine.UI.Image>().sprite;
+        this.QuickChatFont = gameplayUI.scoreTrickLabel.font;
 
         {
             this.NameplateFont = gameplayUI.trickNameLabel.font;
@@ -41,7 +43,6 @@ public class InterfaceUtility(Config config) : IHostedService {
                 this.NameplateFontMaterial.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.0f);
             }
         }
-
 
         {
             const int spriteWidth = 512;

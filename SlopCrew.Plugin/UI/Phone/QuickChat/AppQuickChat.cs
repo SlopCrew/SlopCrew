@@ -3,6 +3,7 @@ using Reptile.Phone;
 using System;
 using UnityEngine;
 using DG.Tweening;
+using Microsoft.Extensions.DependencyInjection;
 using SlopCrew.Common.Proto;
 
 namespace SlopCrew.Plugin.UI.Phone;
@@ -11,6 +12,7 @@ public class AppQuickChat : App {
     public static readonly int MessageCategoryCount = Enum.GetValues(typeof(QuickChatCategory)).Length;
 
     private QuickChatView? scrollView;
+    private ConnectionManager? connectionManager;
 
     public override void OnAppInit() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
@@ -22,6 +24,7 @@ public class AppQuickChat : App {
     }
 
     public override void OnAppEnable() {
+        this.connectionManager = Plugin.Host.Services.GetRequiredService<ConnectionManager>();
         PlayEnableAnimation();
     }
 
@@ -63,7 +66,15 @@ public class AppQuickChat : App {
     }
 
     private void SendQuickChatMessage(QuickChatCategory category, int index) {
-        // TODO
-        // Send the message packet, make the text pop up etc.
+        connectionManager?.SendMessage(new ServerboundMessage {
+            QuickChat = new ServerboundQuickChat {
+                QuickChat = new QuickChat {
+                    Category = category,
+                    Index = index
+                }
+            }
+        });
+        
+        QuickChatUtility.SpawnQuickChat(WorldHandler.instance.GetCurrentPlayer(), category, index);
     }
 }
