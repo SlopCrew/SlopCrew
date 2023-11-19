@@ -50,6 +50,7 @@ public class InterfaceUtility(Config config) : IHostedService {
             const int spriteSheetRows = 4;
             const int spriteSheetCols = 4;
             const int spriteSheetPadding = 64;
+            const float spriteScale = 1.5f;
 
             const int spriteSheetWidth = (spriteWidth * spriteSheetCols) + spriteSheetPadding;
             const int spriteSheetHeight = (spriteHeight * spriteSheetRows) + spriteSheetPadding;
@@ -103,7 +104,7 @@ public class InterfaceUtility(Config config) : IHostedService {
                         height = spriteHeight,
                         x = spriteX,
                         y = spriteY,
-                        scale = 1
+                        scale = spriteScale
                     };
                     this.EmojiAsset.spriteInfoList.Add(tmpSprite);
 
@@ -112,7 +113,7 @@ public class InterfaceUtility(Config config) : IHostedService {
                                                    0, spriteHeight - spriteSheetPadding,
                                                    spriteWidth);
                     var glyphRect = new GlyphRect(spriteX, spriteY, spriteWidth, spriteHeight);
-                    var glyph = new TMP_SpriteGlyph((uint) idx, metrics, glyphRect, 1, 0);
+                    var glyph = new TMP_SpriteGlyph((uint) idx, metrics, glyphRect, spriteScale, 0);
                     this.EmojiAsset.spriteGlyphTable.Add(glyph);
 
                     var character = new TMP_SpriteCharacter((uint) unicode, this.EmojiAsset, glyph) {

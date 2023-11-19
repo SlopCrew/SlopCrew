@@ -20,7 +20,8 @@ public class AppQuickChat : App {
         this.scrollView = ExtendedPhoneScroll.Create<QuickChatView>("Categories", this, Content);
 
         var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
-        AppUtility.CreateAppOverlay(musicApp, false, Content, "Quick Chat", AppSlopCrew.SpriteSheet.MainIcon, out _, out _, scrollView.RectTransform());
+        AppUtility.CreateAppOverlay(musicApp, false, Content, "Quick Chat", AppSlopCrew.SpriteSheet.MainIcon, out _,
+                                    out _, scrollView.RectTransform());
     }
 
     public override void OnAppEnable() {
@@ -51,14 +52,18 @@ public class AppQuickChat : App {
     }
 
     public override void OnPressRight() {
-        scrollView!.HoldAnimationSelectedButton();
+        if (this.scrollView!.SelectedButtton == null) return;
+        this.scrollView.HoldAnimationSelectedButton();
     }
 
     public override void OnReleaseRight() {
-        int contentIndex = scrollView!.GetContentIndex();
-        var button = (QuickChatButton) scrollView.GetButtonByRelativeIndex(contentIndex);
+        if (this.scrollView!.SelectedButtton == null) return;
+        
+        var contentIndex = this.scrollView.GetContentIndex();
+        var buttonAssignStartIndex = this.scrollView.m_ButtonAssignStartIndex; // wtf?
+        var button = (QuickChatButton) this.scrollView.GetButtonByRelativeIndex(contentIndex - buttonAssignStartIndex);
 
-        button.GetMessage(out QuickChatCategory category, out int index);
+        button.GetMessage(out var category, out var index);
         SendQuickChatMessage(category, index);
 
         scrollView!.ActivateAnimationSelectedButton();
@@ -74,7 +79,7 @@ public class AppQuickChat : App {
                 }
             }
         });
-        
+
         QuickChatUtility.SpawnQuickChat(WorldHandler.instance.GetCurrentPlayer(), category, index);
     }
 }
