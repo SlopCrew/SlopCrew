@@ -13,6 +13,7 @@ public class AppQuickChat : App {
 
     private QuickChatView? scrollView;
     private ConnectionManager? connectionManager;
+    private float continuousScrollTimer;
 
     public override void OnAppInit() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
@@ -45,9 +46,25 @@ public class AppQuickChat : App {
 
     public override void OnPressUp() {
         scrollView!.Move(PhoneScroll.ScrollDirection.Previous, m_AudioManager);
+        this.continuousScrollTimer -= 0.4f;
     }
 
     public override void OnPressDown() {
+        scrollView!.Move(PhoneScroll.ScrollDirection.Next, m_AudioManager);
+        this.continuousScrollTimer -= 0.4f;
+    }
+
+    public override void OnHoldUp() {
+        this.continuousScrollTimer += Core.dt;
+        if (this.continuousScrollTimer < 0.1f) return;
+        this.continuousScrollTimer = 0.0f;
+        scrollView!.Move(PhoneScroll.ScrollDirection.Previous, m_AudioManager);
+    }
+
+    public override void OnHoldDown() {
+        this.continuousScrollTimer += Core.dt;
+        if (this.continuousScrollTimer < 0.1f) return;
+        this.continuousScrollTimer = 0.0f;
         scrollView!.Move(PhoneScroll.ScrollDirection.Next, m_AudioManager);
     }
 

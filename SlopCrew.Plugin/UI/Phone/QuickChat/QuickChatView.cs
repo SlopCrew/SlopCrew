@@ -13,7 +13,6 @@ public class QuickChatView : ExtendedPhoneScroll {
     private AppQuickChat? app;
 
     private const float ButtonScale = 2.33f;
-
     private const float ButtonSpacing = 24.0f;
     private const float ButtonTopMargin = -ButtonSpacing;
 
