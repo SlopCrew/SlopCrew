@@ -60,15 +60,19 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
         var buttonIconObject = new GameObject("Button Icon");
         buttonIconObject.transform.SetParent(rectTransform, false);
         var buttonIcon = buttonIconObject.AddComponent<Image>();
-        buttonIcon.rectTransform.sizeDelta = scaledIconSize;
-        buttonIcon.rectTransform.anchoredPosition = new Vector2((-scaledButtonSize.x * 0.5f) + (scaledIconSize.x * 0.5f) + 32.0f, 0.0f);
+        var buttonIconRect = buttonIcon.rectTransform;
+        buttonIconRect.SetAnchor(0.0f, 0.5f);
+        buttonIconRect.sizeDelta = scaledIconSize;
+        buttonIconRect.anchoredPosition = new Vector2((scaledIconSize.x * 0.5f) + 32.0f, 0.0f);
 
         // Title
         var buttonTitle = Instantiate(titleLabel);
-        buttonTitle.transform.SetParent(rectTransform, false);
-        float textSize = scaledIconSize.x + 8.0f;
-        buttonTitle.rectTransform.sizeDelta = new Vector2(scaledButtonSize.x - textSize, scaledButtonSize.y);
-        buttonTitle.rectTransform.anchoredPosition = new Vector2(textSize, 0.0f);
+        var buttonTitleRect = buttonTitle.rectTransform;
+        buttonTitleRect.SetParent(rectTransform, false);
+        buttonTitleRect.SetAnchorAndPivot(0.0f, 0.5f);
+        float textSize = buttonIconRect.anchoredPosition.x + (buttonIconRect.sizeDelta.x * 0.5f) + 8.0f;
+        buttonTitleRect.sizeDelta = new Vector2(scaledButtonSize.x - textSize, scaledButtonSize.y);
+        buttonTitleRect.anchoredPosition = new Vector2(textSize, 0.0f);
         buttonTitle.SetText("Category");
 
         // Arrow to indicate pressing right = confirm
