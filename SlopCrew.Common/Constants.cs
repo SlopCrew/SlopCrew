@@ -23,11 +23,14 @@ public class Constants {
     public const int MaxRaceTime = 120;
 
     public static Dictionary<QuickChatCategory, List<string>> QuickChatMessages = new() {
-        {QuickChatCategory.General, ["Heya!", "Goodbye!", "Good game!", "OK.", "No thanks."]},
+        {
+            QuickChatCategory.General,
+            ["Heya!", "Goodbye!", "Good game!", "OK.", "No thanks.", "Nice!", "I'm using tilt controls!"]
+        },
         // line break for formatting lol
         {
             QuickChatCategory.Actions,
-            ["Let's chill!", "Let's skate!", "Let's score battle!", "Let's combo battle!", "Let's race!"]
+            ["Let's chill!", "Let's skate!", "Let's score battle!", "Let's combo battle!", "Let's race!", "Follow me!"]
         },
         // line break for formatting lol
         {
