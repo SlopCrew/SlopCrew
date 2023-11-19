@@ -18,7 +18,7 @@ public class AppQuickChat : App {
     public override void OnAppInit() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
 
-        this.scrollView = ExtendedPhoneScroll.Create<QuickChatView>("Categories", this, Content);
+        this.scrollView = ExtendedPhoneScroll.Create<QuickChatView>("Messages", this, Content);
 
         var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
         AppUtility.CreateAppOverlay(musicApp, false, Content, "Quick Chat", AppSlopCrew.SpriteSheet.MainIcon, out _,

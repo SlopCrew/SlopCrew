@@ -69,7 +69,7 @@ public static class AppUtility {
         iconImage.sprite = icon;
 
         if (view != null) {
-            if (useFooter) view.offsetMin = new Vector2(view.offsetMin.x, -footer.sizeDelta.y);
+            if (useFooter) view.offsetMin = new Vector2(view.offsetMin.x, footer.sizeDelta.y - 90.0f);
             view.offsetMax = new Vector2(view.offsetMax.x, -header.sizeDelta.y);
         }
 

@@ -50,7 +50,7 @@ public class QuickChatView : ExtendedPhoneScroll {
         var scaledButtonSize = AppSpriteSheet.ChatButtonSize * ButtonScale;
 
         // Main button
-        GameObject button = new GameObject("Category Button");
+        GameObject button = new GameObject("QuickChat Button");
         var rectTransform = button.AddComponent<RectTransform>();
         // Align to the top
         rectTransform.SetAnchorAndPivot(1.0f, 1.0f);
