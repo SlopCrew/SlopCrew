@@ -13,13 +13,13 @@ public class QuickChatView : ExtendedPhoneScroll {
     private AppQuickChat? app;
 
     private const float ButtonScale = 2.33f;
-    private const float ButtonSpacing = 24.0f;
+    private const float ButtonSpacing = 18.0f;
     private const float ButtonTopMargin = -ButtonSpacing;
 
     public override void Initialize(App associatedApp, RectTransform root) {
         this.app = associatedApp as AppQuickChat;
 
-        this.SCROLL_RANGE = 8;
+        this.SCROLL_RANGE = 9;
         this.SCROLL_AMOUNT = 1;
         this.OVERFLOW_BUTTON_AMOUNT = 1;
         this.SCROLL_DURATION = 0.1f;
@@ -114,13 +114,13 @@ public class QuickChatView : ExtendedPhoneScroll {
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
         var rectTransform = button.RectTransform();
-        rectTransform.anchoredPosition = GetButtonPosition(posIndex);
+        rectTransform.anchoredPosition = GetButtonPosition(posIndex, rectTransform);
     }
 
-    public Vector2 GetButtonPosition(float positionIndex) {
+    public Vector2 GetButtonPosition(float positionIndex, RectTransform rect) {
         var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
         return new Vector2 {
-            x = 0.0f,
+            x = rect.anchoredPosition.x,
             y = ButtonTopMargin - (positionIndex * buttonSize)
         };
     }

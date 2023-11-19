@@ -108,13 +108,13 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
         var rectTransform = button.RectTransform();
-        rectTransform.anchoredPosition = GetButtonPosition(posIndex);
+        rectTransform.anchoredPosition = GetButtonPosition(posIndex, rectTransform);
     }
 
-    public Vector2 GetButtonPosition(float positionIndex) {
+    public Vector2 GetButtonPosition(float positionIndex, RectTransform rect) {
         var buttonSize = this.m_AppButtonPrefab.RectTransform().sizeDelta.y + ButtonSpacing;
         return new Vector2 {
-            x = 0.0f,
+            x = rect.anchoredPosition.x,
             y = ButtonTopMargin - (positionIndex * buttonSize)
         };
     }

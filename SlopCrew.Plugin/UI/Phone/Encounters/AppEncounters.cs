@@ -201,7 +201,7 @@ public class AppEncounters : App {
             var button = (EncounterButton) scrollView.GetButtonByRelativeIndex(i);
             RectTransform buttonRect = button.RectTransform();
 
-            var targetPosition = scrollView.GetButtonPosition(i);
+            var targetPosition = scrollView.GetButtonPosition(i, buttonRect);
             if (i != scrollView.GetSelectorPos()) targetPosition.x = 70.0f;
             buttonRect.anchoredPosition = new Vector2(MyPhone.ScreenSize.x, buttonRect.anchoredPosition.y);
             enableAnimation.Append(buttonRect.DOAnchorPos(targetPosition, 0.08f));

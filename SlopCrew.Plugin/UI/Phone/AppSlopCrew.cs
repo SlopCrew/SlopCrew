@@ -44,7 +44,7 @@ public class AppSlopCrew : App {
             var button = (SlopCrewButton) scrollView.GetButtonByRelativeIndex(i);
             RectTransform buttonRect = button.RectTransform();
 
-            var targetPosition = scrollView.GetButtonPosition(i);
+            var targetPosition = scrollView.GetButtonPosition(i, buttonRect);
             if (i != scrollView.GetSelectorPos()) targetPosition.x = 70.0f;
             button.ToggleBackground(true);
             buttonRect.anchoredPosition = new Vector2(MyPhone.ScreenSize.x, buttonRect.anchoredPosition.y);
