@@ -55,7 +55,6 @@ public class PlayerNameFilter {
         "</smallcaps>",
         "</noparse>",
         "</nobr>",
-        "</page>",
         "</s>",
         "</u>",
         "</sub>",

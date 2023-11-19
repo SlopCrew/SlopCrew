@@ -57,6 +57,20 @@ public class Config(ConfigFile config) {
             true,
             "Show quick chat messages."
         );
+
+        public ConfigEntry<CharacterOverride> CharacterOverride = config.Bind(
+            "General",
+            "CharacterOverride",
+            SlopCrew.Plugin.CharacterOverride.None,
+            "Force a certain character to appear at all times. Useful if you are a CrewBoom user to avoid being Red for other players without your mod."
+        );
+
+        public ConfigEntry<int> OutfitOverride = config.Bind(
+            "General",
+            "OutfitOverride",
+            -1,
+            "Force a certain outfit to appear at all times. Only works if CharacterOverride is set. Values 0-3."
+        );
     }
 
     public class ConfigFixes(ConfigFile config) {
