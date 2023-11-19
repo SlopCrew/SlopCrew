@@ -39,6 +39,7 @@ public class EncounterManager : IHostedService {
 
     public Task StartAsync(CancellationToken cancellationToken) {
         Core.OnUpdate += this.Update;
+        StageManager.OnStageInitialized += this.StageInitialized;
         this.ConnectionManager.Tick += this.Tick;
         this.ConnectionManager.MessageReceived += this.MessageReceived;
         return Task.CompletedTask;
@@ -46,6 +47,7 @@ public class EncounterManager : IHostedService {
 
     public Task StopAsync(CancellationToken cancellationToken) {
         Core.OnUpdate -= this.Update;
+        StageManager.OnStageInitialized -= this.StageInitialized;
         this.ConnectionManager.Tick -= this.Tick;
         this.ConnectionManager.MessageReceived -= this.MessageReceived;
         return Task.CompletedTask;
@@ -58,6 +60,10 @@ public class EncounterManager : IHostedService {
         }
 
         this.CurrentEncounter?.Update();
+    }
+
+    private void StageInitialized() {
+        this.CurrentEncounter?.Stop();
     }
 
     private void StartEncounter(ClientboundEncounterStart start) {

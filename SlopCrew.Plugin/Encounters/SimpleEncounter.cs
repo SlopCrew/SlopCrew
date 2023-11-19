@@ -181,7 +181,7 @@ public abstract class SimpleEncounter : Encounter {
         this.SetEncounterState(TimerState.Outro);
     }
 
-    protected override void Stop() {
+    public override void Stop() {
         base.Stop();
         this.TurnOffScoreUI();
         this.Opponent = null;

@@ -10,7 +10,7 @@ public abstract class Encounter {
 
     public virtual void Update() { }
 
-    protected virtual void Stop() {
+    public virtual void Stop() {
         this.IsBusy = false;
     }
 
