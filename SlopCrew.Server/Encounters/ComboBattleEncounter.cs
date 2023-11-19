@@ -24,10 +24,11 @@ public class ComboBattleEncounter : Encounter {
             await Task.Delay((int) (grace * 1000));
             this.grace = false;
         });
-        
+
         var timerLength = Constants.SimpleEncounterStartTime + this.length;
         this.timer = new Timer(timerLength * 1000);
         this.timer.Elapsed += (_, _) => this.Stop();
+        this.timer.Start();
 
         this.one = one;
         this.two = two;
