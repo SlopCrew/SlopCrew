@@ -1,1 +1,1 @@
-- Fixed a bug when dismissing race results
+- Fixed a crash with the latest CrewBoom
