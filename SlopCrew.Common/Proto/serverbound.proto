@@ -17,6 +17,7 @@ message ServerboundMessage {
     ServerboundEncounterUpdate encounter_update = 8;
 
     ServerboundCustomPacket custom_packet = 9;
+    ServerboundQuickChat quick_chat = 10;
   }
 }
 
@@ -71,4 +72,8 @@ message ServerboundRaceEncounterUpdateData {
 
 message ServerboundCustomPacket {
   CustomPacket packet = 1;
+}
+
+message ServerboundQuickChat {
+  QuickChat quick_chat = 1;
 }

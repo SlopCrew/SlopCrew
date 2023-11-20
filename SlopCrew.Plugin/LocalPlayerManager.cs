@@ -55,7 +55,16 @@ public class LocalPlayerManager(
     private void HandleRefreshes(Reptile.Player me) {
         if (this.HelloRefreshQueued) {
             var key = config.Server.Key.Value ?? string.Empty;
-            var infos = characterInfoManager.GetCharacterInfo((int) me.character);
+            var character = (int) me.character;
+            var outfit = this.CurrentOutfit;
+            var infos = characterInfoManager.GetCharacterInfo(character);
+
+            var characterOverride = config.General.CharacterOverride.Value;
+            var outfitOverride = config.General.OutfitOverride.Value;
+            if (characterOverride != CharacterOverride.None) {
+                character = (int) characterOverride;
+                if (outfitOverride is >= 0 and <= 3) outfit = outfitOverride;
+            }
 
             connectionManager.SendMessage(new ServerboundMessage {
                 Hello = new ServerboundHello {
@@ -69,8 +78,8 @@ public class LocalPlayerManager(
                         },
 
                         CharacterInfo = new CharacterInfo {
-                            Character = (int) me.character,
-                            Outfit = this.CurrentOutfit,
+                            Character = character,
+                            Outfit = outfit,
                             MoveStyle = (int) me.moveStyle
                         },
 

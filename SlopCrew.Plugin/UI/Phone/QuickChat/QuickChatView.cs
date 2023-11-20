@@ -1,24 +1,26 @@
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using Reptile.Phone;
+using SlopCrew.Common;
+using SlopCrew.Common.Proto;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SlopCrew.Plugin.UI.Phone;
 
-internal class SlopCrewScrollView : ExtendedPhoneScroll {
-    private AppSlopCrew? app;
+public class QuickChatView : ExtendedPhoneScroll {
+    private AppQuickChat? app;
 
-    private const float ButtonScale = 2.5f;
-    private const float IconScale = 2.0f;
-
-    private const float ButtonSpacing = 24.0f;
+    private const float ButtonScale = 2.33f;
+    private const float ButtonSpacing = 18.0f;
     private const float ButtonTopMargin = -ButtonSpacing;
 
     public override void Initialize(App associatedApp, RectTransform root) {
-        this.app = associatedApp as AppSlopCrew;
+        this.app = associatedApp as AppQuickChat;
 
-        this.SCROLL_RANGE = AppSlopCrew.CategoryCount;
+        this.SCROLL_RANGE = 9;
         this.SCROLL_AMOUNT = 1;
         this.OVERFLOW_BUTTON_AMOUNT = 1;
         this.SCROLL_DURATION = 0.1f;
@@ -29,8 +31,10 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
 
         this.CreatePrefabs(AppSlopCrew.SpriteSheet);
 
+        var messageCount = Constants.QuickChatMessages.Sum(x => x.Value.Count);
+
         InitalizeScrollView();
-        SetListContent(AppSlopCrew.CategoryCount);
+        SetListContent(messageCount);
     }
 
     private void CreatePrefabs(AppSpriteSheet spriteSheet) {
@@ -41,11 +45,10 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
         var confirmArrow = homeApp.m_ScrollView.Selector.Arrow;
         var titleLabel = musicButtonPrefab.transform.Find("TitleLabel").GetComponent<TextMeshProUGUI>();
 
-        var scaledButtonSize = AppSpriteSheet.CategoryButtonSize * ButtonScale;
-        var scaledIconSize = AppSpriteSheet.CategoryIconSize * IconScale;
+        var scaledButtonSize = AppSpriteSheet.ChatButtonSize * ButtonScale;
 
         // Main button
-        GameObject button = new GameObject("Category Button");
+        GameObject button = new GameObject("QuickChat Button");
         var rectTransform = button.AddComponent<RectTransform>();
         // Align to the top
         rectTransform.SetAnchorAndPivot(1.0f, 1.0f);
@@ -57,24 +60,17 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
         var buttonBackground = buttonBackgroundObject.AddComponent<Image>();
         buttonBackground.rectTransform.sizeDelta = scaledButtonSize;
 
-        // Icon
-        var buttonIconObject = new GameObject("Button Icon");
-        buttonIconObject.transform.SetParent(rectTransform, false);
-        var buttonIcon = buttonIconObject.AddComponent<Image>();
-        var buttonIconRect = buttonIcon.rectTransform;
-        buttonIconRect.SetAnchor(0.0f, 0.5f);
-        buttonIconRect.sizeDelta = scaledIconSize;
-        buttonIconRect.anchoredPosition = new Vector2((scaledIconSize.x * 0.5f) + 32.0f, 0.0f);
+        // Text
+        var buttonText = Instantiate(titleLabel);
+        var buttonTextRect = buttonText.rectTransform;
+        buttonTextRect.SetParent(rectTransform, false);
+        buttonTextRect.SetAnchorAndPivot(0.0f, 0.5f);
+        buttonTextRect.sizeDelta = new Vector2(scaledButtonSize.x, scaledButtonSize.y);
+        buttonTextRect.anchoredPosition = new Vector2(48.0f, 0.0f);
+        buttonText.SetText("Message");
 
-        // Title
-        var buttonTitle = Instantiate(titleLabel);
-        var buttonTitleRect = buttonTitle.rectTransform;
-        buttonTitleRect.SetParent(rectTransform, false);
-        buttonTitleRect.SetAnchorAndPivot(0.0f, 0.5f);
-        float textSize = buttonIconRect.anchoredPosition.x + (buttonIconRect.sizeDelta.x * 0.5f) + 8.0f;
-        buttonTitleRect.sizeDelta = new Vector2(scaledButtonSize.x - textSize, scaledButtonSize.y);
-        buttonTitleRect.anchoredPosition = new Vector2(textSize, 0.0f);
-        buttonTitle.SetText("Category");
+        var interfaceUtility = Plugin.Host.Services.GetRequiredService<InterfaceUtility>();
+        buttonText.spriteAsset = interfaceUtility.EmojiAsset;
 
         // Arrow to indicate pressing right = confirm
         var arrow = Instantiate(confirmArrow).rectTransform;
@@ -82,13 +78,12 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
         arrow!.SetAnchorAndPivot(1.0f, 0.5f);
         arrow!.anchoredPosition = new Vector2(-arrow.sizeDelta.x - 8.0f, 0.0f);
 
-        var component = button.AddComponent<SlopCrewButton>();
+        var component = button.AddComponent<QuickChatButton>();
         component.InitializeButton(buttonBackground,
-                                   buttonIcon,
-                                   buttonTitle,
+                                   buttonText,
                                    arrow.gameObject,
-                                   spriteSheet.CategoryButtonNormal,
-                                   spriteSheet.CategoryButtonSelected);
+                                   spriteSheet.ChatSpriteNormal,
+                                   spriteSheet.ChatSpriteSelected);
 
         m_AppButtonPrefab = button;
         m_AppButtonPrefab.SetActive(false);
@@ -96,14 +91,25 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
 
     public override void OnButtonCreated(PhoneScrollButton newButton) {
         newButton.gameObject.SetActive(true);
-
         base.OnButtonCreated(newButton);
     }
 
     public override void SetButtonContent(PhoneScrollButton button, int contentIndex) {
-        var slopCrewButton = (SlopCrewButton) button;
-        var categoryType = (AppSlopCrew.Category) contentIndex;
-        slopCrewButton.SetButtonContents(categoryType, AppSlopCrew.SpriteSheet.GetCategoryIcon(categoryType)!);
+        var quickChatButton = (QuickChatButton) button;
+
+        var categoryIndex = 0;
+        foreach (var keyValuePair in Constants.QuickChatMessages.OrderBy(x => x.Key)) {
+            var messageCount = keyValuePair.Value.Count;
+            if (contentIndex >= messageCount) {
+                contentIndex -= messageCount;
+                categoryIndex++;
+            } else {
+                break;
+            }
+        }
+
+        var category = (QuickChatCategory) categoryIndex;
+        quickChatButton.SetButtonContents(category, contentIndex);
     }
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {

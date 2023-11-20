@@ -37,7 +37,8 @@ public class VersionUIHandlerPatch {
         var username = PlayerNameFilter.DoFilter(config.General.Username.Value);
 
         CreateVersionLabel("SlopCrew Username", label, labelRect, out var usernameLabel, out var usernameRect);
-        usernameRect.anchoredPosition = versionRect.anchoredPosition + new Vector2(versionLabel.renderedWidth + 8.0f, 2.0f);
+        usernameRect.anchoredPosition =
+            versionRect.anchoredPosition + new Vector2(versionLabel.renderedWidth + 8.0f, 2.0f);
         usernameLabel.font = interfaceUtility.NameplateFont;
         usernameLabel.fontMaterial = interfaceUtility.NameplateFontMaterial;
         usernameLabel.fontSize = label.fontSize;
@@ -49,7 +50,9 @@ public class VersionUIHandlerPatch {
         mainMenuAnimator.Awake();
     }
 
-    private static void CreateLabelFade(string name, UIAnimationController mainMenuAnimator, Transform originalFade, TextMeshProUGUI label) {
+    private static void CreateLabelFade(
+        string name, UIAnimationController mainMenuAnimator, Transform originalFade, TextMeshProUGUI label
+    ) {
         var originalFadeAnimation = originalFade.GetComponent<DOTweenAnimation>();
 
         var versionFade = new GameObject(name);
@@ -74,11 +77,13 @@ public class VersionUIHandlerPatch {
         mainMenuAnimator.animations.AddToArray(versionFadeAnimation);
     }
 
-    private static void CreateVersionLabel(string name,
-                                           TextMeshProUGUI originalLabel,
-                                           RectTransform originalLabelRect,
-                                           out TextMeshProUGUI label,
-                                           out RectTransform rect) {
+    private static void CreateVersionLabel(
+        string name,
+        TextMeshProUGUI originalLabel,
+        RectTransform originalLabelRect,
+        out TextMeshProUGUI label,
+        out RectTransform rect
+    ) {
         // We have to manually copy the label because the game crashes otherwise for unknown reasons
         label = new GameObject(name).AddComponent<TextMeshProUGUI>();
         label.transform.SetParent(originalLabel.transform.parent, false);

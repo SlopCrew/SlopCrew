@@ -24,3 +24,6 @@ database.db*
 
 # GitHub Actions
 local/
+
+# Weird visual studio launch options
+SlopCrew.Server/Properties/*

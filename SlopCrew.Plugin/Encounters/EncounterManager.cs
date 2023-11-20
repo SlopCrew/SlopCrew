@@ -18,7 +18,7 @@ public class EncounterManager : IHostedService {
     public ServerConfig ServerConfig;
     public Config Config;
     public InputBlocker InputBlocker;
-    
+
     public Encounter? CurrentEncounter;
 
     public EncounterManager(
@@ -39,6 +39,7 @@ public class EncounterManager : IHostedService {
 
     public Task StartAsync(CancellationToken cancellationToken) {
         Core.OnUpdate += this.Update;
+        StageManager.OnStageInitialized += this.StageInitialized;
         this.ConnectionManager.Tick += this.Tick;
         this.ConnectionManager.MessageReceived += this.MessageReceived;
         return Task.CompletedTask;
@@ -46,18 +47,23 @@ public class EncounterManager : IHostedService {
 
     public Task StopAsync(CancellationToken cancellationToken) {
         Core.OnUpdate -= this.Update;
+        StageManager.OnStageInitialized -= this.StageInitialized;
         this.ConnectionManager.Tick -= this.Tick;
         this.ConnectionManager.MessageReceived -= this.MessageReceived;
         return Task.CompletedTask;
     }
 
     private void Update() {
-        if (this.CurrentEncounter is {IsBusy: false}) {
+        if (this.CurrentEncounter is { IsBusy: false }) {
             this.CurrentEncounter.Dispose();
             this.CurrentEncounter = null;
         }
 
         this.CurrentEncounter?.Update();
+    }
+
+    private void StageInitialized() {
+        this.CurrentEncounter?.Stop();
     }
 
     private void StartEncounter(ClientboundEncounterStart start) {
@@ -68,19 +74,19 @@ public class EncounterManager : IHostedService {
 
         switch (start.Type) {
             case EncounterType.ScoreBattle: {
-                this.CurrentEncounter = new ScoreBattleEncounter(this, start);
-                break;
-            }
+                    this.CurrentEncounter = new ScoreBattleEncounter(this, start);
+                    break;
+                }
 
             case EncounterType.ComboBattle: {
-                this.CurrentEncounter = new ComboBattleEncounter(this, start);
-                break;
-            }
+                    this.CurrentEncounter = new ComboBattleEncounter(this, start);
+                    break;
+                }
 
             case EncounterType.Race: {
-                this.CurrentEncounter = new RaceEncounter(this, start);
-                break;
-            }
+                    this.CurrentEncounter = new RaceEncounter(this, start);
+                    break;
+                }
         }
     }
 
@@ -121,28 +127,28 @@ public class EncounterManager : IHostedService {
     private void MessageReceived(ClientboundMessage message) {
         switch (message.MessageCase) {
             case ClientboundMessage.MessageOneofCase.EncounterRequest: {
-                var me = WorldHandler.instance.GetCurrentPlayer();
-                if (me == null) return;
-                var app = me.phone.GetAppInstance<AppSlopCrew>();
-                if (app == null) return;
-                app.ProcessEncounterRequest(message.EncounterRequest);
-                break;
-            }
+                    var me = WorldHandler.instance.GetCurrentPlayer();
+                    if (me == null) return;
+                    var app = me.phone.GetAppInstance<AppEncounters>();
+                    if (app == null) return;
+                    app.HandleEncounterRequest(message.EncounterRequest);
+                    break;
+                }
 
             case ClientboundMessage.MessageOneofCase.EncounterStart: {
-                this.StartEncounter(message.EncounterStart);
-                break;
-            }
+                    this.StartEncounter(message.EncounterStart);
+                    break;
+                }
 
             case ClientboundMessage.MessageOneofCase.EncounterUpdate: {
-                this.CurrentEncounter?.HandleUpdate(message.EncounterUpdate);
-                break;
-            }
+                    this.CurrentEncounter?.HandleUpdate(message.EncounterUpdate);
+                    break;
+                }
 
             case ClientboundMessage.MessageOneofCase.EncounterEnd: {
-                this.CurrentEncounter?.HandleEnd(message.EncounterEnd);
-                break;
-            }
+                    this.CurrentEncounter?.HandleEnd(message.EncounterEnd);
+                    break;
+                }
         }
     }
 }

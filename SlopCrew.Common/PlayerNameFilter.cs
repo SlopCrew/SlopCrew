@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SlopCrew.Common;
@@ -43,6 +44,23 @@ public class PlayerNameFilter {
         new Regex("<width.*?>")
     };
 
+    private static readonly string[] ClosingTags = {
+        "</align>",
+        "</color>",
+        "</b>",
+        "</i>",
+        "</link>",
+        "</lowercase>",
+        "</uppercase>",
+        "</smallcaps>",
+        "</noparse>",
+        "</nobr>",
+        "</s>",
+        "</u>",
+        "</sub>",
+        "</sup>"
+    };
+
     private static List<string> LoadBannedWords() {
         var result = new List<string>();
 
@@ -70,6 +88,12 @@ public class PlayerNameFilter {
 
         var len = Math.Min(Constants.NameLimit, regexed.Length);
         return regexed.Substring(0, len);
+    }
+
+    public static string CloseAll(string name) {
+        var stringBuilder = new StringBuilder(name);
+        foreach (var tag in ClosingTags) stringBuilder.Append(tag);
+        return stringBuilder.ToString();
     }
 
     public static bool HitsFilter(string name) {

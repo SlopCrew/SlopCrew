@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>2.0.0</Version>
+        <Version>2.0.3</Version>
         <AssemblyName>SlopCrew.Plugin</AssemblyName>
         <Product>SlopCrew</Product>
         <Authors>NotNite</Authors>
@@ -53,6 +53,7 @@
         <Reference Include="Unity.TextMeshPro">
             <HintPath>$(ManagedPath)/Unity.TextMeshPro.dll</HintPath>
             <Private>false</Private>
+            <Publicize>true</Publicize>
         </Reference>
         <Reference Include="UnityEngine.UI">
             <HintPath>$(ManagedPath)/UnityEngine.UI.dll</HintPath>
@@ -90,7 +91,7 @@
             <HintPath>$(ManagedPath)/DOTween.dll</HintPath>
             <Private>false</Private>
         </Reference>
-		<Reference Include="DOTweenPro">
+        <Reference Include="DOTweenPro">
             <HintPath>$(ManagedPath)/DOTweenPro.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -105,10 +106,6 @@
     <ItemGroup>
         <Ignore Include="res\**" />
         <EmbeddedResource Include="res\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Encounters\Race\" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

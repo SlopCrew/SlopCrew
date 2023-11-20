@@ -18,6 +18,7 @@ public class NetworkClient : IDisposable {
     public string? Key;
     public ulong Latency;
     public bool IsCommunityContributor;
+    public int QuickChatCooldown = 0;
 
     public Dictionary<EncounterType, List<NetworkClient>> EncounterRequests = new();
     public Encounter? CurrentEncounter;
@@ -164,6 +165,24 @@ public class NetworkClient : IDisposable {
                 });
                 break;
             }
+
+            case ServerboundMessage.MessageOneofCase.QuickChat: {
+                if (this.Player is null || this.Stage is null) return;
+                if (this.QuickChatCooldown > 0) return;
+
+                var quickChat = packet.QuickChat.QuickChat;
+                if (quickChat.Index >= Constants.QuickChatMessages[quickChat.Category].Count) return;
+                this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
+                    QuickChat = new ClientboundQuickChat {
+                        PlayerId = this.Player.Id,
+                        QuickChat = quickChat
+                    }
+                });
+
+                this.QuickChatCooldown = this.serverOptions.TickRate * 2;
+
+                break;
+            }
         }
     }
 
@@ -220,7 +239,7 @@ public class NetworkClient : IDisposable {
             var user = this.userService.GetUserByKey(this.Key);
             this.IsCommunityContributor = user?.IsCommunityContributor ?? false;
         }
-        
+
         player.IsCommunityContributor = this.IsCommunityContributor;
 
         // Cap a few things for people who are naughty
@@ -277,6 +296,7 @@ public class NetworkClient : IDisposable {
         this.networkService.SendPacket(this.Connection, packet, flags);
 
     private void Tick() {
+        if (this.QuickChatCooldown > 0) this.QuickChatCooldown--;
         if (this.CurrentEncounter is {Finished: true}) this.CurrentEncounter = null;
     }
 }

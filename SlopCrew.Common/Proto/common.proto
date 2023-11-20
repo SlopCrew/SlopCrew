@@ -95,3 +95,15 @@ message RaceTime {
   uint32 player_id = 1;
   float time = 2;
 }
+
+message QuickChat {
+  QuickChatCategory category = 1;
+  int32 index = 2;
+}
+
+enum QuickChatCategory {
+  General = 0;
+  Actions = 1;
+  Places = 2;
+  Emojis = 3;
+}

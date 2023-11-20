@@ -105,7 +105,10 @@ public class AssociatedPlayer : IDisposable {
             devIcon.SetActive(true);
 
             var spriteRenderer = devIcon.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = interfaceUtility.HeatStar;
+
+            // Caching this seems to break
+            var gameplay = Core.Instance.UIManager.gameplay;
+            spriteRenderer.sprite = gameplay.wanted1.GetComponent<Image>().sprite;
 
             var localPosition = devIcon.transform.localPosition;
             localPosition -= new UnityEngine.Vector3(0, localPosition.y / 2, 0);
@@ -125,8 +128,9 @@ public class AssociatedPlayer : IDisposable {
         container.transform.localPosition = UnityEngine.Vector3.up * (capsule!.height * NameplateHeightFactor);
         container.transform.Rotate(0, 180, 0);
 
-        var uiNameplate = container.AddComponent<UINameplate>();
-        uiNameplate.Billboard = this.config.General.BillboardNameplates.Value;
+        if (this.config.General.BillboardNameplates.Value) {
+            container.AddComponent<UIBillboard>();
+        }
     }
 
     private void SpawnMapPin() {
@@ -158,7 +162,10 @@ public class AssociatedPlayer : IDisposable {
     public void Dispose() {
         if (this.ReptilePlayer != null) {
             var worldHandler = WorldHandler.instance;
-            if (worldHandler != null) worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
+            if (worldHandler is {SceneObjectsRegister.players: not null}) {
+                worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
+            }
+
             Object.Destroy(this.ReptilePlayer.gameObject);
         }
 

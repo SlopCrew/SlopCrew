@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -56,7 +56,8 @@ public class RaceEncounter : Encounter {
 
         // Respawn all boost pickups
         UnityEngine.Object.FindObjectsOfType<Pickup>()
-            .Where(pickup => pickup.pickupType is Pickup.PickUpType.BOOST_CHARGE or Pickup.PickUpType.BOOST_BIG_CHARGE)
+            .Where(pickup => pickup.pickupType is Pickup.PickUpType.BOOST_CHARGE or Pickup.PickUpType.BOOST_BIG_CHARGE
+                                 && pickup.pickupObject != null)
             .ToList()
             .ForEach(boost => { boost.SetPickupActive(true); });
 
@@ -70,26 +71,26 @@ public class RaceEncounter : Encounter {
 
         switch (this.state) {
             case RaceState.Start: {
-                if (this.timer.Elapsed.TotalSeconds > 3) {
-                    this.state = RaceState.Race;
-                    this.encounterManager.InputBlocker.ShouldIgnoreInput = false;
-                    this.timer.Restart();
-                } else {
-                    var secondsLeft = (int) Math.Ceiling(3 - this.timer.Elapsed.TotalSeconds);
-                    var periods = new string('.', secondsLeft);
-                    var countdown = secondsLeft.ToString(CultureInfo.CurrentCulture) + periods;
-                    this.SetTimer(countdown);
+                    if (this.timer.Elapsed.TotalSeconds > 3) {
+                        this.state = RaceState.Race;
+                        this.encounterManager.InputBlocker.ShouldIgnoreInput = false;
+                        this.timer.Restart();
+                    } else {
+                        var secondsLeft = (int) Math.Ceiling(3 - this.timer.Elapsed.TotalSeconds);
+                        var periods = new string('.', secondsLeft);
+                        var countdown = secondsLeft.ToString(CultureInfo.CurrentCulture) + periods;
+                        this.SetTimer(countdown);
+                    }
+
+                    var phone = WorldHandler.instance.GetCurrentPlayer().phone;
+                    var app = phone.GetAppInstance<AppSlopCrew>();
+                    break;
                 }
 
-                var phone = WorldHandler.instance.GetCurrentPlayer().phone;
-                var app = phone.GetAppInstance<AppSlopCrew>();
-                break;
-            }
-
             case RaceState.Race: {
-                this.SetTimer(this.TimeElapsed());
-                break;
-            }
+                    this.SetTimer(this.TimeElapsed());
+                    break;
+                }
         }
     }
 
@@ -118,7 +119,7 @@ public class RaceEncounter : Encounter {
 
     private void UpdateRaceResults(RepeatedField<RaceTime> times) {
         var player = WorldHandler.instance.GetCurrentPlayer();
-        var app = player.phone.GetAppInstance<AppSlopCrew>();
+        var app = player.phone.GetAppInstance<AppEncounters>();
         var sorted = times.OrderBy(x => x.Time).ToList();
 
         var str = string.Empty;
@@ -126,10 +127,11 @@ public class RaceEncounter : Encounter {
         var config = Plugin.Host.Services.GetRequiredService<Config>();
         foreach (var kvp in sorted) {
             var id = kvp.PlayerId;
-            var timeStr = "<color=white>: " + this.NiceTimerString(kvp.Time) + "\n";
+            var timeStr = $"<color=white>: {this.NiceTimerString(kvp.Time)}</color>\n";
 
             if (playerManager.Players.TryGetValue(id, out var associatedPlayer)) {
                 var name = PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
+                name = PlayerNameFilter.CloseAll(name);
                 str += name + timeStr;
             } else {
                 // Assume players not in our players list is us
@@ -137,7 +139,7 @@ public class RaceEncounter : Encounter {
             }
         }
 
-        app.SetForcedText("Race Results", str.Trim());
+        app.SetBigText("Race Results", str.Trim());
     }
 
     public bool OnCheckpointReached(RaceCheckpoint checkpoint) {
