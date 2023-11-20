@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using Reptile.Phone;
@@ -30,10 +31,7 @@ public class QuickChatView : ExtendedPhoneScroll {
 
         this.CreatePrefabs(AppSlopCrew.SpriteSheet);
 
-        int messageCount = 0;
-        foreach (var keyValuePair in Constants.QuickChatMessages) {
-            messageCount += keyValuePair.Value.Count;
-        }
+        var messageCount = Constants.QuickChatMessages.Sum(x => x.Value.Count);
 
         InitalizeScrollView();
         SetListContent(messageCount);
@@ -100,11 +98,13 @@ public class QuickChatView : ExtendedPhoneScroll {
         var quickChatButton = (QuickChatButton) button;
 
         var categoryIndex = 0;
-        foreach (var keyValuePair in Constants.QuickChatMessages) {
+        foreach (var keyValuePair in Constants.QuickChatMessages.OrderBy(x => x.Key)) {
             var messageCount = keyValuePair.Value.Count;
             if (contentIndex >= messageCount) {
                 contentIndex -= messageCount;
                 categoryIndex++;
+            } else {
+                break;
             }
         }
 

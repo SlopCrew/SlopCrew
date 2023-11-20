@@ -292,7 +292,7 @@ public class AppEncounters : App {
             return;
         }
 
-        int contentIndex = scrollView!.GetContentIndex();
+        var contentIndex = scrollView!.GetContentIndex();
         var currentSelectedMode = (EncounterType) contentIndex;
 
         var selectedButton = (EncounterButton) scrollView!.SelectedButtton;

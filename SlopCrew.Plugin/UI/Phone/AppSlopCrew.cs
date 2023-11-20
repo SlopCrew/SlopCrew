@@ -11,7 +11,6 @@ using DG.Tweening;
 namespace SlopCrew.Plugin.UI.Phone;
 
 public class AppSlopCrew : App {
-
     public enum Category {
         Chat,
         Encounters
@@ -30,7 +29,8 @@ public class AppSlopCrew : App {
         this.scrollView = ExtendedPhoneScroll.Create<SlopCrewScrollView>("Categories", this, Content);
 
         var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
-        AppUtility.CreateAppOverlay(musicApp, false, Content, "Slop Crew", SpriteSheet.MainIcon, out _, out _, scrollView.RectTransform());
+        AppUtility.CreateAppOverlay(musicApp, false, Content, "Slop Crew", SpriteSheet.MainIcon, out _, out _,
+                                    scrollView.RectTransform());
     }
 
     public override void OnAppEnable() {
@@ -61,7 +61,8 @@ public class AppSlopCrew : App {
     }
 
     public override void OnPressRight() {
-        scrollView!.HoldAnimationSelectedButton();
+        if (this.scrollView!.SelectedButtton == null) return;
+        this.scrollView.HoldAnimationSelectedButton();
     }
 
     public override void OnReleaseRight() {

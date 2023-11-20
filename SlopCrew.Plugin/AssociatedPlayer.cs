@@ -162,7 +162,10 @@ public class AssociatedPlayer : IDisposable {
     public void Dispose() {
         if (this.ReptilePlayer != null) {
             var worldHandler = WorldHandler.instance;
-            if (worldHandler != null) worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
+            if (worldHandler is {SceneObjectsRegister.players: not null}) {
+                worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
+            }
+
             Object.Destroy(this.ReptilePlayer.gameObject);
         }
 
