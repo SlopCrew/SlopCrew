@@ -1,0 +1,1 @@
+- Fixed a bug when dismissing race results

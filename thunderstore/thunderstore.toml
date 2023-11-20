@@ -1,0 +1,16 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "NotNet"
+name = "SlopCrew"
+description = "multiplayer mod for skateboard video game"
+websiteUrl = "https://github.com/SlopCrew/SlopCrew"
+
+[package.dependencies]
+BepInEx-BepInExPack = "5.4.2100"
+
+[publish]
+repository = "https://thunderstore.dev"
+communities = ["bomb-rush-cyberfunk"]
+categories = ["mods"]

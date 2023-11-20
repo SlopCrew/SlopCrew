@@ -32,13 +32,14 @@ dotnet build "$project" --configuration Release
 # GitHub release
 $version = (Get-Item "$buildDir/SlopCrew.Plugin.dll").VersionInfo.ProductVersion
 $version = $version -replace '\+.*$'
-Compress-Archive -Path "$buildDir/*" -DestinationPath "$outDir/SlopCrew.zip" -Force
+Compress-Archive -Path "$buildDir/*" -DestinationPath "$outDir/plugin.zip" -Force
 
 # Thunderstore release
 Copy-Item "$buildDir/*" "$thunderstorePluginDir/" -Recurse -Force
 Copy-Item "$rootDir/README.md" "$thunderstoreDir/README.md"
+Copy-Item "$rootDir/CHANGELOG.md" "$thunderstoreDir/CHANGELOG.md"
 
-# Edit the Thunderstore JSON's `version_number` property, using jq
+# Edit the Thunderstore JSON's `version_number` property to match
 $manifest = "$thunderstoreDir/manifest.json"
 $edited = (jq --arg version $version '.version_number = $version' $manifest)
 

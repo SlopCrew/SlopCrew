@@ -1,9 +1,9 @@
-on: [push, pull_request]
-name: Server builds
+on: workflow_dispatch
+name: Deploy to GitHub & Thunderstore
 
 jobs:
-    server:
-        name: Build server
+    deploy:
+        name: Deploy to GitHub & Thunderstore
         runs-on: windows-latest
         steps:
             - name: Checkout code
@@ -27,17 +27,33 @@ jobs:
             - name: Copy GameNetworkingSockets
               run: Copy-Item -Path ./vcpkg_installed/*/bin/* -Destination ./libs/GameNetworkingSockets -Recurse -Force
 
-            - name: Install dependencies
-              run: dotnet restore
-
             - name: Setup Bomb Rush Cyberfunk dependencies
               run: ./scripts/gha.ps1
 
             - name: Build
-              run: dotnet build SlopCrew.Server --configuration Release --no-restore
+              run: ./scripts/build.ps1
+              env:
+                  BRCPath: ${{ github.workspace }}/local/BombRushCyberfunk
 
-            - name: Upload artifacts
+            - name: Deploy to Thunderstore
+              run: ./scripts/thunderstore.ps1
+              env:
+                  THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+
+            - name: Deploy to GitHub
+              uses: ncipollo/release-action@v1
+              with:
+                  artifacts: ./out/plugin.zip
+                  bodyFile: ./CHANGELOG.md
+
+            - name: Upload plugin artifact
               uses: actions/upload-artifact@v3
               with:
-                  name: server-windows
-                  path: ./SlopCrew.Server/bin/Release/net7.0
+                  name: plugin
+                  path: ./SlopCrew.Plugin/bin/Release/net462
+
+            - name: Upload Thunderstore artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: thunderstore
+                  path: ./thunderstore
