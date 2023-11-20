@@ -11,6 +11,6 @@ websiteUrl = "https://github.com/SlopCrew/SlopCrew"
 BepInEx-BepInExPack = "5.4.2100"
 
 [publish]
-repository = "https://thunderstore.dev"
+repository = "https://thunderstore.io"
 communities = ["bomb-rush-cyberfunk"]
 categories = ["mods"]
