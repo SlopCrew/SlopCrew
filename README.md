@@ -16,7 +16,7 @@
 
 ---
 
-It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends. **See the [INSTALL.md](https://github.com/SlopCrew/SlopCrew/blob/main/docs/Install%20Guide.md) file for setting up the mod, or making your own servers.**
+It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends. **See the [install guide](https://github.com/SlopCrew/SlopCrew/blob/main/docs/Install%20Guide.md) for setting up the mod, or the [server guide](https://github.com/SlopCrew/SlopCrew/blob/main/docs/Server%20Guide.md) for making your own servers.**
 
 ## Features
 
