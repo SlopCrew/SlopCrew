@@ -35,6 +35,9 @@ jobs:
               env:
                   BRCPath: ${{ github.workspace }}/local/BombRushCyberfunk
 
+            - name: Install tcli
+              run: dotnet tool install -g tcli
+
             - name: Deploy to Thunderstore
               run: ./scripts/thunderstore.ps1
               env:
