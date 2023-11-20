@@ -5,7 +5,7 @@
 ### Windows
 
 - Download the server binaries [from GitHub Actions](https://github.com/SlopCrew/SlopCrew/actions/workflows/server.yml?query=branch%3Amain+event%3Apush) (pick the latest one).
-  - After selecting the entry, scroll down to the bottom, and select `server-windows` from the Artifacts section. You will need a GitHub account to download these artifacts, or you can use a service like [nightly.link](https://nightly.link) if you do not havev one.
+  - After selecting the entry, scroll down to the bottom, and select `server-windows` from the Artifacts section. You will need a GitHub account to download these artifacts, or you can use a service like [nightly.link](https://nightly.link) if you do not have one.
 - Download the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-7.0.10-windows-x64-installer).
 - Start the executable by double clicking it.
 
