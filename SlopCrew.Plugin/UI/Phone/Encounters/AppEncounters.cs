@@ -283,8 +283,7 @@ public class AppEncounters : App {
     }
 
     public override void OnPressRight() {
-        if (this.isShowingBigText) {
-            DismissBigText();
+        if (isShowingBigText) {
             return;
         }
 
@@ -308,6 +307,11 @@ public class AppEncounters : App {
     }
 
     public override void OnReleaseRight() {
+        if (this.isShowingBigText) {
+            DismissBigText();
+            return;
+        }
+
         if (this.hasBannedMods) {
             return;
         }
