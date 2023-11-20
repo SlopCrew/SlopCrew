@@ -54,6 +54,9 @@ public class AppQuickChat : App {
         this.continuousScrollTimer -= 0.4f;
     }
 
+    public override void OnReleaseUp() => this.continuousScrollTimer = 0.0f;
+    public override void OnReleaseDown() => this.continuousScrollTimer = 0.0f;
+
     public override void OnHoldUp() {
         this.continuousScrollTimer += Core.dt;
         if (this.continuousScrollTimer < 0.1f) return;
