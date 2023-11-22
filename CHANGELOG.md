@@ -1,1 +1,2 @@
-- Fixed a crash with the latest CrewBoom
+- Fixed nameplates rendering under graffiti
+- Fixed a crash when someone would use quick chat as you quit the game
