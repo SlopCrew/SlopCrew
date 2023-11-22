@@ -32,10 +32,10 @@ public class EncounterView : ExtendedPhoneScroll {
         this.m_ButtonContainer = this.gameObject.GetComponent<RectTransform>();
         this.CanvasGroup = this.gameObject.AddComponent<CanvasGroup>();
 
-        CreatePrefabs(AppSlopCrew.SpriteSheet);
+        this.CreatePrefabs(AppSlopCrew.SpriteSheet);
 
-        InitalizeScrollView();
-        SetListContent(AppSlopCrew.EncounterCount);
+        this.InitalizeScrollView();
+        this.SetListContent(AppSlopCrew.EncounterCount);
     }
 
     private void CreatePrefabs(AppSpriteSheet spriteSheet) {
@@ -116,8 +116,8 @@ public class EncounterView : ExtendedPhoneScroll {
                                         spriteSheet.EncounterButtonSpriteNormal!,
                                         spriteSheet.EncounterButtonSpriteSelected!);
 
-        m_AppButtonPrefab = slopCrewButton.gameObject;
-        m_AppButtonPrefab.SetActive(false);
+        this.m_AppButtonPrefab = slopCrewButton.gameObject;
+        this.m_AppButtonPrefab.SetActive(false);
     }
 
     public override void OnButtonCreated(PhoneScrollButton newButton) {
@@ -136,7 +136,7 @@ public class EncounterView : ExtendedPhoneScroll {
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
         var rectTransform = button.RectTransform();
-        rectTransform.anchoredPosition = GetButtonPosition(posIndex, rectTransform);
+        rectTransform.anchoredPosition = this.GetButtonPosition(posIndex, rectTransform);
     }
 
     public Vector2 GetButtonPosition(float positionIndex, RectTransform rect) {

@@ -25,7 +25,7 @@ public class AppEncounters : App {
     }
 
     public EncounterType ActiveEncounter { get; private set; }
-    public bool HasNearbyPlayer => closestPlayer != null;
+    public bool HasNearbyPlayer => this.closestPlayer != null;
 
     public static ClientboundEncounterRequest? PreviousEncounterRequest;
 
@@ -64,15 +64,15 @@ public class AppEncounters : App {
         this.config = Plugin.Host.Services.GetRequiredService<Config>();
         this.serverConfig = Plugin.Host.Services.GetRequiredService<ServerConfig>();
 
-        scrollView = ExtendedPhoneScroll.Create<EncounterView>("EncounterScrollView", this, Content);
-        AddOverlay();
-        AddBigText();
+        this.scrollView = ExtendedPhoneScroll.Create<EncounterView>("EncounterScrollView", this, this.Content);
+        this.AddOverlay();
+        this.AddBigText();
 
-        NearestPlayerChanged(null);
+        this.NearestPlayerChanged(null);
     }
 
     private void AddBigText() {
-        var musicApp = MyPhone.GetAppInstance<AppMusicPlayer>();
+        var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
         var musicButtonPrefab = musicApp.m_TrackList.m_AppButtonPrefab;
 
         var confirmArrow = musicButtonPrefab.transform.Find("PromptArrow");
@@ -83,16 +83,16 @@ public class AppEncounters : App {
         var bigTextBackgroundObject = new GameObject("Big Text");
         this.bigTextBackground = bigTextBackgroundObject.AddComponent<Image>();
         this.bigTextBackground.color = Color.clear;
-        var bigTextBackgroundRect = bigTextBackground.rectTransform;
-        bigTextBackgroundRect.SetParent(Content, false);
-        bigTextBackgroundRect.SetSiblingIndex(scrollView!.transform.GetSiblingIndex() + 1);
+        var bigTextBackgroundRect = this.bigTextBackground.rectTransform;
+        bigTextBackgroundRect.SetParent(this.Content, false);
+        bigTextBackgroundRect.SetSiblingIndex(this.scrollView!.transform.GetSiblingIndex() + 1);
         bigTextBackgroundRect.StretchToFillParent();
         // Offset for overlay
-        var scrollViewRect = scrollView.RectTransform();
+        var scrollViewRect = this.scrollView.RectTransform();
         bigTextBackgroundRect.offsetMin = scrollViewRect.offsetMin;
         bigTextBackgroundRect.offsetMax = scrollViewRect.offsetMax;
 
-        float textSize = MyPhone.ScreenSize.x - 64.0f;
+        float textSize = this.MyPhone.ScreenSize.x - 64.0f;
         float textPosition = 64.0f;
 
         this.bigTextTitleLabel = new GameObject("Title Label").AddComponent<TextMeshProUGUI>();
@@ -106,7 +106,7 @@ public class AppEncounters : App {
         bigTextTitleRect.sizeDelta = new Vector2(textSize + 256.0f, this.bigTextTitleLabel.fontSize);
         bigTextTitleRect.anchoredPosition = new Vector2(textPosition + 256.0f, -64.0f);
 
-        this.bigTextMessageLabel = Instantiate(bigTextTitleLabel, bigTextBackgroundRect);
+        this.bigTextMessageLabel = Instantiate(this.bigTextTitleLabel, bigTextBackgroundRect);
         this.bigTextMessageLabel.fontSize = label.fontSize;
         var bigTextMessageRect = this.bigTextMessageLabel.rectTransform;
         bigTextMessageRect.anchoredPosition =
@@ -119,22 +119,22 @@ public class AppEncounters : App {
         arrow.anchoredPosition = new Vector2(-64, 64.0f);
         arrow.gameObject.SetActive(true);
 
-        bigTextSequence = DOTween.Sequence();
-        bigTextSequence.SetAutoKill(false);
-        bigTextSequence.Append(bigTextBackground.DOFade(0.95f, 0.2f));
-        bigTextSequence.Append(bigTextTitleLabel.DOFade(1.0f, 0.1f));
-        bigTextSequence.Join(bigTextTitleRect.DOAnchorPosX(textPosition, 0.1f));
-        bigTextSequence.Append(bigTextMessageLabel.DOFade(1.0f, 0.1f));
-        bigTextSequence.Join(bigTextMessageRect.DOAnchorPosX(textPosition, 0.1f));
+        this.bigTextSequence = DOTween.Sequence();
+        this.bigTextSequence.SetAutoKill(false);
+        this.bigTextSequence.Append(this.bigTextBackground.DOFade(0.95f, 0.2f));
+        this.bigTextSequence.Append(this.bigTextTitleLabel.DOFade(1.0f, 0.1f));
+        this.bigTextSequence.Join(bigTextTitleRect.DOAnchorPosX(textPosition, 0.1f));
+        this.bigTextSequence.Append(this.bigTextMessageLabel.DOFade(1.0f, 0.1f));
+        this.bigTextSequence.Join(bigTextMessageRect.DOAnchorPosX(textPosition, 0.1f));
 
-        bigTextBackground!.gameObject.SetActive(false);
+        this.bigTextBackground!.gameObject.SetActive(false);
     }
 
     private void AddOverlay() {
-        var musicApp = MyPhone.GetAppInstance<AppMusicPlayer>();
+        var musicApp = this.MyPhone.GetAppInstance<AppMusicPlayer>();
 
-        AppUtility.CreateAppOverlay(musicApp, true, Content, "Activities", AppSlopCrew.SpriteSheet.MainIcon,
-                                    out _, out RectTransform footer, scrollView.RectTransform());
+        AppUtility.CreateAppOverlay(musicApp, true, this.Content, "Activities", AppSlopCrew.SpriteSheet.MainIcon,
+                                    out _, out RectTransform footer, this.scrollView.RectTransform());
 
         // Status panel
         var statusPanel = musicApp.transform.Find("Content/StatusPanel").gameObject;
@@ -152,65 +152,67 @@ public class AppEncounters : App {
         titleRect.sizeDelta = new Vector2(footer.sizeDelta.x - 32.0f, this.titleLabel.fontSize);
         titleRect.anchoredPosition = new Vector2(32.0f, -165.0f);
 
-        this.opponentNameLabel = Instantiate(titleLabel, footer);
+        this.opponentNameLabel = Instantiate(this.titleLabel, footer);
         this.opponentNameLabel.alpha = 0.0f;
         var opponentNameRect = this.opponentNameLabel.rectTransform;
         opponentNameRect.anchoredPosition =
             new Vector2(titleRect.anchoredPosition.x + 256.0f, titleRect.anchoredPosition.y - 70.0f);
 
-        initialOpponentNameX = titleRect.anchoredPosition.x;
+        this.initialOpponentNameX = titleRect.anchoredPosition.x;
 
-        nameDisplaySequence = DOTween.Sequence();
-        nameDisplaySequence.SetAutoKill(false);
-        nameDisplaySequence.Join(opponentNameLabel.rectTransform.DOAnchorPosX(initialOpponentNameX, 0.2f));
-        nameDisplaySequence.Join(opponentNameLabel.DOFade(1.0f, 0.2f));
+        this.nameDisplaySequence = DOTween.Sequence();
+        this.nameDisplaySequence.SetAutoKill(false);
+        this.nameDisplaySequence.Join(this.opponentNameLabel.rectTransform.DOAnchorPosX(this.initialOpponentNameX, 0.2f));
+        this.nameDisplaySequence.Join(this.opponentNameLabel.DOFade(1.0f, 0.2f));
     }
 
     public override void OnAppTerminate() {
-        if (nameDisplaySequence != null) {
-            nameDisplaySequence.Kill();
+        if (this.nameDisplaySequence != null) {
+            this.nameDisplaySequence.Kill();
         }
-        if (bigTextSequence != null) {
-            bigTextSequence.Kill();
+        if (this.bigTextSequence != null) {
+            this.bigTextSequence.Kill();
         }
     }
 
     public override void OnAppEnable() {
         base.OnAppEnable();
 
-        PlayEnableAnimation();
+        this.PlayEnableAnimation();
 
-        this.hasBannedMods = HasBannedMods();
+        this.hasBannedMods = this.HasBannedMods();
         if (this.hasBannedMods) {
-            scrollView!.CanvasGroup!.alpha = 0.5f;
-            SetText("Please disable adavantageous mods.", string.Empty);
-            foreach (var button in scrollView.GetButtons()) {
+            this.scrollView!.CanvasGroup!.alpha = 0.5f;
+            this.SetText("Please disable adavantageous mods.", string.Empty);
+            foreach (var button in this.scrollView.GetButtons()) {
                 button.IsSelected = false;
             }
-            scrollView.enabled = false;
+            this.scrollView.enabled = false;
 
             return;
         }
     }
 
     private void PlayEnableAnimation() {
-        nameDisplaySequence.Restart();
+        this.nameDisplaySequence.Restart();
         Sequence enableAnimation = DOTween.Sequence();
 
-        for (int i = 0; i < scrollView!.GetScrollRange(); i++) {
-            var button = (EncounterButton) scrollView.GetButtonByRelativeIndex(i);
+        for (int i = 0; i < this.scrollView!.GetScrollRange(); i++) {
+            var button = (EncounterButton) this.scrollView.GetButtonByRelativeIndex(i);
             RectTransform buttonRect = button.RectTransform();
 
-            var targetPosition = scrollView.GetButtonPosition(i, buttonRect);
-            if (i != scrollView.GetSelectorPos()) targetPosition.x = 70.0f;
-            buttonRect.anchoredPosition = new Vector2(MyPhone.ScreenSize.x, buttonRect.anchoredPosition.y);
+            var targetPosition = this.scrollView.GetButtonPosition(i, buttonRect);
+            if (i != this.scrollView.GetSelectorPos())
+                targetPosition.x = 70.0f;
+            buttonRect.anchoredPosition = new Vector2(this.MyPhone.ScreenSize.x, buttonRect.anchoredPosition.y);
             enableAnimation.Append(buttonRect.DOAnchorPos(targetPosition, 0.08f));
         }
     }
 
     public override void OnAppUpdate() {
         var player = WorldHandler.instance.GetCurrentPlayer();
-        if (player is null) return;
+        if (player is null)
+            return;
 
         if (this.encounterManager.CurrentEncounter is RaceEncounter
             && this.isWaitingForEncounter
@@ -218,19 +220,21 @@ public class AppEncounters : App {
             this.EndWaitingForEncounter();
         }
 
-        if (this.hasBannedMods) return;
+        if (this.hasBannedMods)
+            return;
 
         if (this.encounterManager.CurrentEncounter?.IsBusy == true) {
             if (this.encounterManager.CurrentEncounter is RaceEncounter race && race.IsWaitingForResults()) {
-                SetEncounterStatus(EncounterStatus.WaitingResults);
+                this.SetEncounterStatus(EncounterStatus.WaitingResults);
             } else {
-                SetEncounterStatus(EncounterStatus.InProgress);
+                this.SetEncounterStatus(EncounterStatus.InProgress);
             }
             return;
         }
 
         // This happens when literally no encounter is going on or one just ended
-        if (!this.isWaitingForEncounter) this.SetEncounterStatus(EncounterStatus.None);
+        if (!this.isWaitingForEncounter)
+            this.SetEncounterStatus(EncounterStatus.None);
 
         if (!this.opponentLocked) {
             var position = player.transform.position;
@@ -271,7 +275,7 @@ public class AppEncounters : App {
             return;
         }
 
-        scrollView!.Move(PhoneScroll.ScrollDirection.Previous, m_AudioManager);
+        this.scrollView!.Move(PhoneScroll.ScrollDirection.Previous, this.m_AudioManager);
     }
 
     public override void OnPressDown() {
@@ -279,11 +283,11 @@ public class AppEncounters : App {
             return;
         }
 
-        scrollView!.Move(PhoneScroll.ScrollDirection.Next, m_AudioManager);
+        this.scrollView!.Move(PhoneScroll.ScrollDirection.Next, this.m_AudioManager);
     }
 
     public override void OnPressRight() {
-        if (isShowingBigText) {
+        if (this.isShowingBigText) {
             return;
         }
 
@@ -291,24 +295,24 @@ public class AppEncounters : App {
             return;
         }
 
-        var contentIndex = scrollView!.GetContentIndex();
+        var contentIndex = this.scrollView!.GetContentIndex();
         var currentSelectedMode = (EncounterType) contentIndex;
 
-        var selectedButton = (EncounterButton) scrollView!.SelectedButtton;
+        var selectedButton = (EncounterButton) this.scrollView!.SelectedButtton;
         if (selectedButton!.Unavailable) {
             return;
         }
 
-        if (isWaitingForEncounter && currentSelectedMode != ActiveEncounter) {
+        if (this.isWaitingForEncounter && currentSelectedMode != this.ActiveEncounter) {
             return;
         }
 
-        scrollView!.HoldAnimationSelectedButton();
+        this.scrollView!.HoldAnimationSelectedButton();
     }
 
     public override void OnReleaseRight() {
         if (this.isShowingBigText) {
-            DismissBigText();
+            this.DismissBigText();
             return;
         }
 
@@ -316,95 +320,101 @@ public class AppEncounters : App {
             return;
         }
 
-        scrollView!.ActivateAnimationSelectedButton();
+        this.scrollView!.ActivateAnimationSelectedButton();
 
-        var contentIndex = scrollView!.GetContentIndex();
+        var contentIndex = this.scrollView!.GetContentIndex();
         var currentSelectedMode = (EncounterType) contentIndex;
 
-        var selectedButton = (EncounterButton) scrollView!.SelectedButtton;
+        var selectedButton = (EncounterButton) this.scrollView!.SelectedButtton;
         if (selectedButton.Unavailable) {
             return;
         }
 
-        if (isWaitingForEncounter && currentSelectedMode == ActiveEncounter) {
-            SendCancelEncounterRequest(ActiveEncounter);
+        if (this.isWaitingForEncounter && currentSelectedMode == this.ActiveEncounter) {
+            this.SendCancelEncounterRequest(this.ActiveEncounter);
             return;
         }
 
-        if (!SendEncounterRequest(currentSelectedMode)) return;
+        if (!this.SendEncounterRequest(currentSelectedMode))
+            return;
 
-        m_AudioManager.PlaySfxUI(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
+        this.m_AudioManager.PlaySfxUI(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
 
-        if (currentSelectedMode == EncounterType.Race && !isWaitingForEncounter) {
-            ActiveEncounter = EncounterType.Race;
-            isWaitingForEncounter = true;
-            SetEncounterStatus(EncounterStatus.WaitingStart);
+        if (currentSelectedMode == EncounterType.Race && !this.isWaitingForEncounter) {
+            this.ActiveEncounter = EncounterType.Race;
+            this.isWaitingForEncounter = true;
+            this.SetEncounterStatus(EncounterStatus.WaitingStart);
         }
     }
 
     private void SetText(string title, string messsage) {
-        if (titleLabel!.text != title) {
-            titleLabel.SetText(title);
+        if (this.titleLabel!.text != title) {
+            this.titleLabel.SetText(title);
         }
-        if (opponentNameLabel!.text != messsage) {
-            opponentNameLabel.SetText(messsage);
+        if (this.opponentNameLabel!.text != messsage) {
+            this.opponentNameLabel.SetText(messsage);
         }
     }
 
     public void SetBigText(string title, string message) {
-        isShowingBigText = true;
+        this.isShowingBigText = true;
 
-        bigTextBackground!.gameObject.SetActive(true);
+        this.bigTextBackground!.gameObject.SetActive(true);
 
-        bigTextTitleLabel!.SetText(title);
-        bigTextMessageLabel!.SetText(message);
+        this.bigTextTitleLabel!.SetText(title);
+        this.bigTextMessageLabel!.SetText(message);
 
-        bigTextSequence.Restart();
+        this.bigTextSequence.Restart();
     }
 
     private void DismissBigText() {
-        isShowingBigText = false;
+        this.isShowingBigText = false;
 
-        bigTextBackground!.gameObject.SetActive(false);
+        this.bigTextBackground!.gameObject.SetActive(false);
 
-        m_AudioManager.PlaySfxUI(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
+        this.m_AudioManager.PlaySfxUI(SfxCollectionID.PhoneSfx, AudioClipID.FlipPhone_Confirm);
     }
 
     private void NearestPlayerChanged(AssociatedPlayer? player) {
         this.closestPlayer = player;
 
         if (player == null) {
-            if (this.opponentLocked) this.opponentLocked = false;
-            SetText(ClosestPlayerTitle, "None found.");
+            if (this.opponentLocked)
+                this.opponentLocked = false;
+            this.SetText(ClosestPlayerTitle, "None found.");
             return;
         }
 
 
         var playerName = PlayerNameFilter.DoFilter(player.SlopPlayer.Name);
         playerName = PlayerNameFilter.CloseAll(playerName);
-        SetText(ClosestPlayerTitle, playerName);
+        this.SetText(ClosestPlayerTitle, playerName);
 
-        nameDisplaySequence!.Restart();
+        this.nameDisplaySequence!.Restart();
     }
 
     private bool SendEncounterRequest(EncounterType encounter) {
         // TODO: races
-        if (encounter is not EncounterType.Race && this.closestPlayer == null) return false;
-        if (this.encounterManager.CurrentEncounter?.IsBusy == true) return false;
-        if (hasBannedMods) return false;
+        if (encounter is not EncounterType.Race && this.closestPlayer == null)
+            return false;
+        if (this.encounterManager.CurrentEncounter?.IsBusy == true)
+            return false;
+        if (this.hasBannedMods)
+            return false;
 
         var id = this.closestPlayer?.SlopPlayer.Id;
 
         var encounterRequest = new ServerboundEncounterRequest {
             Type = encounter
         };
-        if (id is not null) encounterRequest.PlayerId = id.Value;
+        if (id is not null)
+            encounterRequest.PlayerId = id.Value;
 
         this.connectionManager.SendMessage(new ServerboundMessage {
             EncounterRequest = encounterRequest
         });
 
-        ActiveEncounter = encounter;
+        this.ActiveEncounter = encounter;
         return true;
     }
 
@@ -416,12 +426,15 @@ public class AppEncounters : App {
     }
 
     public void HandleEncounterRequest(ClientboundEncounterRequest request) {
-        if (!this.config.Phone.ReceiveNotifications.Value) return;
-        if (this.encounterManager.CurrentEncounter?.IsBusy == true) return;
+        if (!this.config.Phone.ReceiveNotifications.Value)
+            return;
+        if (this.encounterManager.CurrentEncounter?.IsBusy == true)
+            return;
 
         if (this.playerManager.Players.TryGetValue(request.PlayerId, out var associatedPlayer)) {
             var me = WorldHandler.instance.GetCurrentPlayer();
-            if (me == null) return;
+            if (me == null)
+                return;
 
             PreviousEncounterRequest = request;
 
@@ -436,7 +449,8 @@ public class AppEncounters : App {
     }
 
     private void SetNotification(Notification notif) {
-        if (this.notificationInitialized) return;
+        if (this.notificationInitialized)
+            return;
         var newNotif = Instantiate(notif.gameObject, this.transform);
         this.m_Notification = newNotif.GetComponent<Notification>();
         this.m_Notification.InitNotification(this);
@@ -444,8 +458,9 @@ public class AppEncounters : App {
     }
 
     private void SetEncounterStatus(EncounterStatus status) {
-        var button = scrollView!.GetButtonByRelativeIndex((int) ActiveEncounter) as EncounterButton;
-        if (button == null) return;
+        var button = this.scrollView!.GetButtonByRelativeIndex((int) this.ActiveEncounter) as EncounterButton;
+        if (button == null)
+            return;
 
         if (button.Status == status) {
             return;
@@ -455,8 +470,8 @@ public class AppEncounters : App {
     }
 
     public void EndWaitingForEncounter() {
-        isWaitingForEncounter = false;
-        SetEncounterStatus(EncounterStatus.None);
+        this.isWaitingForEncounter = false;
+        this.SetEncounterStatus(EncounterStatus.None);
     }
 
     private bool HasBannedMods() {

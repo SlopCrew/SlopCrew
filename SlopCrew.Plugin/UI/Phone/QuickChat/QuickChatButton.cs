@@ -39,22 +39,22 @@ internal class QuickChatButton : PhoneScrollButton {
     }
 
     public void SetButtonContents(QuickChatCategory category, int index) {
-        messageCategory = category;
-        messageIndex = index;
+        this.messageCategory = category;
+        this.messageIndex = index;
         this.label!.SetText(Constants.QuickChatMessages[category][index]);
     }
 
     public override void OnSelect(bool skipAnimations = false) {
         base.OnSelect(skipAnimations);
-        this.buttonBackground!.sprite = selectedButtonSprite;
-        this.label!.color = selectedModeColor;
+        this.buttonBackground!.sprite = this.selectedButtonSprite;
+        this.label!.color = this.selectedModeColor;
         this.confirmArrow!.SetActive(true);
     }
 
     public override void OnDeselect(bool skipAnimations = false) {
         base.OnDeselect(skipAnimations);
-        this.buttonBackground!.sprite = normalButtonSprite;
-        this.label!.color = normalModeColor;
+        this.buttonBackground!.sprite = this.normalButtonSprite;
+        this.label!.color = this.normalModeColor;
         this.confirmArrow!.SetActive(false);
     }
 

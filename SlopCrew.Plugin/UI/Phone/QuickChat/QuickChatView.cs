@@ -33,8 +33,8 @@ public class QuickChatView : ExtendedPhoneScroll {
 
         var messageCount = Constants.QuickChatMessages.Sum(x => x.Value.Count);
 
-        InitalizeScrollView();
-        SetListContent(messageCount);
+        this.InitalizeScrollView();
+        this.SetListContent(messageCount);
     }
 
     private void CreatePrefabs(AppSpriteSheet spriteSheet) {
@@ -85,8 +85,8 @@ public class QuickChatView : ExtendedPhoneScroll {
                                    spriteSheet.ChatSpriteNormal,
                                    spriteSheet.ChatSpriteSelected);
 
-        m_AppButtonPrefab = button;
-        m_AppButtonPrefab.SetActive(false);
+        this.m_AppButtonPrefab = button;
+        this.m_AppButtonPrefab.SetActive(false);
     }
 
     public override void OnButtonCreated(PhoneScrollButton newButton) {
@@ -114,7 +114,7 @@ public class QuickChatView : ExtendedPhoneScroll {
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
         var rectTransform = button.RectTransform();
-        rectTransform.anchoredPosition = GetButtonPosition(posIndex, rectTransform);
+        rectTransform.anchoredPosition = this.GetButtonPosition(posIndex, rectTransform);
     }
 
     public Vector2 GetButtonPosition(float positionIndex, RectTransform rect) {
