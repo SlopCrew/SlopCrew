@@ -162,7 +162,7 @@ public class NetworkClient : IDisposable {
                         PlayerId = this.Player.Id,
                         Packet = packet.CustomPacket.Packet
                     }
-                });
+                }, exclude: this.Player.Id);
                 break;
             }
 
