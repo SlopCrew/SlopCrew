@@ -89,13 +89,15 @@ public class AssociatedPlayer : IDisposable {
         // Setup the nameplate itself
         var nameplate = new GameObject("SlopCrew_Nameplate");
         var tmp = nameplate.AddComponent<TextMeshPro>();
-        tmp.text = this.SlopPlayer.Name;
         nameplate.AddComponent<TextMeshProFilter>();
 
         tmp.font = interfaceUtility.NameplateFont;
         tmp.fontMaterial = interfaceUtility.NameplateFontMaterial;
         tmp.alignment = TextAlignmentOptions.Midline;
         tmp.fontSize = 2.5f;
+        // Needed to make it appear in front of graffiti decals
+        tmp.sortingOrder = 1;
+        tmp.SetText(this.SlopPlayer.Name);
 
         nameplate.transform.parent = container.transform;
 
@@ -109,6 +111,8 @@ public class AssociatedPlayer : IDisposable {
             // Caching this seems to break
             var gameplay = Core.Instance.UIManager.gameplay;
             spriteRenderer.sprite = gameplay.wanted1.GetComponent<Image>().sprite;
+            // Needed to make it appear in front of graffiti decals
+            spriteRenderer.sortingOrder = 1;
 
             var localPosition = devIcon.transform.localPosition;
             localPosition -= new UnityEngine.Vector3(0, localPosition.y / 2, 0);
@@ -162,7 +166,7 @@ public class AssociatedPlayer : IDisposable {
     public void Dispose() {
         if (this.ReptilePlayer != null) {
             var worldHandler = WorldHandler.instance;
-            if (worldHandler is {SceneObjectsRegister.players: not null}) {
+            if (worldHandler is { SceneObjectsRegister.players: not null }) {
                 worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
             }
 
@@ -175,7 +179,8 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void HandleVisualUpdate(VisualUpdate update) {
-        if (this.ReptilePlayer == null) return;
+        if (this.ReptilePlayer == null)
+            return;
 
         var characterVisual = this.ReptilePlayer.characterVisual;
         var prevSpraycanState = this.ReptilePlayer.spraycanState;
@@ -204,7 +209,8 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void HandleAnimationUpdate(AnimationUpdate update) {
-        if (this.ReptilePlayer == null) return;
+        if (this.ReptilePlayer == null)
+            return;
 
         this.playerManager.PlayingAnimation = true;
         this.ReptilePlayer.PlayAnim(update.Animation, update.ForceOverwrite, update.Instant, update.Time);
@@ -212,7 +218,8 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void UpdateIfDifferent(Common.Proto.Player player) {
-        if (this.ReptilePlayer == null) return;
+        if (this.ReptilePlayer == null)
+            return;
 
         var anyDifferentCharacterInfo = player.CustomCharacterInfo.Count != this.SlopPlayer.CustomCharacterInfo.Count;
         foreach (var info in player.CustomCharacterInfo) {
@@ -253,7 +260,8 @@ public class AssociatedPlayer : IDisposable {
     }
 
     public void QueuePositionUpdate(PositionUpdate newUpdate) {
-        if (this.ReptilePlayer == null) return;
+        if (this.ReptilePlayer == null)
+            return;
 
         this.targetUpdate = newUpdate;
         var latency = newUpdate.Latency / 1000f;
@@ -275,13 +283,15 @@ public class AssociatedPlayer : IDisposable {
 
     public void Update() {
         this.ProcessPositionUpdate();
-        if (this.MapPin != null) this.MapPin.SetLocation();
+        if (this.MapPin != null)
+            this.MapPin.SetLocation();
     }
 
     // TODO: this interp code sucks. I don't understand how the previous interp code works anymore
     // but I can't seem to get fluid feeling movement working anymore - help appreciated :D
     public void ProcessPositionUpdate() {
-        if (this.targetUpdate is null || this.ReptilePlayer == null) return;
+        if (this.targetUpdate is null || this.ReptilePlayer == null)
+            return;
 
         var latency = this.targetUpdate.Latency / 1000f;
         var timeToMove = this.connectionManager.TickRate!.Value + latency;

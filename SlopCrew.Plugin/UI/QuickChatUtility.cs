@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using Microsoft.Extensions.DependencyInjection;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
@@ -18,8 +18,10 @@ public static class QuickChatUtility {
     private const float QuickChatOutroDuration = 0.25f;
 
     public static void SpawnQuickChat(Reptile.Player player, QuickChatCategory category, int index) {
-        if (!Constants.QuickChatMessages.TryGetValue(category, out var messages)) return;
-        if (index >= messages.Count) return;
+        if (!Constants.QuickChatMessages.TryGetValue(category, out var messages))
+            return;
+        if (index >= messages.Count)
+            return;
 
         var message = messages[index];
         var interfaceUtility = Plugin.Host.Services.GetRequiredService<InterfaceUtility>();
@@ -28,12 +30,14 @@ public static class QuickChatUtility {
         quickChat.AddComponent<UIBillboard>();
 
         var tmp = quickChat.AddComponent<TextMeshPro>();
-        tmp.text = message;
         tmp.font = interfaceUtility.QuickChatFont;
         tmp.alignment = TextAlignmentOptions.Midline;
         tmp.fontSize = 2.5f;
         tmp.color = new Color(1, 1, 1, 0);
         tmp.spriteAsset = interfaceUtility.EmojiAsset;
+        // Needed to make it appear in front of graffiti decals
+        tmp.sortingOrder = 1;
+        tmp.SetText(message);
 
         var capsule = player.interactionCollider as CapsuleCollider;
         var height = capsule!.height;
