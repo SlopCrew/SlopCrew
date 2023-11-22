@@ -39,9 +39,10 @@ public static class QuickChatUtility {
         tmp.sortingOrder = 1;
         tmp.SetText(message);
 
+        if (player == null) return;
         var capsule = player.interactionCollider as CapsuleCollider;
-        var height = capsule!.height;
-
+        if (capsule == null) return;
+        var height = capsule.height;
         var startPos = Vector3.up * (height * QuickChatStartHeightFactor);
         var restPos = Vector3.up * (height * QuickChatRestHeightFactor);
         var endPos = Vector3.up * (height * QuickChatEndHeightFactor);
