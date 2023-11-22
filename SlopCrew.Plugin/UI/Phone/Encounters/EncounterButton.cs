@@ -92,19 +92,19 @@ internal class EncounterButton : PhoneScrollButton {
 
     public override void OnSelect(bool skipAnimations = false) {
         base.OnSelect(skipAnimations);
-        this.buttonBackground!.sprite = selectedButtonSprite;
-        this.modeLabel!.color = selectedModeColor;
-        this.descriptionLabel!.color = selectedModeColor;
-        this.statusLabel!.color = normalModeColor;
+        this.buttonBackground!.sprite = this.selectedButtonSprite;
+        this.modeLabel!.color = this.selectedModeColor;
+        this.descriptionLabel!.color = this.selectedModeColor;
+        this.statusLabel!.color = this.normalModeColor;
         this.confirmArrow!.SetActive(true);
     }
 
     public override void OnDeselect(bool skipAnimations = false) {
         base.OnDeselect(skipAnimations);
-        this.buttonBackground!.sprite = normalButtonSprite;
-        this.modeLabel!.color = normalModeColor;
-        this.descriptionLabel!.color = normalModeColor;
-        this.statusLabel!.color = selectedModeColor;
+        this.buttonBackground!.sprite = this.normalButtonSprite;
+        this.modeLabel!.color = this.normalModeColor;
+        this.descriptionLabel!.color = this.normalModeColor;
+        this.statusLabel!.color = this.selectedModeColor;
         this.confirmArrow!.SetActive(false);
     }
 
@@ -114,7 +114,7 @@ internal class EncounterButton : PhoneScrollButton {
             return;
         }
 
-        switch (encounterType) {
+        switch (this.encounterType) {
             case EncounterType.ScoreBattle:
             case EncounterType.ComboBattle:
                 this.SetUnavailable(!this.app!.HasNearbyPlayer, "No player nearby");
@@ -127,30 +127,32 @@ internal class EncounterButton : PhoneScrollButton {
 
     public void SetStatus(AppEncounters.EncounterStatus status) {
         this.Status = status;
-        if (this.Unavailable) return;
+        if (this.Unavailable)
+            return;
 
         this.statusLabel!.gameObject.SetActive(status != AppEncounters.EncounterStatus.None);
         switch (status) {
             case AppEncounters.EncounterStatus.WaitingStart:
-                statusLabel.SetText("Waiting...");
+                this.statusLabel.SetText("Waiting...");
                 break;
             case AppEncounters.EncounterStatus.InProgress:
-                statusLabel.SetText("In progress!");
+                this.statusLabel.SetText("In progress!");
                 break;
             case AppEncounters.EncounterStatus.WaitingResults:
-                statusLabel.SetText("Awaiting results...");
+                this.statusLabel.SetText("Awaiting results...");
                 break;
         }
     }
 
     private void SetUnavailable(bool value, string message = "") {
-        if (this.Unavailable == value) return;
+        if (this.Unavailable == value)
+            return;
         this.Unavailable = value;
 
         if (value) {
             if (message != string.Empty) {
                 this.statusLabel!.gameObject.SetActive(true);
-                statusLabel.SetText($"<color=red>{message}");
+                this.statusLabel.SetText($"<color=red>{message}");
             }
 
             this.canvasGroup!.alpha = 0.5f;

@@ -29,13 +29,13 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
 
         this.CreatePrefabs(AppSlopCrew.SpriteSheet);
 
-        InitalizeScrollView();
-        SetListContent(AppSlopCrew.CategoryCount);
+        this.InitalizeScrollView();
+        this.SetListContent(AppSlopCrew.CategoryCount);
     }
 
     private void CreatePrefabs(AppSpriteSheet spriteSheet) {
-        var musicApp = app!.MyPhone.GetAppInstance<AppMusicPlayer>();
-        var homeApp = app!.MyPhone.GetAppInstance<AppHomeScreen>();
+        var musicApp = this.app!.MyPhone.GetAppInstance<AppMusicPlayer>();
+        var homeApp = this.app!.MyPhone.GetAppInstance<AppHomeScreen>();
 
         var musicButtonPrefab = musicApp.m_TrackList.m_AppButtonPrefab;
         var confirmArrow = homeApp.m_ScrollView.Selector.Arrow;
@@ -90,8 +90,8 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
                                    spriteSheet.CategoryButtonNormal,
                                    spriteSheet.CategoryButtonSelected);
 
-        m_AppButtonPrefab = button;
-        m_AppButtonPrefab.SetActive(false);
+        this.m_AppButtonPrefab = button;
+        this.m_AppButtonPrefab.SetActive(false);
     }
 
     public override void OnButtonCreated(PhoneScrollButton newButton) {
@@ -108,7 +108,7 @@ internal class SlopCrewScrollView : ExtendedPhoneScroll {
 
     public override void SetButtonPosition(PhoneScrollButton button, float posIndex) {
         var rectTransform = button.RectTransform();
-        rectTransform.anchoredPosition = GetButtonPosition(posIndex, rectTransform);
+        rectTransform.anchoredPosition = this.GetButtonPosition(posIndex, rectTransform);
     }
 
     public Vector2 GetButtonPosition(float positionIndex, RectTransform rect) {

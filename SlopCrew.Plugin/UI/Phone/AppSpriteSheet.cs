@@ -47,7 +47,7 @@ public class AppSpriteSheet {
             Sprite.Create(spriteSheet, new Rect(SpriteSheetSize.x - CategoryButtonSize.x, CategorySpriteHeight - CategoryButtonSize.y - SpriteSheetPadding, CategoryButtonSize.x, CategoryButtonSize.y),
                   centerPivot, 100.0f);
 
-        categoryIcons = new Sprite[categoryCount];
+        this.categoryIcons = new Sprite[categoryCount];
         var categoryIconWidthPadded = CategoryIconSize.x + SpriteSheetPadding;
         var categoryIconHeightPadded = CategoryIconSize.y + SpriteSheetPadding;
         int categoryRow = -1;
@@ -57,7 +57,7 @@ public class AppSpriteSheet {
                 categoryRow++;
             }
 
-            categoryIcons[i] =
+            this.categoryIcons[i] =
                 Sprite.Create(spriteSheet, new Rect(CategoryIconGridStart.x + (categoryIconWidthPadded * column), CategoryIconGridStart.y - (categoryIconHeightPadded * categoryRow), CategoryIconSize.x, CategoryIconSize.y),
                               centerPivot, 100.0f);
         }
@@ -70,7 +70,7 @@ public class AppSpriteSheet {
             Sprite.Create(spriteSheet, new Rect(0.0f, SpriteSheetSize.y - (EncounterButtonSize.y * 2.0f) - SpriteSheetPadding, EncounterButtonSize.x, EncounterButtonSize.y),
                           centerPivot, 100.0f);
 
-        encounterIcons = new Sprite[encounterCount];
+        this.encounterIcons = new Sprite[encounterCount];
         var encounterIconWidthPadded = EncounterIconSize.x + SpriteSheetPadding;
         var encounterIconHeightPadded = EncounterIconSize.y + SpriteSheetPadding;
         int encounterRow = -1;
@@ -80,7 +80,7 @@ public class AppSpriteSheet {
                 encounterRow++;
             }
 
-            encounterIcons[i] =
+            this.encounterIcons[i] =
                 Sprite.Create(spriteSheet, new Rect(encounterIconWidthPadded * column, EncounterIconGridHeight - (encounterIconHeightPadded * encounterRow), EncounterIconSize.x, EncounterIconSize.y),
                               centerPivot, 100.0f);
         }
@@ -95,9 +95,9 @@ public class AppSpriteSheet {
     }
 
     public Sprite? GetEncounterIcon(EncounterType encounter) {
-        return encounterIcons[(int) encounter];
+        return this.encounterIcons[(int) encounter];
     }
     public Sprite? GetCategoryIcon(AppSlopCrew.Category category) {
-        return categoryIcons[(int) category];
+        return this.categoryIcons[(int) category];
     }
 }
