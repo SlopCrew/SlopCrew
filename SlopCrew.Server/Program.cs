@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using SlopCrew.Server;
+using SlopCrew.Server.Api;
 using SlopCrew.Server.Database;
 using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
@@ -37,7 +36,6 @@ if (serverOptions.QuieterLogs) {
     builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
 }
 
-// This is fucking stupid. I hate MSDI
 void AddSingletonHostedService<T>() where T : class, IHostedService {
     builder.Services.AddSingleton<T>();
     builder.Services.AddHostedService<T>(p => p.GetRequiredService<T>());
@@ -51,34 +49,17 @@ builder.Services.AddTransient<NetworkClient>();
 builder.Services.AddSingleton<MetricsService>();
 builder.Services.AddSingleton<TickRateService>();
 builder.Services.AddSingleton<EncounterService>();
-builder.Services.AddSingleton<UserService>();
+
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CrewService>();
+
 builder.Services.AddDbContext<SlopDbContext>(
     options => options.UseSqlite($"DataSource={databaseOptions.DatabasePath}"));
 
 builder.Services.AddControllers();
 
-var key = authOptions.JwtSecret;
-if (!string.IsNullOrEmpty(key)) {
-    builder.Services.AddAuthentication(options => {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(options => {
-        var bytes = Encoding.UTF8.GetBytes(key);
-
-        options.TokenValidationParameters = new TokenValidationParameters {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = false,
-            IssuerSigningKey = new SymmetricSecurityKey(bytes),
-            ValidateIssuerSigningKey = true
-        };
-    });
-
-    builder.Services.AddAuthorization();
-} else {
-    logger.LogWarning("No JWT secret provided, API will be unstable");
-}
+builder.Services.AddAuthentication("Bearer")
+    .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("Bearer", _ => { });
 
 var redirectUri = authOptions.DiscordRedirectUri;
 if (!string.IsNullOrEmpty(redirectUri)) {

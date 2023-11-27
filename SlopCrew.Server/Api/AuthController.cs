@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SlopCrew.Server.Database;
 
@@ -40,26 +41,16 @@ public class AuthController(UserService userService, ILogger<AuthController> log
     }
     
     [HttpGet("me")]
+    [Authorize]
     public async Task<ActionResult<MeResponse>> GetMe() {
-        var user = this.GetUser();
+        var user = await userService.GetUserFromIdentity(this.User);
         if (user is null) return this.Unauthorized();
-        var me = await userService.GetDiscordMeResponse(user);
         
+        var me = await userService.GetDiscordMeResponse(user);
         return new MeResponse {
             Username = me.Username,
             Id = me.Id,
             Avatar = me.Avatar
         };
-    }
-    
-    // TODO: figure out how ASP.NET auth works lmao
-    private User? GetUser() {
-        var auth = this.Request.Headers["Authorization"];
-        if (auth.Count != 1) return null;
-        
-        var token = auth[0];
-        if (token is null) return null;
-        
-        return userService.GetUserByKey(token);
     }
 }

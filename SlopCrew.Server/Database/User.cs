@@ -15,4 +15,10 @@ public class User {
 
     public string? GameToken { get; set; } = null;
     public bool IsCommunityContributor { get; set; } = false;
+
+    public List<Crew> Crews { get; set; } = new();
+    public List<Crew> OwnedCrews { get; set; } = new();
+
+    public Crew? RepresentingCrew { get; set; } = null;
+    public string? RepresentingCrewId { get; set; } = null;
 }

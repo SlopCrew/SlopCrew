@@ -56,6 +56,8 @@ public class NetworkService : BackgroundService {
 
         this.listenSocket = this.server.CreateListenSocket(ref address);
 
+        this.logger.LogInformation("Now listening on port {Port}", this.serverOptions.Port);
+
         this.tickRateService.Tick += this.Tick;
         return Task.CompletedTask;
     }
