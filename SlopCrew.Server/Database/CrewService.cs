@@ -10,8 +10,12 @@ public class CrewService(SlopDbContext dbContext) {
         return crews.ToListAsync();
     }
 
-    public Task<Crew?> GetCrew(string id)
-        => dbContext.Crews.FirstOrDefaultAsync(c => c.Id == id);
+    public Task<Crew?> GetCrew(string id) {
+        return dbContext.Crews
+            .Include(c => c.Members)
+            .Include(c => c.Owners)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
 
     public bool CanJoinOrCreateCrew(User user)
         => user.Crews.Count < MaxCrewCount;
@@ -50,18 +54,22 @@ public class CrewService(SlopDbContext dbContext) {
         return crew;
     }
 
-    public async Task<bool> JoinCrew(User user, string inviteCode) {
-        if (!this.CanJoinOrCreateCrew(user)) return false;
+    public async Task<Crew?> JoinCrew(User user, string inviteCode) {
+        if (!this.CanJoinOrCreateCrew(user)) return null;
 
-        var crewWithCode = await dbContext.Crews.FirstOrDefaultAsync(c => c.InviteCodes.Contains(inviteCode));
-        if (crewWithCode is null) return false;
+        var crews = await dbContext.Crews.ToListAsync();
+        var crewWithCode = crews.FirstOrDefault(c => c.InviteCodes.ToList().Contains(inviteCode));
+        if (crewWithCode is null) return null;
 
         crewWithCode.Members.Add(user);
         user.Crews.Add(crewWithCode);
-        crewWithCode.InviteCodes.Remove(inviteCode);
-        await dbContext.SaveChangesAsync();
 
-        return true;
+        var newInviteCodes = new List<string>(crewWithCode.InviteCodes);
+        newInviteCodes.Remove(inviteCode);
+        crewWithCode.InviteCodes = newInviteCodes.ToArray();
+
+        await dbContext.SaveChangesAsync();
+        return crewWithCode;
     }
 
     public async Task LeaveCrew(Crew crew, User user) {
@@ -106,13 +114,18 @@ public class CrewService(SlopDbContext dbContext) {
 
     public async Task<string> GenerateInviteCode(Crew crew) {
         var code = Guid.NewGuid().ToString();
-        crew.InviteCodes.Add(code);
+
+        var newInviteCodes = new List<string>(crew.InviteCodes) {code};
+        crew.InviteCodes = newInviteCodes.ToArray();
+
         await dbContext.SaveChangesAsync();
         return code;
     }
 
     public async Task DeleteInviteCode(Crew crew, string code) {
-        crew.InviteCodes.Remove(code);
+        var newInviteCodes = new List<string>(crew.InviteCodes);
+        newInviteCodes.Remove(code);
+        crew.InviteCodes = newInviteCodes.ToArray();
         await dbContext.SaveChangesAsync();
     }
 

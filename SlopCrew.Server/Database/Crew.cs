@@ -15,5 +15,5 @@ public class Crew {
     public required List<User> Owners { get; set; }
     public required List<User> Members { get; set; }
 
-    public List<string> InviteCodes { get; set; } = new();
+    public string[] InviteCodes { get; set; } = [];
 }

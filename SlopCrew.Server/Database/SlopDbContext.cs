@@ -36,15 +36,7 @@ public class SlopDbContext : DbContext {
             .Property(c => c.InviteCodes)
             .HasConversion(
                 v => string.Join(' ', v),
-                v => v.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList()
-            )
-            .Metadata
-            .SetValueComparer(
-                new ValueComparer<List<string>>(
-                    (l1, l2) => l2 != null && l1 != null && l1.SequenceEqual(l2),
-                    l => l.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                    l => l.ToList()
-                )
+                v => v.Split(' ', StringSplitOptions.RemoveEmptyEntries)
             );
     }
 }
