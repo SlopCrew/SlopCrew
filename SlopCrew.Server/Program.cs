@@ -84,10 +84,8 @@ var redirectUri = authOptions.DiscordRedirectUri;
 if (!string.IsNullOrEmpty(redirectUri)) {
     builder.Services.AddCors(options => {
         var domain = new Uri(redirectUri).GetLeftPart(UriPartial.Authority);
-        options.AddDefaultPolicy(corsBuilder => corsBuilder
-                                     .WithOrigins(domain)
-                                     .WithHeaders("Content-Type")
-        );
+        options.AddDefaultPolicy(corsBuilder =>
+                                     corsBuilder.WithOrigins(domain).WithHeaders("Content-Type", "Authorization"));
     });
 }
 

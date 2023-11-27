@@ -11,6 +11,7 @@ public class User {
     public required string DiscordToken { get; set; }
     public required string DiscordRefreshToken { get; set; }
     public DateTime DiscordTokenExpires { get; set; }
+    public string? DiscordAvatar { get; set; }
 
     public string? GameToken { get; set; } = null;
     public bool IsCommunityContributor { get; set; } = false;

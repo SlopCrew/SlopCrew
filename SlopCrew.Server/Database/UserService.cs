@@ -22,6 +22,7 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         [JsonPropertyName("id")] public required string Id { get; set; }
         [JsonPropertyName("username")] public required string Username { get; set; }
         [JsonPropertyName("discriminator")] public required string Discriminator { get; set; }
+        [JsonPropertyName("avatar")] public string? Avatar { get; set; }
     }
 
     public async Task<User> ExchangeCodeForUser(string code) {
@@ -39,13 +40,7 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         var exchangeResponse = await exchangeRequest.Content.ReadFromJsonAsync<DiscordTokenExchangeResponse>();
         if (exchangeResponse is null) throw new Exception("Error exchanging code for token");
 
-        var meRequestUri = new HttpRequestMessage(HttpMethod.Get, "https://discord.com/api/users/@me");
-        meRequestUri.Headers.Authorization = new AuthenticationHeaderValue("Bearer", exchangeResponse.AccessToken);
-
-        var meRequest = await client.SendAsync(meRequestUri);
-        meRequest.EnsureSuccessStatusCode();
-        var meResponse = await meRequest.Content.ReadFromJsonAsync<DiscordMeResponse>();
-        if (meResponse is null) throw new Exception("Error fetching user info");
+        var meResponse = await GetDiscordMeResponse(exchangeResponse.AccessToken);
 
         var user = await dbContext.Users.FindAsync(meResponse.Id);
         if (user is not null) {
@@ -55,23 +50,41 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
             await dbContext.SaveChangesAsync();
             return user;
         } else {
-            var username = $"@{meResponse.Username}";
-            if (meResponse.Discriminator != "0") {
-                username = $"{meResponse.Username}#{meResponse.Discriminator}";
-            }
-
             var newUser = new User {
                 DiscordId = meResponse.Id,
-                DiscordUsername = username,
+                DiscordUsername = meResponse.Username,
                 DiscordToken = exchangeResponse.AccessToken,
                 DiscordRefreshToken = exchangeResponse.RefreshToken,
-                DiscordTokenExpires = DateTime.UtcNow.AddSeconds(exchangeResponse.ExpiresIn)
+                DiscordTokenExpires = DateTime.UtcNow.AddSeconds(exchangeResponse.ExpiresIn),
+                DiscordAvatar = meResponse.Avatar
             };
 
             await dbContext.Users.AddAsync(newUser);
             await dbContext.SaveChangesAsync();
             return newUser;
         }
+    }
+
+    public async Task<DiscordMeResponse> GetDiscordMeResponse(User user) {
+        var response = await GetDiscordMeResponse(user.DiscordToken);
+
+        user.DiscordUsername = response.Username;
+        user.DiscordAvatar = response.Avatar;
+        await dbContext.SaveChangesAsync();
+
+        return response;
+    }
+
+    private async Task<DiscordMeResponse> GetDiscordMeResponse(string accessToken) {
+        var meRequestUri = new HttpRequestMessage(HttpMethod.Get, "https://discord.com/api/users/@me");
+        meRequestUri.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var meRequest = await client.SendAsync(meRequestUri);
+        meRequest.EnsureSuccessStatusCode();
+        var meResponse = await meRequest.Content.ReadFromJsonAsync<DiscordMeResponse>();
+        if (meResponse is null) throw new Exception("Error fetching user info");
+
+        return meResponse;
     }
 
     public async Task<string> RegenerateGameToken(User user) {
