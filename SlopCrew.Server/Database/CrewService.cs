@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SlopCrew.Common;
 
 namespace SlopCrew.Server.Database;
 
@@ -44,6 +45,7 @@ public class CrewService(SlopDbContext dbContext) {
         if (!this.CanJoinOrCreateCrew(user)) {
             throw new InvalidOperationException("User cannot create any more crews");
         }
+        
 
         var crew = new Crew {
             Id = Guid.NewGuid().ToString(),
@@ -161,6 +163,7 @@ public class CrewService(SlopDbContext dbContext) {
     }
 
     public async Task UpdateCrew(Crew crew, string newName, string newTag) {
+        if (PlayerNameFilter.HitsFilter(newName) || PlayerNameFilter.HitsFilter(newTag)) return;
         crew.Name = newName;
         crew.Tag = newTag;
         await dbContext.SaveChangesAsync();

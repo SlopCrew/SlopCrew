@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SlopCrew.Common;
 using SlopCrew.Server.Database;
 
 namespace SlopCrew.Server.Api;
@@ -43,6 +44,10 @@ public class CrewController(
 
         if (!crewService.CanJoinOrCreateCrew(user)) {
             return this.BadRequest("You cannot create any more crews");
+        }
+        
+        if (PlayerNameFilter.HitsFilter(req.Name) || PlayerNameFilter.HitsFilter(req.Tag)) {
+            return this.BadRequest("Crew name or tag contains a banned word");
         }
 
         try {
