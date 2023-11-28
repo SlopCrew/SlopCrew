@@ -266,7 +266,7 @@ public class CrewController(
         if (user is null) return this.Unauthorized();
 
         if (id is null) {
-            await crewService.RepresentCrew(user, null);
+            await userService.RepresentCrew(user, null);
             return this.NoContent();
         }
 
@@ -274,7 +274,7 @@ public class CrewController(
         if (crew is null) return this.NotFound();
         if (!crew.Members.Contains(user)) return this.Unauthorized();
 
-        await crewService.RepresentCrew(user, crew);
+        await userService.RepresentCrew(user, crew);
         return this.NoContent();
     }
 }

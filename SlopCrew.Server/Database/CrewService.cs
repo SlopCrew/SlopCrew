@@ -168,16 +168,4 @@ public class CrewService(SlopDbContext dbContext) {
         crew.Tag = newTag;
         await dbContext.SaveChangesAsync();
     }
-
-    public async Task RepresentCrew(User user, Crew? crew) {
-        if (crew is null) {
-            user.RepresentingCrew = null;
-            user.RepresentingCrewId = null;
-        } else if (crew.Members.Contains(user)) {
-            user.RepresentingCrew = crew;
-            user.RepresentingCrewId = crew.Id;
-        }
-
-        await dbContext.SaveChangesAsync();
-    }
 }
