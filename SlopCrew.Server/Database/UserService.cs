@@ -153,7 +153,7 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         if (crew is null) {
             user.RepresentingCrew = null;
             user.RepresentingCrewId = null;
-        } else if (crew.Members.Contains(user)) {
+        } else {
             user.RepresentingCrew = crew;
             user.RepresentingCrewId = crew.Id;
         }
