@@ -1,2 +1,5 @@
-- Fixed nameplates rendering under graffiti
-- Fixed a crash when someone would use quick chat as you quit the game
+- **Added crews**
+  - Use [SlopNet](https://slopnet.sloppers.club/) to create and join crews
+  - Represent crews with special tags above your nameplate
+  - This feature is a work in progress and will likely contain bugs
+- Redesigned SlopNet website
