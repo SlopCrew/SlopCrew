@@ -70,6 +70,7 @@ public class CrewService(SlopDbContext dbContext) {
                         .ToListAsync();
         var crewWithCode = crews.FirstOrDefault(c => c.InviteCodes.ToList().Contains(inviteCode));
         if (crewWithCode is null) return null;
+        if (crewWithCode.Members.Contains(user)) return crewWithCode;
 
         crewWithCode.Members.Add(user);
         user.Crews.Add(crewWithCode);
