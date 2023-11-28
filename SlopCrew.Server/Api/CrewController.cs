@@ -111,6 +111,69 @@ public class CrewController(
         return this.NoContent();
     }
 
+    [HttpPost("{crewId}/demote")]
+    [Authorize]
+    public async Task<ActionResult> PostDemote([FromRoute] string crewId, [FromQuery] string id) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        var targetUser = await userService.GetUserById(id);
+        if (targetUser is null) return this.NotFound("Target user not found");
+
+        if (targetUser.DiscordId == user.DiscordId) {
+            return this.BadRequest("Cannot demote yourself");
+        }
+
+        var worked = await crewService.DemoteUser(crew, targetUser);
+        if (!worked) return this.BadRequest("Cannot demote the last owner of a crew");
+        return this.NoContent();
+    }
+
+    [HttpGet("{crewId}/invites")]
+    [Authorize]
+    public async Task<ActionResult<List<string>>> GetInvites([FromRoute] string crewId) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        return crew.InviteCodes.ToList();
+    }
+
+    [HttpPost("{crewId}/invites")]
+    [Authorize]
+    public async Task<ActionResult<string>> PostInvite([FromRoute] string crewId) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        var code = await crewService.GenerateInviteCode(crew);
+        return code;
+    }
+
+    [HttpDelete("{crewId}/invites/{code}")]
+    [Authorize]
+    public async Task<ActionResult> DeleteInvite([FromRoute] string crewId, [FromRoute] string code) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        await crewService.DeleteInviteCode(crew, code);
+        return this.NoContent();
+    }
+
     [HttpPost("join")]
     [Authorize]
     public async Task<ActionResult<SimpleCrewResponse>> PostJoin([FromQuery] string code) {
@@ -126,5 +189,50 @@ public class CrewController(
             Name = crew.Name,
             Tag = crew.Tag
         };
+    }
+
+    [HttpPost("{crewId}/leave")]
+    [Authorize]
+    public async Task<ActionResult> PostLeave([FromRoute] string crewId) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Members.Contains(user)) return this.Unauthorized();
+
+        await crewService.LeaveCrew(crew, user);
+        return this.NoContent();
+    }
+
+    [HttpPost("{crewId}/kick")]
+    [Authorize]
+    public async Task<ActionResult> PostKick([FromRoute] string crewId, [FromQuery] string id) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        var targetUser = await userService.GetUserById(id);
+        if (targetUser is null) return this.NotFound("Target user not found");
+
+        await crewService.LeaveCrew(crew, targetUser);
+        return this.NoContent();
+    }
+    
+    [HttpDelete("{crewId}")]
+    [Authorize]
+    public async Task<ActionResult> DeleteCrew([FromRoute] string crewId) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound("Crew not found");
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        await crewService.DeleteCrew(crew);
+        return this.NoContent();
     }
 }

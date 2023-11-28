@@ -57,7 +57,9 @@ public class CrewService(SlopDbContext dbContext) {
     public async Task<Crew?> JoinCrew(User user, string inviteCode) {
         if (!this.CanJoinOrCreateCrew(user)) return null;
 
-        var crews = await dbContext.Crews.ToListAsync();
+        var crews = await dbContext.Crews
+                        .Include(x => x.Members)
+                        .ToListAsync();
         var crewWithCode = crews.FirstOrDefault(c => c.InviteCodes.ToList().Contains(inviteCode));
         if (crewWithCode is null) return null;
 
@@ -136,13 +138,15 @@ public class CrewService(SlopDbContext dbContext) {
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task DemoteUser(Crew crew, User user) {
-        if (crew.Owners.Count == 1) return;      // Must have at least one owner
-        if (!crew.Owners.Contains(user)) return; // Already done
+    public async Task<bool> DemoteUser(Crew crew, User user) {
+        if (crew.Owners.Count == 1) return false;      // Must have at least one owner
+        if (!crew.Owners.Contains(user)) return false; // Already done
 
         crew.Owners.Remove(user);
         user.OwnedCrews.Remove(crew);
         await dbContext.SaveChangesAsync();
+        
+        return true;
     }
 
     public async Task UpdateCrew(Crew crew, string newName, string newTag) {
