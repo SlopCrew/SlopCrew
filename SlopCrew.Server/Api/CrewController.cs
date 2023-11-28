@@ -21,6 +21,7 @@ public class CrewController(
         [JsonPropertyName("id")] public required string Id { get; set; }
         [JsonPropertyName("name")] public required string Name { get; set; }
         [JsonPropertyName("tag")] public required string Tag { get; set; }
+        [JsonPropertyName("super_owner")] public required string SuperOwner { get; set; }
     }
 
     public class CrewResponse : SimpleCrewResponse {
@@ -49,7 +50,8 @@ public class CrewController(
             return new SimpleCrewResponse {
                 Id = crew.Id,
                 Name = crew.Name,
-                Tag = crew.Tag
+                Tag = crew.Tag,
+                SuperOwner = crew.SuperOwner.DiscordId
             };
         } catch (Exception e) {
             logger.LogError(e, "Error creating crew");
@@ -67,7 +69,8 @@ public class CrewController(
         return crews.Select(c => new SimpleCrewResponse {
             Id = c.Id,
             Name = c.Name,
-            Tag = c.Tag
+            Tag = c.Tag,
+            SuperOwner = c.SuperOwner.DiscordId
         }).ToList();
     }
 
@@ -85,6 +88,7 @@ public class CrewController(
             Id = crew.Id,
             Name = crew.Name,
             Tag = crew.Tag,
+            SuperOwner = crew.SuperOwner.DiscordId,
             Members = crew.Members.Select(m => new CrewMember {
                 Id = m.DiscordId,
                 Username = m.DiscordUsername,
@@ -126,6 +130,10 @@ public class CrewController(
 
         if (targetUser.DiscordId == user.DiscordId) {
             return this.BadRequest("Cannot demote yourself");
+        }
+
+        if (targetUser == crew.SuperOwner) {
+            return this.BadRequest("Cannot demote the super owner");
         }
 
         var worked = await crewService.DemoteUser(crew, targetUser);
@@ -187,7 +195,8 @@ public class CrewController(
         return new SimpleCrewResponse {
             Id = crew.Id,
             Name = crew.Name,
-            Tag = crew.Tag
+            Tag = crew.Tag,
+            SuperOwner = crew.SuperOwner.DiscordId
         };
     }
 
@@ -221,7 +230,7 @@ public class CrewController(
         await crewService.LeaveCrew(crew, targetUser);
         return this.NoContent();
     }
-    
+
     [HttpDelete("{crewId}")]
     [Authorize]
     public async Task<ActionResult> DeleteCrew([FromRoute] string crewId) {
@@ -230,7 +239,7 @@ public class CrewController(
 
         var crew = await crewService.GetCrew(crewId);
         if (crew is null) return this.NotFound("Crew not found");
-        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+        if (crew.SuperOwner != user) return this.Unauthorized();
 
         await crewService.DeleteCrew(crew);
         return this.NoContent();

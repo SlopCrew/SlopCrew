@@ -38,5 +38,10 @@ public class SlopDbContext : DbContext {
                 v => string.Join(' ', v),
                 v => v.Split(' ', StringSplitOptions.RemoveEmptyEntries)
             );
+
+        // Crew.SuperOwner -> one to many -> User.SuperOwnedCrews
+        modelBuilder.Entity<Crew>()
+            .HasOne(c => c.SuperOwner)
+            .WithMany(u => u.SuperOwnedCrews);
     }
 }

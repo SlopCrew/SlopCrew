@@ -30,6 +30,9 @@ public class CrewService(SlopDbContext dbContext) {
         // Ditto for members
         if (crew.Members.Contains(user) && crew.Members.Count == 1) return false;
 
+        // You can't leave if you're the super owner
+        if (crew.SuperOwner == user) return false;
+
         return true;
     }
 
@@ -42,6 +45,7 @@ public class CrewService(SlopDbContext dbContext) {
             Id = Guid.NewGuid().ToString(),
             Name = name,
             Tag = tag,
+            SuperOwner = user,
             Owners = [user],
             Members = [user]
         };
@@ -99,11 +103,13 @@ public class CrewService(SlopDbContext dbContext) {
                            .Include(user => user.RepresentingCrew)
                            .Include(user => user.Crews)
                            .Include(user => user.OwnedCrews)
+                           .Include(user => user.SuperOwnedCrews)
                            .FirstOrDefaultAsync(u => u == member);
             if (user is null) continue;
 
             if (user.Crews.Contains(crew)) user.Crews.Remove(crew);
             if (user.OwnedCrews.Contains(crew)) user.OwnedCrews.Remove(crew);
+            if (user.SuperOwnedCrews.Contains(crew)) user.SuperOwnedCrews.Remove(crew);
             if (user.RepresentingCrew == crew) {
                 user.RepresentingCrew = null;
                 user.RepresentingCrewId = null;
@@ -145,7 +151,7 @@ public class CrewService(SlopDbContext dbContext) {
         crew.Owners.Remove(user);
         user.OwnedCrews.Remove(crew);
         await dbContext.SaveChangesAsync();
-        
+
         return true;
     }
 

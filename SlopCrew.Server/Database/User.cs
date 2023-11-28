@@ -17,7 +17,10 @@ public class User {
     public bool IsCommunityContributor { get; set; } = false;
 
     public List<Crew> Crews { get; set; } = new();
+    // I made a mistake making everyone owner, and then I transitioned owner into a moderative role
+    // so now we have these names in the database
     public List<Crew> OwnedCrews { get; set; } = new();
+    public List<Crew> SuperOwnedCrews { get; set; } = new();
 
     public Crew? RepresentingCrew { get; set; } = null;
     public string? RepresentingCrewId { get; set; } = null;

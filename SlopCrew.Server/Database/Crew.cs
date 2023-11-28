@@ -12,6 +12,7 @@ public class Crew {
     [MinLength(3)] [MaxLength(32)] public required string Name { get; set; }
     [MinLength(3)] [MaxLength(32)] public required string Tag { get; set; }
 
+    public required User SuperOwner { get; set; }
     public required List<User> Owners { get; set; }
     public required List<User> Members { get; set; }
 
