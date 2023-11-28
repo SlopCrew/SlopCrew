@@ -106,7 +106,7 @@ public class CrewController(
 
         var crew = await crewService.GetCrew(crewId);
         if (crew is null) return this.NotFound("Crew not found");
-        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+        if (crew.SuperOwner != user) return this.Unauthorized();
 
         var targetUser = await userService.GetUserById(id);
         if (targetUser is null) return this.NotFound("Target user not found");
