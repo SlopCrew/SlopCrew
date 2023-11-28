@@ -139,7 +139,9 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         => dbContext.Users.FirstOrDefaultAsync(u => u.DiscordId == id);
 
     public User? GetUserByKey(string key)
-        => dbContext.Users.FirstOrDefault(u => u.GameToken == key);
+        => dbContext.Users
+            .Include(u => u.RepresentingCrew)
+            .FirstOrDefault(u => u.GameToken == key);
 
     public async Task<User?> GetUserFromIdentity(ClaimsPrincipal user) {
         var id = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

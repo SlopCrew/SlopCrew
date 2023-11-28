@@ -18,6 +18,7 @@ public class NetworkClient : IDisposable {
     public string? Key;
     public ulong Latency;
     public bool IsCommunityContributor;
+    public string? RepresentingCrew;
     public int QuickChatCooldown = 0;
 
     public Dictionary<EncounterType, List<NetworkClient>> EncounterRequests = new();
@@ -238,9 +239,11 @@ public class NetworkClient : IDisposable {
             this.Key = hello.Key;
             var user = this.userService.GetUserByKey(this.Key);
             this.IsCommunityContributor = user?.IsCommunityContributor ?? false;
+            this.RepresentingCrew = user?.RepresentingCrew?.Tag;
         }
 
         player.IsCommunityContributor = this.IsCommunityContributor;
+        player.RepresentingCrew = this.RepresentingCrew ?? string.Empty;
 
         // Cap a few things for people who are naughty
         var customCharacterInfo = player.CustomCharacterInfo.ToList();

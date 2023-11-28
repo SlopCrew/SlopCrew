@@ -126,12 +126,39 @@ public class AssociatedPlayer : IDisposable {
 
         container.transform.SetParent(this.ReptilePlayer.interactionCollider.transform, false);
         nameplate.transform.SetParent(container.transform, false);
+        
+        if (this.SlopPlayer.RepresentingCrew is { } crew) {
+            var crewTag = new GameObject("SlopCrew_CrewTag");
+            var crewTagText = crewTag.AddComponent<TextMeshPro>();
+            crewTag.AddComponent<TextMeshProFilter>();
+            
+            crewTagText.font = interfaceUtility.NameplateFont;
+            crewTagText.fontMaterial = interfaceUtility.NameplateFontMaterial;
+            crewTagText.alignment = TextAlignmentOptions.Midline;
+            crewTagText.fontSize = 1.5f;
+
+            crewTagText.sortingOrder = 1;
+            crewTagText.SetText(crew);
+
+            crewTag.transform.SetParent(container.transform, false);
+
+            // Needed to populate the bounds
+            tmp.ForceMeshUpdate();
+            crewTagText.ForceMeshUpdate();
+            var nameplateSize = tmp.bounds.size;
+            var crewTagSize = crewTagText.bounds.size;
+            
+            // Offset it to sit above the nameplate, on the top left
+            var x = (-nameplateSize.x / 2) + (crewTagSize.x / 2);
+            var y = (nameplateSize.y / 2) + (crewTagSize.y / 2);
+            crewTag.transform.localPosition = new UnityEngine.Vector3(x, y, 0);
+        }
 
         var capsule = this.ReptilePlayer.interactionCollider as CapsuleCollider;
         // float * float before float * vector is faster because reasons
         container.transform.localPosition = UnityEngine.Vector3.up * (capsule!.height * NameplateHeightFactor);
         container.transform.Rotate(0, 180, 0);
-
+        
         if (this.config.General.BillboardNameplates.Value) {
             container.AddComponent<UIBillboard>();
         }
@@ -166,7 +193,7 @@ public class AssociatedPlayer : IDisposable {
     public void Dispose() {
         if (this.ReptilePlayer != null) {
             var worldHandler = WorldHandler.instance;
-            if (worldHandler is { SceneObjectsRegister.players: not null }) {
+            if (worldHandler is {SceneObjectsRegister.players: not null}) {
                 worldHandler.SceneObjectsRegister.players.Remove(this.ReptilePlayer);
             }
 

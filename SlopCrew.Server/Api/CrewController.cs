@@ -45,7 +45,7 @@ public class CrewController(
         if (!crewService.CanJoinOrCreateCrew(user)) {
             return this.BadRequest("You cannot create any more crews");
         }
-        
+
         if (PlayerNameFilter.HitsFilter(req.Name) || PlayerNameFilter.HitsFilter(req.Tag)) {
             return this.BadRequest("Crew name or tag contains a banned word");
         }
@@ -247,6 +247,34 @@ public class CrewController(
         if (crew.SuperOwner != user) return this.Unauthorized();
 
         await crewService.DeleteCrew(crew);
+        return this.NoContent();
+    }
+
+    [HttpGet("represent")]
+    [Authorize]
+    public async Task<ActionResult<string>> GetRepresent() {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+        if (user.RepresentingCrewId is null) return this.NoContent();
+        return user.RepresentingCrewId;
+    }
+
+    [HttpPost("represent")]
+    [Authorize]
+    public async Task<ActionResult> PostRepresent([FromQuery] string? id) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        if (id is null) {
+            await crewService.RepresentCrew(user, null);
+            return this.NoContent();
+        }
+
+        var crew = await crewService.GetCrew(id);
+        if (crew is null) return this.NotFound();
+        if (!crew.Members.Contains(user)) return this.Unauthorized();
+
+        await crewService.RepresentCrew(user, crew);
         return this.NoContent();
     }
 }

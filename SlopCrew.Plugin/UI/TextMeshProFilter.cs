@@ -18,7 +18,7 @@ public class TextMeshProFilter : MonoBehaviour {
             if (parsedText is not null && parsedText != string.Empty) {
                 // Filter without rich text tags, in case someone's witty enough to put a tag mid-profanity
                 if (PlayerNameFilter.HitsFilter(parsedText)) {
-                    tmp.text = Constants.CensoredName;
+                    tmp.SetText(Constants.CensoredName);
                 }
 
                 this.checkedFilter = true;

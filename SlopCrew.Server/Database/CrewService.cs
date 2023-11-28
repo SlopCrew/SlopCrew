@@ -45,7 +45,7 @@ public class CrewService(SlopDbContext dbContext) {
         if (!this.CanJoinOrCreateCrew(user)) {
             throw new InvalidOperationException("User cannot create any more crews");
         }
-        
+
 
         var crew = new Crew {
             Id = Guid.NewGuid().ToString(),
@@ -166,6 +166,18 @@ public class CrewService(SlopDbContext dbContext) {
         if (PlayerNameFilter.HitsFilter(newName) || PlayerNameFilter.HitsFilter(newTag)) return;
         crew.Name = newName;
         crew.Tag = newTag;
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task RepresentCrew(User user, Crew? crew) {
+        if (crew is null) {
+            user.RepresentingCrew = null;
+            user.RepresentingCrewId = null;
+        } else if (crew.Members.Contains(user)) {
+            user.RepresentingCrew = crew;
+            user.RepresentingCrewId = crew.Id;
+        }
+
         await dbContext.SaveChangesAsync();
     }
 }
