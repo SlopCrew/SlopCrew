@@ -6,7 +6,11 @@ public class CrewService(SlopDbContext dbContext) {
     public const int MaxCrewCount = 10;
 
     public Task<List<Crew>> GetCrews(User user) {
-        var crews = dbContext.Crews.Where(c => c.Members.Contains(user));
+        var crews = dbContext.Crews
+            .Include(c => c.Members)
+            .Include(c => c.Owners)
+            .Include(c => c.SuperOwner)
+            .Where(c => c.Members.Contains(user));
         return crews.ToListAsync();
     }
 
