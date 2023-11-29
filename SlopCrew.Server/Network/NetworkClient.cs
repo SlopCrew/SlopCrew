@@ -29,7 +29,7 @@ public class NetworkClient : IDisposable {
     private EncounterService encounterService;
     private ServerOptions serverOptions;
     private EncounterOptions encounterOptions;
-    private UserService userService;
+    private IServiceScopeFactory scopeFactory;
 
     public NetworkClient(
         NetworkService networkService,
@@ -37,14 +37,14 @@ public class NetworkClient : IDisposable {
         EncounterService encounterService,
         IOptions<ServerOptions> serverOptions,
         IOptions<EncounterOptions> encounterOptions,
-        UserService userService
+        IServiceScopeFactory scopeFactory
     ) {
         this.networkService = networkService;
         this.tickRateService = tickRateService;
         this.encounterService = encounterService;
         this.serverOptions = serverOptions.Value;
         this.encounterOptions = encounterOptions.Value;
-        this.userService = userService;
+        this.scopeFactory = scopeFactory;
 
         this.tickRateService.Tick += this.Tick;
     }
@@ -237,7 +237,12 @@ public class NetworkClient : IDisposable {
 
         if (hello.HasKey && this.Key is null) {
             this.Key = hello.Key;
-            var user = this.userService.GetUserByKey(this.Key);
+
+            // people's info kept getting voided because I forgot that you can't keep DbContexts around in efcore lol
+            using var scope = this.scopeFactory.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+
+            var user = userService.GetUserByKey(this.Key);
             this.IsCommunityContributor = user?.IsCommunityContributor ?? false;
             this.RepresentingCrew = user?.RepresentingCrew?.Tag;
         }

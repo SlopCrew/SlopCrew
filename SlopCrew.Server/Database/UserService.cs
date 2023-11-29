@@ -148,7 +148,7 @@ public class UserService(IOptions<AuthOptions> options, SlopDbContext dbContext)
         if (id is null) return null;
         return await GetUserById(id);
     }
-    
+
     public async Task RepresentCrew(User user, Crew? crew) {
         if (crew is null) {
             user.RepresentingCrew = null;
