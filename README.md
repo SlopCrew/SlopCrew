@@ -6,6 +6,7 @@
   <a href="https://discord.gg/a2nVaZGGNz">Discord</a>
   - <a href="https://thunderstore.io/c/bomb-rush-cyberfunk/p/NotNet/SlopCrew/">Thunderstore</a>
   - <a href="https://github.com/NotNet/SlopCrew">GitHub</a>
+  - <a href="https://slopnet.sloppers.club/">SlopNet</a>
 </h3>
 
 <p align="center">
