@@ -12,6 +12,7 @@ namespace SlopCrew.Server;
 public class NetworkClient : IDisposable {
     public string? PluginVersion;
     public uint Connection;
+    public string Ip = string.Empty;
 
     public Player? Player;
     public int? Stage;

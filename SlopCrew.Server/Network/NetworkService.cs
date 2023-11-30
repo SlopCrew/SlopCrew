@@ -156,6 +156,7 @@ public class NetworkService : BackgroundService {
 
             case ConnectionState.Connected: {
                 var client = this.provider.GetRequiredService<NetworkClient>();
+                client.Ip = info.connectionInfo.address.GetIP();
                 client.Connection = info.connection;
                 this.clients.Add(info.connection, client);
                 this.metricsService.UpdateConnections(this.clients.Count);
