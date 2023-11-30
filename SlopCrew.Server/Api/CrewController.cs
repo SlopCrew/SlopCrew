@@ -59,7 +59,7 @@ public class CrewController(
                 SuperOwner = crew.SuperOwner.DiscordId
             };
         } catch (Exception e) {
-            logger.LogError(e, "Error creating crew");
+            logger.LogError(e, "Error creating crew - crew tag may be taken");
             return this.BadRequest();
         }
     }
@@ -101,6 +101,30 @@ public class CrewController(
                 Avatar = m.DiscordAvatar
             }).ToList()
         };
+    }
+
+    [HttpPatch("{crewId}")]
+    [Authorize]
+    public async Task<ActionResult> PatchCrew([FromRoute] string crewId, [FromBody] CreateRequest req) {
+        var user = await userService.GetUserFromIdentity(this.User);
+        if (user is null) return this.Unauthorized();
+
+        if (PlayerNameFilter.HitsFilter(req.Name) || PlayerNameFilter.HitsFilter(req.Tag)) {
+            return this.BadRequest("Crew name or tag contains a banned word");
+        }
+
+        var crew = await crewService.GetCrew(crewId);
+        if (crew is null) return this.NotFound();
+        if (!crew.Owners.Contains(user)) return this.Unauthorized();
+
+        try {
+            await crewService.UpdateCrew(crew, req.Name, req.Tag);
+        } catch (Exception e) {
+            logger.LogError(e, "Error updating crew - crew tag may be taken");
+            return this.BadRequest();
+        }
+
+        return this.NoContent();
     }
 
     [HttpPost("{crewId}/promote")]

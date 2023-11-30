@@ -68,7 +68,7 @@ if (!string.IsNullOrEmpty(redirectUri)) {
         options.AddDefaultPolicy(corsBuilder => corsBuilder
                                      .WithOrigins(domain)
                                      .WithHeaders("Content-Type", "Authorization")
-                                     .WithMethods("DELETE"));
+                                     .WithMethods("DELETE", "PATCH"));
     });
 }
 
