@@ -13,7 +13,7 @@
   "multiplayer mod for <a href="https://store.steampowered.com/app/1353230/Bomb_Rush_Cyberfunk/">skateboard video game</a>"
 </p>
 
-![Several players in a Slop Crew server](https://namazu.photos/i/a7rb2n7s.png)
+![Several players in a Slop Crew server](https://raw.githubusercontent.com/SlopCrew/SlopCrew/main/cover.png)
 
 ---
 
