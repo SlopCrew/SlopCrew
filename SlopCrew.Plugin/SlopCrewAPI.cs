@@ -16,46 +16,45 @@ public class SlopCrewAPI : ISlopCrewAPI {
 
     public int? StageOverride { get; set; }
 
+    // Returns the name for the local player.
+    public string? PlayerName {
+        get {
+            return this.OnGetLocalPlayerName?.Invoke();
+        }
+    }
+
+    internal Func<string>? OnGetLocalPlayerName;
+
     // Unity API clients can call this then use GameObject.Find() to find the GameObject containing the Reptile.Player component for this player.
     public string? GetGameObjectPathForPlayerID(uint playerid) {
         return this.OnGetGameObjectPathForPlayerID?.Invoke(playerid);
     }
 
-    internal event Func<uint, string>? OnGetGameObjectPathForPlayerID;
+    internal event Func<uint, string?>? OnGetGameObjectPathForPlayerID;
 
     // Reverse of the above method; Given the path to a Player GameObject, returns the player ID.
     public uint? GetPlayerIDForGameObjectPath(string gameObjectPath) {
         return this.OnGetPlayerIDForGameObjectPath?.Invoke(gameObjectPath);
     }
 
-    internal event Func<string, uint>? OnGetPlayerIDForGameObjectPath;
+    internal event Func<string, uint?>? OnGetPlayerIDForGameObjectPath;
 
-    // Given a player ID, checks if they're the local client.
-    public bool? IsLocalPlayer(uint playerid) {
-        return this.OnIsLocalPlayer?.Invoke(playerid);
+    // Given a player ID, checks if they don't exist on our end. Can be used to check if a player is local.
+    public bool? PlayerIDExists(uint playerid) {
+        return this.OnPlayerIDExists?.Invoke(playerid);
     }
 
-    internal event Func<uint, bool>? OnIsLocalPlayer;
+    internal event Func<uint, bool>? OnPlayerIDExists;
 
     // Given a player's ID, returns their name.
     public string? GetPlayerName(uint playerid) {
         return this.OnGetPlayerName?.Invoke(playerid);
     }
 
-    internal event Func<uint, string>? OnGetPlayerName;
-
-    // Given a player's ID, returns the name of the crew they're currently representing.
-    public string? GetPlayerRepresentingCrew(uint playerid) {
-        return this.OnGetPlayerRepresentingCrew?.Invoke(playerid);
-    }
-
-    internal event Func<uint, string>? OnGetPlayerRepresentingCrew;
+    internal event Func<uint, string?>? OnGetPlayerName;
 
     // Read-only list of all player IDs in the current stage.
     public ReadOnlyCollection<uint> Players => this.PlayersInternal.AsReadOnly();
-
-    // Returns the ID for the local player.
-    public uint? LocalPlayerID { get; internal set; } = null;
 
     internal List<uint> PlayersInternal = [];
 

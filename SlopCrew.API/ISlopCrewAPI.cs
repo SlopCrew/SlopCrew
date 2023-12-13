@@ -14,14 +14,14 @@ public interface ISlopCrewAPI {
     public event Action OnDisconnected;
 
     public int? StageOverride { get; set; }
+    
+    public string? PlayerName { get; }
 
     public string? GetGameObjectPathForPlayerID(uint playerid);
     public uint? GetPlayerIDForGameObjectPath(string gameObjectPath);
-    public bool? IsLocalPlayer(uint playerid);
+    public bool? PlayerIDExists(uint playerid);
     public string? GetPlayerName(uint playerid);
-    public string? GetPlayerRepresentingCrew(uint playerid);
     public ReadOnlyCollection<uint> Players { get; }
-    public uint? LocalPlayerID { get; }
     public void SendCustomPacket(string id, byte[] data);
     public event Action<uint, string, byte[]> OnCustomPacketReceived;
 }
