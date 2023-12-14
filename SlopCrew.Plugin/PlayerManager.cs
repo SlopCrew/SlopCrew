@@ -60,14 +60,9 @@ public class PlayerManager(
     }
 
     private uint? GetPlayerIDForGameObjectPath(string gameObjectPath) {
-        var gameObject = GameObject.Find(gameObjectPath);
-        if (gameObject is null)
-            return null;
-        var reptilePlayer = gameObject.GetComponent<Reptile.Player>();
-        if (reptilePlayer is null)
-            return null;
+        // GameObject.Find has performance implications.
         foreach(var player in this.Players) {
-            if (player.Value.ReptilePlayer == reptilePlayer)
+            if (player.Value.ReptilePlayer.gameObject.GetPath() == gameObjectPath)
                 return player.Key;
         }
         return null;
