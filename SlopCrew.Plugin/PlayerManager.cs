@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -38,6 +39,7 @@ public class PlayerManager(
         api.OnGetPlayerIDForGameObjectPath += this.GetPlayerIDForGameObjectPath;
         api.OnPlayerIDExists += this.PlayerIDExists;
         api.OnGetPlayerName += this.GetPlayerName;
+        api.OnGetPlayerList += this.GetPlayerList;
         return Task.CompletedTask;
     }
 
@@ -49,8 +51,13 @@ public class PlayerManager(
         api.OnGetPlayerIDForGameObjectPath -= this.GetPlayerIDForGameObjectPath;
         api.OnPlayerIDExists -= this.PlayerIDExists;
         api.OnGetPlayerName -= this.GetPlayerName;
+        api.OnGetPlayerList -= this.GetPlayerList;
         this.CleanupPlayers();
         return Task.CompletedTask;
+    }
+
+    private ReadOnlyCollection<uint> GetPlayerList() {
+        return this.Players.Keys.ToList().AsReadOnly();
     }
 
     private string? GetGameObjectPathForPlayerID(uint playerid) {

@@ -54,9 +54,9 @@ public class SlopCrewAPI : ISlopCrewAPI {
     internal event Func<uint, string?>? OnGetPlayerName;
 
     // Read-only list of all player IDs in the current stage.
-    public ReadOnlyCollection<uint> Players => this.PlayersInternal.AsReadOnly();
+    public ReadOnlyCollection<uint>? Players => this.OnGetPlayerList?.Invoke();
 
-    internal List<uint> PlayersInternal = [];
+    internal event Func<ReadOnlyCollection<uint>>? OnGetPlayerList;
 
     public void SendCustomPacket(string id, byte[] data) {
         this.OnCustomPacketSent?.Invoke(id, data);

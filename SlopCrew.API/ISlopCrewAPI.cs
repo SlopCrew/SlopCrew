@@ -21,7 +21,7 @@ public interface ISlopCrewAPI {
     public uint? GetPlayerIDForGameObjectPath(string gameObjectPath);
     public bool? PlayerIDExists(uint playerid);
     public string? GetPlayerName(uint playerid);
-    public ReadOnlyCollection<uint> Players { get; }
+    public ReadOnlyCollection<uint>? Players { get; }
     public void SendCustomPacket(string id, byte[] data);
     public event Action<uint, string, byte[]> OnCustomPacketReceived;
 }

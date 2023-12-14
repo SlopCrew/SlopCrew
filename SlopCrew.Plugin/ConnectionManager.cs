@@ -183,13 +183,6 @@ public class ConnectionManager : IHostedService {
 
             case ClientboundMessage.MessageOneofCase.PlayersUpdate: {
                 this.api.ChangePlayerCount(packet.PlayersUpdate.Players.Count + 1);
-                // Update the player list for API clients.
-                this.api.PlayersInternal.Clear();
-                foreach(var player in packet.PlayersUpdate.Players) {
-                    if (!player.HasId)
-                        continue;
-                    this.api.PlayersInternal.Add(player.Id);
-                }
                 break;
             }
 
