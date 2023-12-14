@@ -75,8 +75,8 @@ public class PlayerManager(
 
     private bool PlayerIDExists(uint playerid) {
         if (!this.Players.TryGetValue(playerid, out var _))
-            return true;
-        return false;
+            return false;
+        return true;
     }
 
     private string? GetPlayerName(uint playerid) {

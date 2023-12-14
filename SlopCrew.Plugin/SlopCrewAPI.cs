@@ -39,7 +39,7 @@ public class SlopCrewAPI : ISlopCrewAPI {
 
     internal event Func<string, uint?>? OnGetPlayerIDForGameObjectPath;
 
-    // Given a player ID, checks if they don't exist on our end. Can be used to check if a player is local.
+    // Given a player ID, checks they don't exist on our end. Can be used to listen for a player disconnecting, or if a given ID is our local player.
     public bool? PlayerIDExists(uint playerid) {
         return this.OnPlayerIDExists?.Invoke(playerid);
     }
