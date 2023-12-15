@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using SlopCrew.Server;
@@ -45,6 +45,8 @@ AddSingletonHostedService<NetworkService>();
 AddSingletonHostedService<RaceConfigService>();
 AddSingletonHostedService<DiscordRefreshService>();
 
+if (XmasConstants.Enabled)
+    builder.Services.AddTransient<XmasClient>();
 builder.Services.AddTransient<NetworkClient>();
 builder.Services.AddSingleton<MetricsService>();
 builder.Services.AddSingleton<TickRateService>();

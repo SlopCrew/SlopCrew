@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;
@@ -14,6 +14,7 @@ public class NetworkClient : IDisposable {
     public uint Connection;
     public string Ip = string.Empty;
 
+    public XmasClient? XmasClient;
     public Player? Player;
     public int? Stage;
     public string? Key;
@@ -54,6 +55,7 @@ public class NetworkClient : IDisposable {
 
     public void Dispose() {
         this.tickRateService.Tick -= this.Tick;
+        this.XmasClient?.Dispose();
     }
 
     public void HandlePacket(ServerboundMessage packet) {

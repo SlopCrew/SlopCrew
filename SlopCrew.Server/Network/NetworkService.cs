@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Google.Protobuf;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;
@@ -156,6 +156,7 @@ public class NetworkService : BackgroundService {
 
             case ConnectionState.Connected: {
                 var client = this.provider.GetRequiredService<NetworkClient>();
+                client.XmasClient = this.provider.GetService<XmasClient>();
                 client.Ip = info.connectionInfo.address.GetIP();
                 client.Connection = info.connection;
                 this.clients.Add(info.connection, client);
