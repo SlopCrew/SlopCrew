@@ -20,8 +20,4 @@
     <ItemGroup>
         <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="XmasEvent\" />
-    </ItemGroup>
 </Project>

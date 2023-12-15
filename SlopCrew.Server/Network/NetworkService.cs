@@ -5,6 +5,7 @@ using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
+using SlopCrew.Server.XmasEvent;
 
 namespace SlopCrew.Server;
 

@@ -4,32 +4,18 @@ using System.ComponentModel;
 using System.Net.Sockets;
 using System.Text;
 
-namespace SlopCrew.Server;
+namespace SlopCrew.Server.XmasEvent;
 
 public static class XmasPacketFactory {
-    public static ClientboundMessage CreateAcceptGiftPacket() {
-        var data = BitConverter.GetBytes((uint)1);
-        return new ClientboundMessage {
-            CustomPacket = new ClientboundCustomPacket {
-                PlayerId = XmasConstants.ServerPlayerID,
-                Packet = new CustomPacket {
-                    Id = "Xmas-Server-AcceptGift",
-                    Data = ByteString.CopyFrom(data)
-                }
-            }
-        };
-    }
-
-    public static ClientboundMessage CreateRejectGiftPacket() {
-        var data = BitConverter.GetBytes((uint) 1);
-        return new ClientboundMessage {
-            CustomPacket = new ClientboundCustomPacket {
-                PlayerId = XmasConstants.ServerPlayerID,
-                Packet = new CustomPacket {
-                    Id = "Xmas-Server-RejectGift",
-                    Data = ByteString.CopyFrom(data)
-                }
-            }
-        };
+    public static XmasPacket? CreatePacketFromID(string id) {
+        switch (id) {
+            case XmasClientCollectGiftPacket.PacketId:
+                return new XmasClientCollectGiftPacket();
+            case XmasServerAcceptGiftPacket.PacketId:
+                return new XmasServerAcceptGiftPacket();
+            case XmasServerRejectGiftPacket.PacketId:
+                return new XmasServerRejectGiftPacket();
+        }
+        return null;
     }
 }

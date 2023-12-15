@@ -6,6 +6,7 @@ using SlopCrew.Server.Api;
 using SlopCrew.Server.Database;
 using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
+using SlopCrew.Server.XmasEvent;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders().AddConsole();
