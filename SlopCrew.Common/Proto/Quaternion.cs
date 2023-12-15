@@ -1,4 +1,4 @@
-﻿namespace SlopCrew.Common.Proto;
+namespace SlopCrew.Common.Proto;
 
 public partial class Quaternion {
     public Quaternion(System.Numerics.Quaternion quat) {

@@ -1,4 +1,4 @@
-﻿namespace SlopCrew.Common.Proto;
+namespace SlopCrew.Common.Proto;
 
 public partial class Vector3 {
     public Vector3(System.Numerics.Vector3 vec) {
