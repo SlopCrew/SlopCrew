@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SlopCrew.Common;
 
 namespace SlopCrew.Server.Database;
