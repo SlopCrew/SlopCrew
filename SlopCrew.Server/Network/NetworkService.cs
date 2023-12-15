@@ -157,6 +157,8 @@ public class NetworkService : BackgroundService {
             case ConnectionState.Connected: {
                 var client = this.provider.GetRequiredService<NetworkClient>();
                 client.XmasClient = this.provider.GetService<XmasClient>();
+                if (client.XmasClient != null)
+                    client.XmasClient.Client = client;
                 client.Ip = info.connectionInfo.address.GetIP();
                 client.Connection = info.connection;
                 this.clients.Add(info.connection, client);

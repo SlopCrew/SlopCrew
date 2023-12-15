@@ -160,7 +160,8 @@ public class NetworkClient : IDisposable {
             case ServerboundMessage.MessageOneofCase.CustomPacket: {
                 if (this.Player is null || this.Stage is null) return;
                 if (packet.CustomPacket.Packet.Data.Length > Constants.MaxCustomPacketSize) return;
-
+                var handled = this.XmasClient?.HandlePacket(packet.CustomPacket);
+                if (handled == true) return;
                 this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
                     CustomPacket = new ClientboundCustomPacket {
                         PlayerId = this.Player.Id,
