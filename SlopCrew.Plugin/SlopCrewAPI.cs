@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using SlopCrew.API;
 
 namespace SlopCrew.Plugin;
