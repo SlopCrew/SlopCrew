@@ -1,4 +1,4 @@
-﻿using Graphite;
+using Graphite;
 using Microsoft.Extensions.Options;
 using SlopCrew.Server.Options;
 

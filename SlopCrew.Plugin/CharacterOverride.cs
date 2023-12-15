@@ -1,4 +1,4 @@
-﻿namespace SlopCrew.Plugin;
+namespace SlopCrew.Plugin;
 
 // Thanks Giygas: https://github.com/SGiygas/CrewBoomMonobehaviours/blob/main/CharacterEnums.cs
 public enum CharacterOverride {

@@ -1,4 +1,4 @@
-﻿using System.Timers;
+using System.Timers;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using Timer = System.Timers.Timer;

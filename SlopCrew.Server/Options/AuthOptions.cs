@@ -1,4 +1,4 @@
-﻿namespace SlopCrew.Server.Options; 
+namespace SlopCrew.Server.Options; 
 
 public class AuthOptions {
     public string DiscordClientId { get; set; } = string.Empty;

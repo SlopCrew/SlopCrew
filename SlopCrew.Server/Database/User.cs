@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable EntityFramework.ModelValidation.UnlimitedStringLength
 
