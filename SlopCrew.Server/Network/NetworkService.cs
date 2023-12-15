@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Google.Protobuf;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;
