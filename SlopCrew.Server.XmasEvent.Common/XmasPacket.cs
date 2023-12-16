@@ -21,6 +21,9 @@ public abstract class XmasPacket {
         return stream.ToArray();
     }
 
+    /// <summary>
+    /// Write packet to bytes. Packet version has already been written.
+    /// </summary>
     protected virtual void Write(BinaryWriter writer) {
         throw new NotImplementedException();
     }
@@ -33,7 +36,18 @@ public abstract class XmasPacket {
         }
     }
 
+    /// <summary>
+    /// Parse packet from bytes. Packet version has already been read and set.
+    /// </summary>
     protected virtual void Read(BinaryReader reader) {
         throw new NotImplementedException();
     }
+
+    protected void UnexpectedVersion() {
+        throw new XmasPacketParseException($"Got packet with unexpected version: {this.GetType().Name} {this.Version}");
+    }
+    
+}
+public class XmasPacketParseException : Exception {
+    public XmasPacketParseException(string message) : base(message) {}
 }
