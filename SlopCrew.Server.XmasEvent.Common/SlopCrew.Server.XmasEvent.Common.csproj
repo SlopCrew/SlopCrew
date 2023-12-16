@@ -5,8 +5,4 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj" />
-    </ItemGroup>
 </Project>
