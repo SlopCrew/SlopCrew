@@ -45,6 +45,7 @@ public class XmasServerEventStatePacket : XmasPacket {
     }
 }
 
+[Serializable]
 public class XmasPhase {
     /// <summary>
     /// If true, this phase is active.  Gifts collected will count towards this phase.
