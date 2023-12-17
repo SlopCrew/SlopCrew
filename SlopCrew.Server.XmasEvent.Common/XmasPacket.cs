@@ -46,7 +46,6 @@ public abstract class XmasPacket {
     protected void UnexpectedVersion() {
         throw new XmasPacketParseException($"Got packet with unexpected version: {this.GetType().Name} {this.Version}");
     }
-    
 }
 public class XmasPacketParseException : Exception {
     public XmasPacketParseException(string message) : base(message) {}

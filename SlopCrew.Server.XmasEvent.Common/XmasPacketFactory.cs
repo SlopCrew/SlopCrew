@@ -19,8 +19,10 @@ public static class XmasPacketFactory {
                 return new XmasServerAcceptGiftPacket();
             case XmasServerRejectGiftPacket.PacketId:
                 return new XmasServerRejectGiftPacket();
-            case XmasServerEventProgressPacket.PacketId:
-                return new XmasServerEventProgressPacket();
+            case XmasServerEventStatePacket.PacketId:
+                return new XmasServerEventStatePacket();
+            case XmasClientModifyEventStatePacket.PacketId:
+                return new XmasClientModifyEventStatePacket();
         }
         return null;
     }
