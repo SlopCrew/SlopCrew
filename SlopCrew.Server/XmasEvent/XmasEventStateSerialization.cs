@@ -9,6 +9,7 @@ public class XmasEventStateSerializer {
     static readonly JsonSerializerOptions options = new JsonSerializerOptions()
     {
         IncludeFields = true,
+        WriteIndented = true
     };
 
     public static string ToJson(XmasServerEventStatePacket state) {
