@@ -149,10 +149,13 @@ public class XmasService : BackgroundService {
             this.logger.LogInformation("Xmas state file not found; creating default state.");
             // this is expected the first time we run the server
             this.State = this.CreateDefaultEventState();
+            // Set dirty to create the file immediately
             this.stateDirty = true;
             return;
         }
         this.State = XmasEventStateSerializer.FromJson(json);
+        // Set dirty so it immediately rewrites, in case code changes have changed the JSON schema 
+        this.stateDirty = true;
         this.logger.LogInformation("Successfully read Xmas event state from disk");
     }
 
