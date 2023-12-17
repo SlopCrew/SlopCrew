@@ -52,6 +52,7 @@ public class XmasService : BackgroundService {
         // Synchronously write event state to disk before shutdown
         if (this.stateDirty) {
             this.WriteEventStateToDisk();
+            this.stateDirty = false;
         }
         return Task.CompletedTask;
     }
@@ -120,6 +121,7 @@ public class XmasService : BackgroundService {
             // re-broadcast and save state
             this.BroadcastEventState();
             this.WriteEventStateToDisk();
+            this.stateDirty = false;
         }
     }
     
