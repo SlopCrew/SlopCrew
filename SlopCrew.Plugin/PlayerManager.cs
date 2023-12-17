@@ -1,12 +1,16 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BepInEx.Logging;
 using Microsoft.Extensions.Hosting;
 using Reptile;
+using SlopCrew.Common;
 using SlopCrew.Common.Proto;
 using SlopCrew.Plugin.UI;
+using UnityEngine;
 
 namespace SlopCrew.Plugin;
 
@@ -15,9 +19,11 @@ public class PlayerManager(
     Config config,
     CharacterInfoManager characterInfoManager,
     InterfaceUtility interfaceUtility,
-    ManualLogSource logger
+    ManualLogSource logger,
+    SlopCrewAPI api
 )
     : IHostedService {
+
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
     public readonly InterfaceUtility InterfaceUtility = interfaceUtility;
@@ -29,6 +35,11 @@ public class PlayerManager(
         StageManager.OnStageInitialized += this.StageInit;
         connectionManager.Disconnected += this.Disconnected;
         connectionManager.MessageReceived += this.MessageReceived;
+        api.OnGetGameObjectPathForPlayerID += this.GetGameObjectPathForPlayerID;
+        api.OnGetPlayerIDForGameObjectPath += this.GetPlayerIDForGameObjectPath;
+        api.OnPlayerIDExists += this.PlayerIDExists;
+        api.OnGetPlayerName += this.GetPlayerName;
+        api.OnGetPlayerList += this.GetPlayerList;
         return Task.CompletedTask;
     }
 
@@ -36,8 +47,44 @@ public class PlayerManager(
         StageManager.OnStageInitialized -= this.StageInit;
         connectionManager.Disconnected -= this.Disconnected;
         connectionManager.MessageReceived -= this.MessageReceived;
+        api.OnGetGameObjectPathForPlayerID -= this.GetGameObjectPathForPlayerID;
+        api.OnGetPlayerIDForGameObjectPath -= this.GetPlayerIDForGameObjectPath;
+        api.OnPlayerIDExists -= this.PlayerIDExists;
+        api.OnGetPlayerName -= this.GetPlayerName;
+        api.OnGetPlayerList -= this.GetPlayerList;
         this.CleanupPlayers();
         return Task.CompletedTask;
+    }
+
+    private ReadOnlyCollection<uint> GetPlayerList() {
+        return this.Players.Keys.ToList().AsReadOnly();
+    }
+
+    private string? GetGameObjectPathForPlayerID(uint playerid) {
+        if (!this.Players.TryGetValue(playerid, out var associatedPlayer))
+            return null;
+        return associatedPlayer.ReptilePlayer.gameObject.GetPath();
+    }
+
+    private uint? GetPlayerIDForGameObjectPath(string gameObjectPath) {
+        // GameObject.Find has performance implications.
+        foreach(var player in this.Players) {
+            if (player.Value.ReptilePlayer.gameObject.GetPath() == gameObjectPath)
+                return player.Key;
+        }
+        return null;
+    }
+
+    private bool PlayerIDExists(uint playerid) {
+        if (!this.Players.TryGetValue(playerid, out var _))
+            return false;
+        return true;
+    }
+
+    private string? GetPlayerName(uint playerid) {
+        if (!this.Players.TryGetValue(playerid, out var associatedPlayer))
+            return null;
+        return PlayerNameFilter.DoFilter(associatedPlayer.SlopPlayer.Name);
     }
 
     public AssociatedPlayer? GetAssociatedPlayer(Reptile.Player reptilePlayer) {

@@ -18,4 +18,13 @@ public static class UnityExtensions {
     public static Quaternion ToMentalDeficiency(this System.Numerics.Quaternion quat) {
         return new Quaternion(quat.X, quat.Y, quat.Z, quat.W);
     }
+
+    public static string GetPath(this GameObject gameObject) {
+        var path = $"/{gameObject.name}";
+        while (gameObject.transform.parent != null) {
+            gameObject = gameObject.transform.parent.gameObject;
+            path = $"/{gameObject.name}{path}";
+        }
+        return path;
+    }
 }

@@ -12,7 +12,8 @@ namespace SlopCrew.Plugin;
 public class LocalPlayerManager(
     Config config,
     ConnectionManager connectionManager,
-    CharacterInfoManager characterInfoManager
+    CharacterInfoManager characterInfoManager,
+    SlopCrewAPI api
 ) : IHostedService {
     public bool HelloRefreshQueued;
     public bool VisualRefreshQueued;
@@ -24,6 +25,7 @@ public class LocalPlayerManager(
     public Task StartAsync(CancellationToken cancellationToken) {
         connectionManager.Tick += this.Tick;
         connectionManager.MessageReceived += this.MessageReceived;
+        api.OnGetLocalPlayerName += this.OnGetLocalPlayerName;
         StageManager.OnStagePostInitialization += this.StagePostInit;
         return Task.CompletedTask;
     }
@@ -32,8 +34,13 @@ public class LocalPlayerManager(
     public Task StopAsync(CancellationToken cancellationToken) {
         connectionManager.Tick -= this.Tick;
         connectionManager.MessageReceived -= this.MessageReceived;
+        api.OnGetLocalPlayerName -= this.OnGetLocalPlayerName;
         StageManager.OnStagePostInitialization -= this.StagePostInit;
         return Task.CompletedTask;
+    }
+
+    private string OnGetLocalPlayerName() {
+        return PlayerNameFilter.DoFilter(config.General.Username.Value);
     }
 
     private void MessageReceived(ClientboundMessage message) {
@@ -86,7 +93,7 @@ public class LocalPlayerManager(
                         CustomCharacterInfo = {infos}
                     },
 
-                    Stage = APIManager.API!.StageOverride ?? (int) Core.instance.baseModule.CurrentStage,
+                    Stage = api.StageOverride ?? (int) Core.instance.baseModule.CurrentStage,
                     Key = key
                 }
             });
