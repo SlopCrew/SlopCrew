@@ -55,31 +55,30 @@ public class XmasClient : IDisposable {
 
     // Returns true if we've handled the custom packet, to avoid it getting re-broadcasted to clients.
     public bool HandlePacket(ServerboundCustomPacket customPacket) {
-        var packet = XmasPacketFactory.CreatePacketFromID(customPacket.Packet.Id);
-        if (packet == null)
-            return false;
-        packet.PlayerID = this.Client?.Connection;
-        packet.Deserialize(customPacket.Packet.Data.ToArray());
-        switch (packet.GetPacketId()) {
-            case "Xmas-Client-CollectGift":
-                if (this.CurrentGiftCooldown > 0) {
-                    this.SendPacket(new XmasServerRejectGiftPacket());
-                } else {
-                    this.xmasService.CollectGift();
-                    this.SendPacket(new XmasServerAcceptGiftPacket());
-                    this.CurrentGiftCooldown = this.serverOptions.TickRate * XmasConstants.GiftCooldownInSeconds;
-                }
-                return true;
-            case XmasClientModifyEventStatePacket.PacketId:
-                if (packet is XmasClientModifyEventStatePacket p) {
-                    this.HandleModifyEventStatePacket(p);
-                }
-                return true;
+        if (this.Client == null) return false;
+        var packet = XmasPacketFactory.ParsePacket(this.Client.Connection, customPacket.Packet.Id, customPacket.Packet.Data.ToArray());
+        if (packet is XmasClientCollectGiftPacket collectGiftPacket) {
+            this.HandleCollectGiftPacket(collectGiftPacket);
+            return true;
+        } else if(packet is XmasClientModifyEventStatePacket modifyPacket) {
+            this.HandleModifyEventStatePacket(modifyPacket);
+            return true;
         }
         return false;
     }
+    
+    private void HandleCollectGiftPacket(XmasClientCollectGiftPacket packet) {
+        // SlopBrew members are able to ignore cooldown from debug UI, for testing
+        if (this.CurrentGiftCooldown > 0 && !(packet.IgnoreCooldown && this.IsSlopBrew)) {
+            this.SendPacket(new XmasServerRejectGiftPacket());
+        } else {
+            this.xmasService.CollectGift();
+            this.SendPacket(new XmasServerAcceptGiftPacket());
+            this.CurrentGiftCooldown = this.serverOptions.TickRate * XmasConstants.GiftCooldownInSeconds;
+        }
+    }
 
-    public void HandleModifyEventStatePacket(XmasClientModifyEventStatePacket packet) {
+    private void HandleModifyEventStatePacket(XmasClientModifyEventStatePacket packet) {
         if (!this.IsSlopBrew) return;
         this.xmasService.ApplyEventStateModifications(packet);
     }

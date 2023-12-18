@@ -1,6 +1,7 @@
 
 namespace SlopCrew.Server.XmasEvent;
 
+[Serializable]
 public class XmasServerAcceptGiftPacket : XmasPacket {
     public const string PacketId = "Xmas-Server-AcceptGift";
 

@@ -5,7 +5,7 @@ namespace SlopCrew.Server.XmasEvent;
 [Serializable]
 public class XmasServerEventStatePacket : XmasPacket {
     public const string PacketId = "Xmas-Server-EventState";
-    public override string GetPacketId() { return XmasServerEventStatePacket.PacketId; }
+    public override string GetPacketId() { return PacketId; }
     protected override uint LatestVersion => 1;
 
     public List<XmasPhase> Phases = [];
@@ -42,6 +42,24 @@ public class XmasServerEventStatePacket : XmasPacket {
             clone.Phases.Add(phase.Clone());
         }
         return clone;
+    }
+
+    public override string Describe() {
+        return base.Describe() + "\n" + this.DescribeWithoutPacketInfo();
+    }
+
+    public string DescribeWithoutPacketInfo() {
+        var description = "";
+        for (var i = 0; i < this.Phases.Count; i++) {
+            var phase = this.Phases[i];
+            description += $"Phase#{i}: ";
+            description += $"{phase.GiftsCollected}/{phase.GiftsGoal} gifts ";
+            if (phase.Active) description += nameof(XmasPhase.Active) + " ";
+            if (phase.ActivateNextPhaseAutomatically) description += nameof(XmasPhase.ActivateNextPhaseAutomatically) + " ";
+            description += "\n";
+        }
+        return description;
+        
     }
 }
 

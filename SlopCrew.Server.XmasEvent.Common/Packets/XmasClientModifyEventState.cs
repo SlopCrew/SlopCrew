@@ -3,7 +3,7 @@ namespace SlopCrew.Server.XmasEvent;
 [Serializable]
 public class XmasClientModifyEventStatePacket : XmasPacket {
     public const string PacketId = "Xmas-Client-ModifyEventState";
-    public override string GetPacketId() { return XmasClientModifyEventStatePacket.PacketId; }
+    public override string GetPacketId() { return PacketId; }
     protected override uint LatestVersion => 1;
 
     public List<XmasPhaseModifications> PhaseModifications = [];
@@ -30,8 +30,23 @@ public class XmasClientModifyEventStatePacket : XmasPacket {
                 break;
         }
     }
+
+    public override string Describe() {
+        var description = base.Describe() + "\n";
+        for (var i = 0; i < this.PhaseModifications.Count; i++) {
+            var phaseModifications = this.PhaseModifications[i];
+            description += $"Phase#{i}: ";
+            if (phaseModifications.ModifyActive) description += $"{nameof(XmasPhase.Active)}={phaseModifications.Phase.Active} ";
+            if (phaseModifications.ModifyGiftsCollected) description += $"{nameof(XmasPhase.GiftsCollected)}={phaseModifications.Phase.GiftsCollected} ";
+            if (phaseModifications.ModifyGiftsGoal) description += $"{nameof(XmasPhase.GiftsGoal)}={phaseModifications.Phase.GiftsGoal} ";
+            if (phaseModifications.ModifyActivatePhaseAutomatically) description += $"{nameof(XmasPhase.ActivateNextPhaseAutomatically)}Active={phaseModifications.Phase.ActivateNextPhaseAutomatically} ";
+            description += "\n";
+        }
+        return description;
+    }
 }
 
+[Serializable]
 public struct XmasPhaseModifications {
     public XmasPhaseModifications() {}
 
