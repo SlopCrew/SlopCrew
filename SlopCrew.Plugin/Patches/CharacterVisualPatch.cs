@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using UnityEngine.UIElements;

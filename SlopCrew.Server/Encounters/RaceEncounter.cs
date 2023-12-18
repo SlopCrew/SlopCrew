@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Timers;
 using SlopCrew.Common;
 using SlopCrew.Common.Proto;

@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common;

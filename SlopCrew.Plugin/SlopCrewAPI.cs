@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using SlopCrew.API;
 
 namespace SlopCrew.Plugin;

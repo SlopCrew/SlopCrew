@@ -1,4 +1,4 @@
-﻿namespace SlopCrew.Server.Options; 
+namespace SlopCrew.Server.Options; 
 
 public class GraphiteOptions {
     public string? Host { get; set; } = null;
