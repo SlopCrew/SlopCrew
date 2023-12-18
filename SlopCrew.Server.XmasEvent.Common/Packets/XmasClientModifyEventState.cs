@@ -35,7 +35,7 @@ public class XmasClientModifyEventStatePacket : XmasPacket {
         var description = base.Describe() + "\n";
         for (var i = 0; i < this.PhaseModifications.Count; i++) {
             var phaseModifications = this.PhaseModifications[i];
-            description += $"Phase#{i}: ";
+            description += $"Phase {i}: ";
             if (phaseModifications.ModifyActive) description += $"{nameof(XmasPhase.Active)}={phaseModifications.Phase.Active} ";
             if (phaseModifications.ModifyGiftsCollected) description += $"{nameof(XmasPhase.GiftsCollected)}={phaseModifications.Phase.GiftsCollected} ";
             if (phaseModifications.ModifyGiftsGoal) description += $"{nameof(XmasPhase.GiftsGoal)}={phaseModifications.Phase.GiftsGoal} ";
