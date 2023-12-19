@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore.Scaffolding;
 using Microsoft.Extensions.Options;
 using SlopCrew.Common.Proto;
@@ -6,6 +7,7 @@ using SlopCrew.Server.Options;
 namespace SlopCrew.Server.XmasEvent;
 
 public class XmasService : BackgroundService {
+
     public XmasServerEventStatePacket State;
 
     /// <summary>
@@ -22,6 +24,11 @@ public class XmasService : BackgroundService {
     private ILogger<XmasService> logger;
     private XmasOptions xmasOptions;
 
+    // Runs in background, writes state to disk
+    private Task storageTask;
+    // Tick writes clones of state packet onto this channel.  Writer thread reads them and writes to disk
+    private Channel<XmasServerEventStatePacket> storageChannel = Channel.CreateUnbounded<XmasServerEventStatePacket>();
+
     public XmasService(
         ILogger<XmasService> logger,
         NetworkService networkService,
@@ -36,13 +43,15 @@ public class XmasService : BackgroundService {
         this.xmasOptions = xmasOptions.Value;
 
         this.State = new XmasServerEventStatePacket();
-
-        this.tickRateService.Tick += this.Tick;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken) {
         this.ReadEventStateFromDiskOrCreateDefault();
+
+        this.storageTask = Task.Run(this.StorageLoop, stoppingToken);
         
+        this.tickRateService.Tick += this.Tick;
+
         return Task.CompletedTask;
     }
 
@@ -54,7 +63,12 @@ public class XmasService : BackgroundService {
             this.WriteEventStateToDisk();
             this.stateDirty = false;
         }
-        return Task.CompletedTask;
+
+        this.storageChannel.Writer.Complete();
+
+        return Task.Run(async () => {
+            await this.storageTask.WaitAsync(cancellationToken);
+        }, cancellationToken);
     }
 
     /// <summary>
@@ -162,9 +176,18 @@ public class XmasService : BackgroundService {
     }
 
     private void WriteEventStateToDisk() {
+        // Enqueue clone of state for writing to disk in worker task
+        this.storageChannel.Writer.TryWrite(this.State.Clone());
+    }
+
+    private async void StorageLoop() {
+        // Technically, if filesystem is slow, the channel could get backed up with queued packets.
+        // Seems unlikely since we rate-limit writes w/StateBroadcastCooldownInSeconds.
         var path = this.stateFilename();
-        this.logger.LogInformation($"Writing Xmas event state to disk: {path}");
-        var json = XmasEventStateSerializer.ToJson(this.State);
-        File.WriteAllText(path, json);
+        await foreach(var p in this.storageChannel.Reader.ReadAllAsync()) {
+            this.logger.LogInformation($"Writing Xmas event state to disk: {path}");
+            var json = XmasEventStateSerializer.ToJson(this.State);
+            File.WriteAllText(path, json);
+        }
     }
 }
