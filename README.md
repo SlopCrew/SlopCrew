@@ -24,7 +24,9 @@ It's a Bomb Rush Cyberfunk multiplayer mod. Skate around with your friends. **Se
 - Large MMO-style world where everyone exists together
 - See other people's movements, animations, and visual effects
 - Go against players in score battles, combo battles, and races
+- Form crews with your friends through the [SlopNet](https://slopnet.sloppers.club/) website
 - See other players wearing custom character models you have installed (via [CrewBoom](https://github.com/SGiygas/CrewBoom))
+- Integration with many other plugins through the [Slop Crew API](https://github.com/SlopCrew/SlopCrew/blob/main/docs/Developer%20Guide.md#using-the-api)
 
 ## Credits
 
