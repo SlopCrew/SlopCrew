@@ -1,16 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Plugin", "SlopCrew.Plugin\SlopCrew.Plugin.csproj", "{C33DD7D1-D576-42DC-849A-A67937645689}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlopCrew.Plugin", "SlopCrew.Plugin\SlopCrew.Plugin.csproj", "{C33DD7D1-D576-42DC-849A-A67937645689}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Server", "SlopCrew.Server\SlopCrew.Server.csproj", "{94A3B924-480F-4459-9E21-77913D493360}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlopCrew.Server", "SlopCrew.Server\SlopCrew.Server.csproj", "{94A3B924-480F-4459-9E21-77913D493360}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.API", "SlopCrew.API\SlopCrew.API.csproj", "{9F225D8D-252F-4E86-8A69-66213CB0684C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlopCrew.API", "SlopCrew.API\SlopCrew.API.csproj", "{9F225D8D-252F-4E86-8A69-66213CB0684C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{A05EECEC-AA53-429F-8E12-CF2B549671DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrewBoomAPI", "libs\CrewBoomAPI\CrewBoomAPI.csproj", "{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrewBoomAPI", "libs\CrewBoomAPI\CrewBoomAPI.csproj", "{CA9A7D55-2ABA-46A4-9410-DA1DCE433272}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlopCrew.Common", "SlopCrew.Common\SlopCrew.Common.csproj", "{0948E6D7-9B83-4217-8168-7E84BBF744E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlopCrew.Common", "SlopCrew.Common\SlopCrew.Common.csproj", "{0948E6D7-9B83-4217-8168-7E84BBF744E2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlopCrew.Server.XmasEvent.Common", "SlopCrew.Server.XmasEvent.Common\SlopCrew.Server.XmasEvent.Common.csproj", "{9DA6E912-E2EB-429D-A8E2-F2BB7EEE4301}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +43,13 @@ Global
 		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0948E6D7-9B83-4217-8168-7E84BBF744E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DA6E912-E2EB-429D-A8E2-F2BB7EEE4301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DA6E912-E2EB-429D-A8E2-F2BB7EEE4301}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DA6E912-E2EB-429D-A8E2-F2BB7EEE4301}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DA6E912-E2EB-429D-A8E2-F2BB7EEE4301}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CA9A7D55-2ABA-46A4-9410-DA1DCE433272} = {A05EECEC-AA53-429F-8E12-CF2B549671DB}

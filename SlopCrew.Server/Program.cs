@@ -6,6 +6,7 @@ using SlopCrew.Server.Api;
 using SlopCrew.Server.Database;
 using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
+using SlopCrew.Server.XmasEvent;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders().AddConsole();
@@ -31,6 +32,9 @@ BindConfig<GraphiteOptions>("Graphite");
 BindConfig<EncounterOptions>("Encounter");
 var databaseOptions = BindConfig<DatabaseOptions>("Database");
 var authOptions = BindConfig<AuthOptions>("Auth");
+if(XmasConstants.Enabled) {
+    var xmasOptions = BindConfig<XmasOptions>("Xmas");
+}
 
 if (serverOptions.QuieterLogs) {
     builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
@@ -45,6 +49,10 @@ AddSingletonHostedService<NetworkService>();
 AddSingletonHostedService<RaceConfigService>();
 AddSingletonHostedService<DiscordRefreshService>();
 
+if (XmasConstants.Enabled) {
+    AddSingletonHostedService<XmasService>();
+    builder.Services.AddTransient<XmasClient>();
+}
 builder.Services.AddTransient<NetworkClient>();
 builder.Services.AddSingleton<MetricsService>();
 builder.Services.AddSingleton<TickRateService>();

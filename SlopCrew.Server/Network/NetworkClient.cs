@@ -6,6 +6,7 @@ using SlopCrew.Common.Proto;
 using SlopCrew.Server.Database;
 using SlopCrew.Server.Encounters;
 using SlopCrew.Server.Options;
+using SlopCrew.Server.XmasEvent;
 
 namespace SlopCrew.Server;
 
@@ -14,6 +15,7 @@ public class NetworkClient : IDisposable {
     public uint Connection;
     public string Ip = string.Empty;
 
+    public XmasClient? XmasClient;
     public Player? Player;
     public int? Stage;
     public string? Key;
@@ -54,6 +56,7 @@ public class NetworkClient : IDisposable {
 
     public void Dispose() {
         this.tickRateService.Tick -= this.Tick;
+        this.XmasClient?.Dispose();
     }
 
     public void HandlePacket(ServerboundMessage packet) {
@@ -158,7 +161,8 @@ public class NetworkClient : IDisposable {
             case ServerboundMessage.MessageOneofCase.CustomPacket: {
                 if (this.Player is null || this.Stage is null) return;
                 if (packet.CustomPacket.Packet.Data.Length > Constants.MaxCustomPacketSize) return;
-
+                var handled = this.XmasClient?.HandlePacket(packet.CustomPacket);
+                if (handled == true) return;
                 this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
                     CustomPacket = new ClientboundCustomPacket {
                         PlayerId = this.Player.Id,
