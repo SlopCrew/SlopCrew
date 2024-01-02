@@ -33,7 +33,7 @@ public class RaceEncounter : Encounter {
             .Select(x => {
                 var checkpoint = new GameObject("RaceCheckpoint");
                 checkpoint.tag = RaceCheckpoint.Tag;
-                checkpoint.transform.position = ((System.Numerics.Vector3) x).ToMentalDeficiency();
+                checkpoint.transform.position = x.NetworkToUnity();
                 var component = checkpoint.AddComponent<RaceCheckpoint>();
                 return component;
             })
@@ -43,11 +43,11 @@ public class RaceEncounter : Encounter {
         foreach (var pin in pins) this.checkpoints.Enqueue(pin);
 
         var player = WorldHandler.instance.GetCurrentPlayer();
-        player.tf.position = ((System.Numerics.Vector3) this.raceConfig.StartPosition).ToMentalDeficiency();
+        player.tf.position = this.raceConfig.StartPosition.NetworkToUnity();
         player.motor.SetVelocityTotal(
-            Vector3.Zero.ToMentalDeficiency(),
-            Vector3.Zero.ToMentalDeficiency(),
-            Vector3.Zero.ToMentalDeficiency()
+            Vector3.Zero.SystemToUnity(),
+            Vector3.Zero.SystemToUnity(),
+            Vector3.Zero.SystemToUnity()
         );
         player.StopCurrentAbility();
         player.boostCharge = 0;

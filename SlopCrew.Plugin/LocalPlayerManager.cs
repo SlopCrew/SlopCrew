@@ -79,9 +79,9 @@ public class LocalPlayerManager(
                         Name = config.General.Username.Value,
 
                         Transform = new Transform {
-                            Position = new(me.tf.position.FromMentalDeficiency()),
-                            Rotation = new(me.tf.rotation.FromMentalDeficiency()),
-                            Velocity = new(me.motor.velocity.FromMentalDeficiency())
+                            Position = new(me.tf.position.UnityToSystem()),
+                            Rotation = new(me.tf.rotation.UnityToSystem()),
+                            Velocity = new(me.motor.velocity.UnityToSystem())
                         },
 
                         CharacterInfo = new CharacterInfo {
@@ -121,9 +121,9 @@ public class LocalPlayerManager(
 
     private void HandleMovement(Reptile.Player me) {
         var transform = me.tf;
-        var newPos = transform.position.FromMentalDeficiency();
-        var newRot = transform.rotation.FromMentalDeficiency();
-        var newVel = me.motor.velocity.FromMentalDeficiency();
+        var newPos = transform.position.UnityToSystem();
+        var newRot = transform.rotation.UnityToSystem();
+        var newVel = me.motor.velocity.UnityToSystem();
 
         const float minDistance = 0.01f;
 

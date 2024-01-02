@@ -49,8 +49,8 @@ public class AssociatedPlayer : IDisposable {
 
         var emptyGameObject = new GameObject("SlopCrew_EmptyGameObject");
         var emptyTransform = emptyGameObject.transform;
-        emptyTransform.position = ((System.Numerics.Vector3) slopPlayer.Transform.Position).ToMentalDeficiency();
-        emptyTransform.rotation = ((System.Numerics.Quaternion) slopPlayer.Transform.Rotation).ToMentalDeficiency();
+        emptyTransform.position = slopPlayer.Transform.Position.NetworkToUnity();
+        emptyTransform.rotation = slopPlayer.Transform.Rotation.NetworkToUnity();
 
         var character = (Characters) slopPlayer.CharacterInfo.Character;
         var outfit = slopPlayer.CharacterInfo.Outfit;
@@ -295,12 +295,12 @@ public class AssociatedPlayer : IDisposable {
         var timeToMove = this.connectionManager.TickRate!.Value + latency;
 
         var currentPos = this.ReptilePlayer.tf.position;
-        var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
+        var targetPos = this.targetUpdate.Transform.Position.NetworkToUnity();
         var posDiff = targetPos - currentPos;
         var posVelocity = posDiff / timeToMove;
 
         var currentRot = this.ReptilePlayer.tf.rotation;
-        var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
+        var targetRot = this.targetUpdate.Transform.Rotation.NetworkToUnity();
         var rotDiff = UnityEngine.Quaternion.Angle(currentRot, targetRot);
         var rotVelocity = rotDiff / timeToMove;
 
@@ -324,7 +324,7 @@ public class AssociatedPlayer : IDisposable {
         var timeToMove = this.connectionManager.TickRate!.Value + latency;
 
         var currentPos = this.ReptilePlayer.tf.position;
-        var targetPos = ((System.Numerics.Vector3) this.targetUpdate.Transform.Position).ToMentalDeficiency();
+        var targetPos = this.targetUpdate.Transform.Position.NetworkToUnity();
 
         var newPos = UnityEngine.Vector3.MoveTowards(
             currentPos,
@@ -334,7 +334,7 @@ public class AssociatedPlayer : IDisposable {
         this.ReptilePlayer.tf.position = newPos;
 
         var currentRot = this.ReptilePlayer.tf.rotation;
-        var targetRot = ((System.Numerics.Quaternion) this.targetUpdate.Transform.Rotation).ToMentalDeficiency();
+        var targetRot = this.targetUpdate.Transform.Rotation.NetworkToUnity();
 
         var newRot = UnityEngine.Quaternion.RotateTowards(
             currentRot,
