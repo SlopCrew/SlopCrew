@@ -124,7 +124,7 @@ public class Config(ConfigFile config) {
             "Server",
             "Key",
             "",
-            "Authentication key to link your Discord account to Slop Crew."
+            "Authentication key to link your Discord account to Slop Crew. On the official Slop Crew server, this can be done at https://slopnet.sloppers.club/."
         );
     }
 }
