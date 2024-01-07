@@ -16,7 +16,18 @@ The `SlopCrew.Plugin` project references DLLs in your game install. To not commi
 
 This path will vary per person, and will point to the folder that contains the game executable *without a trailing slash* (e.g. `F:\games\steam\steamapps\common\BombRushCyberfunk`).
 
-- Visual Studio: Set `BRCPath` as a global environment variable (I haven't figured out how to set it per-project yet).
+- Visual Studio: Create `SlopCrew.Plugin.csproj.user` next to the original `.csproj`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <BRCPath>path/to/game</BRCPath>
+    <ManagedPath>$(BRCPath)/Bomb Rush Cyberfunk_Data/Managed</ManagedPath>
+  </PropertyGroup>
+</Project>
+```
+
 - JetBrains Rider: Go to `File | Settings | Build, Execution, Deployment | Toolset and Build` and edit the MSBuild global properties.
 - dotnet CLI: Pass `-p:BRCPath="path/to/game"` as an argument.
 
