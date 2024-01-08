@@ -19,6 +19,5 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SlopCrew.Common\SlopCrew.Common.csproj" />
-        <ProjectReference Include="..\SlopCrew.Server.XmasEvent.Common\SlopCrew.Server.XmasEvent.Common.csproj" />
     </ItemGroup>
 </Project>
