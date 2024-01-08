@@ -1,5 +1,6 @@
-- **Added crews**
-  - Use [SlopNet](https://slopnet.sloppers.club/) to create and join crews
-  - Represent crews with special tags above your nameplate
-  - This feature is a work in progress and will likely contain bugs
-- Redesigned SlopNet website
+- Added new features to the Slop Crew API (@LazyDuchess)
+- Removed Millenium Winterland server code
+  - A update that makes it work in singleplayer has been released
+- Fix some issues in the README and documentation
+- Updated year in license to 2024
+  - Slop Crew is, and always will be, free open source software
