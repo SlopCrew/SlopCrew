@@ -155,11 +155,14 @@ public class NetworkClient : IDisposable {
 
             case ServerboundMessage.MessageOneofCase.CustomPacket: {
                 if (this.Player is null || this.Stage is null) return;
-                if (packet.CustomPacket.Packet.Data.Length > Constants.MaxCustomPacketSize) return;
+                var customPacket = packet.CustomPacket.Packet;
+                if (customPacket.Data.Length > Constants.MaxCustomPacketSize
+                    || customPacket.Id.Length > Constants.MaxCustomPacketSize) return;
+
                 this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
                     CustomPacket = new ClientboundCustomPacket {
                         PlayerId = this.Player.Id,
-                        Packet = packet.CustomPacket.Packet
+                        Packet = customPacket
                     }
                 }, exclude: this.Player.Id);
                 break;
@@ -248,7 +251,6 @@ public class NetworkClient : IDisposable {
         player.IsCommunityContributor = this.IsCommunityContributor;
         player.RepresentingCrew = this.RepresentingCrew ?? string.Empty;
 
-        // Cap a few things for people who are naughty
         var customCharacterInfo = player.CustomCharacterInfo.ToList();
         if (customCharacterInfo.Count > Constants.MaxCustomCharacterInfo) {
             customCharacterInfo.RemoveRange(
@@ -256,6 +258,10 @@ public class NetworkClient : IDisposable {
                 customCharacterInfo.Count - Constants.MaxCustomCharacterInfo
             );
         }
+        customCharacterInfo = customCharacterInfo
+            .Where(x => x.Id.Length <= Constants.MaxCustomPacketSize && x.Data.Length <= Constants.MaxCustomPacketSize)
+            .ToList();
+
         player.CustomCharacterInfo.Clear();
         player.CustomCharacterInfo.AddRange(customCharacterInfo);
 

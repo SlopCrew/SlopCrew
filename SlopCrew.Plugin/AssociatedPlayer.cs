@@ -250,7 +250,7 @@ public class AssociatedPlayer : IDisposable {
 
         var anyDifferentCharacterInfo = player.CustomCharacterInfo.Count != this.SlopPlayer.CustomCharacterInfo.Count;
         foreach (var info in player.CustomCharacterInfo) {
-            var oldInfo = this.SlopPlayer.CustomCharacterInfo.FirstOrDefault(i => i.Type == info.Type);
+            var oldInfo = this.SlopPlayer.CustomCharacterInfo.FirstOrDefault(i => i.Id == info.Id);
             if (oldInfo == null || !oldInfo.Data.Equals(info.Data)) {
                 anyDifferentCharacterInfo = true;
                 break;

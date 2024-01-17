@@ -17,16 +17,14 @@ public class SlopCrewAPI : ISlopCrewAPI {
 
     // Returns the name for the local player.
     public string? PlayerName {
-        get {
-            return this.OnGetLocalPlayerName?.Invoke();
-        }
+        get { return this.OnGetLocalPlayerName?.Invoke(); }
     }
 
     internal Func<string>? OnGetLocalPlayerName;
 
     // Unity API clients can call this then use GameObject.Find() to find the GameObject containing the Reptile.Player component for this player.
-    public string? GetGameObjectPathForPlayerID(uint playerid) {
-        return this.OnGetGameObjectPathForPlayerID?.Invoke(playerid);
+    public string? GetGameObjectPathForPlayerID(uint playerId) {
+        return this.OnGetGameObjectPathForPlayerID?.Invoke(playerId);
     }
 
     internal event Func<uint, string?>? OnGetGameObjectPathForPlayerID;
@@ -39,15 +37,15 @@ public class SlopCrewAPI : ISlopCrewAPI {
     internal event Func<string, uint?>? OnGetPlayerIDForGameObjectPath;
 
     // Given a player ID, checks they don't exist on our end. Can be used to listen for a player disconnecting, or if a given ID is our local player.
-    public bool? PlayerIDExists(uint playerid) {
-        return this.OnPlayerIDExists?.Invoke(playerid);
+    public bool? PlayerIDExists(uint playerId) {
+        return this.OnPlayerIDExists?.Invoke(playerId);
     }
 
     internal event Func<uint, bool>? OnPlayerIDExists;
 
     // Given a player's ID, returns their name.
-    public string? GetPlayerName(uint playerid) {
-        return this.OnGetPlayerName?.Invoke(playerid);
+    public string? GetPlayerName(uint playerId) {
+        return this.OnGetPlayerName?.Invoke(playerId);
     }
 
     internal event Func<uint, string?>? OnGetPlayerName;
@@ -61,8 +59,15 @@ public class SlopCrewAPI : ISlopCrewAPI {
         this.OnCustomPacketSent?.Invoke(id, data);
     }
 
+    public void SetCustomCharacterInfo(string id, byte[]? data) {
+        this.OnCustomCharacterInfoSet?.Invoke(id, data);
+    }
+
     internal event Action<string, byte[]>? OnCustomPacketSent;
+    internal event Action<string, byte[]?>? OnCustomCharacterInfoSet;
+
     public event Action<uint, string, byte[]>? OnCustomPacketReceived;
+    public event Action<uint, string, byte[]>? OnCustomCharacterInfoReceived;
 
     internal void ChangeConnected(bool value) {
         if (this.Connected == value) return;

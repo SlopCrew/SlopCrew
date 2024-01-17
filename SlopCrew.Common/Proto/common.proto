@@ -9,7 +9,7 @@ message CharacterInfo {
 }
 
 message CustomCharacterInfo {
-  CustomCharacterInfoType type = 1;
+  string id = 1;
   bytes data = 2;
 }
 
