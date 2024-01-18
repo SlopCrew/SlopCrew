@@ -183,7 +183,7 @@ public class AppEncounters : App {
         this.hasBannedMods = this.HasBannedMods();
         if (this.hasBannedMods) {
             this.scrollView!.CanvasGroup!.alpha = 0.5f;
-            this.SetText("Please disable adavantageous mods.", string.Empty);
+            this.SetText("Please disable advantageous mods.", string.Empty);
             foreach (var button in this.scrollView.GetButtons()) {
                 button.IsSelected = false;
             }
