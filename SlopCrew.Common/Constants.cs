@@ -4,7 +4,7 @@ using SlopCrew.Common.Proto;
 namespace SlopCrew.Common;
 
 public class Constants {
-    public const uint NetworkVersion = 4;
+    public const uint NetworkVersion = 5;
     public const int MaxCustomCharacterInfo = 5;
     public const int MaxCustomPacketSize = 512;
 

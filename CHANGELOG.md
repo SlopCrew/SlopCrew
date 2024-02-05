@@ -1,6 +1,2 @@
-- Added new features to the Slop Crew API (@LazyDuchess)
-- Removed Millenium Winterland server code
-  - A update that makes it work in singleplayer has been released
-- Fix some issues in the README and documentation
-- Updated year in license to 2024
-  - Slop Crew is, and always will be, free open source software
+- Changed how custom character data works internally
+- Updated the Slop Crew API
