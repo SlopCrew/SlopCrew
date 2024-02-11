@@ -68,3 +68,14 @@ Your current score/multiplier will be reset when starting a battle.
 ### Race
 
 Select the race mode at the same time as other players. This internally creates a lobby, which will start after enough time has passed. You can only queue with players in the same stage as you.
+
+## I can't connect to Slop Crew!
+
+This usually means you are either running an out of date version of the Slop Crew plugin or you are having networking issues. Please provide some more information in ⁠the troubleshooting channel in our [Discord server.](https://discord.gg/a2nVaZGGNz)
+
+- Provide a BepInEx log: ⁠⁠Read "Where is my BepInEx log?" in this FAQ for help locating this file.
+- Try and connect to the [web server](https://sloppers.club/test.txt) and see if it works. The expected result is a small smiley face ( :) ).
+- Include your Internet service provider and country if you are comfortable doing so. Do not post your IP address unless explicitly requested by an admin (@biggest slopper role in our [Discord server.](https://discord.gg/a2nVaZGGNz)) to provide it in DMs.
+- If you are using a VPN, commercial antivirus/firewall, or corporate/educational network, please state the relevant product/service.
+
+Keep in mind that most Slop Crew connection issues are related to a specific issue with your network, so it's hard to solve a lot of these problems.
