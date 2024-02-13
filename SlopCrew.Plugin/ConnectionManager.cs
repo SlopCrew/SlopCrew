@@ -178,6 +178,8 @@ public class ConnectionManager : IHostedService {
                 var latency = (uint) (DateTime.Now - this.lastPing).TotalMilliseconds;
                 this.Latency = latency;
                 this.ServerTick = packet.Pong.Tick;
+                this.api.ChangeLatency(this.Latency);
+                this.api.DispatchServerTick(ServerTick);
                 break;
             }
 
