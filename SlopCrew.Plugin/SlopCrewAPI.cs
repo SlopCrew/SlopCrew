@@ -13,6 +13,7 @@ public class SlopCrewAPI : ISlopCrewAPI {
     public event Action? OnConnected;
     public event Action? OnDisconnected;
     public ulong Latency { get; internal set; } = 0;
+    public int TickRate { get; internal set; } = 0;
 
     public int? StageOverride { get; set; }
 
@@ -84,6 +85,10 @@ public class SlopCrewAPI : ISlopCrewAPI {
     
     internal void ChangeLatency(ulong latency) {
         this.Latency = latency;
+    }
+    
+    internal void ChangeTickRate(int tickRate) {
+        this.TickRate = tickRate;
     }
 
     internal void ChangePlayerCount(int count) {
