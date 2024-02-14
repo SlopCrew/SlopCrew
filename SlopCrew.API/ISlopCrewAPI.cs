@@ -12,6 +12,8 @@ public interface ISlopCrewAPI {
     public bool Connected { get; }
     public event Action OnConnected;
     public event Action OnDisconnected;
+    public ulong Latency { get; }
+    public int TickRate { get; }
 
     public int? StageOverride { get; set; }
 
@@ -28,4 +30,5 @@ public interface ISlopCrewAPI {
 
     public event Action<uint, string, byte[]> OnCustomPacketReceived;
     public event Action<uint, string, byte[]> OnCustomCharacterInfoReceived;
+    public event Action<ulong> OnServerTickReceived;
 }

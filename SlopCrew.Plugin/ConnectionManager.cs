@@ -171,6 +171,7 @@ public class ConnectionManager : IHostedService {
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.Hello: {
                 this.TickRate = 1f / packet.Hello.TickRate;
+                this.api.ChangeTickRate(packet.Hello.TickRate);
                 break;
             }
 
@@ -178,6 +179,8 @@ public class ConnectionManager : IHostedService {
                 var latency = (uint) (DateTime.Now - this.lastPing).TotalMilliseconds;
                 this.Latency = latency;
                 this.ServerTick = packet.Pong.Tick;
+                this.api.ChangeLatency(this.Latency);
+                this.api.DispatchServerTick(ServerTick);
                 break;
             }
 

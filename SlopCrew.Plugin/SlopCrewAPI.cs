@@ -12,6 +12,8 @@ public class SlopCrewAPI : ISlopCrewAPI {
     public bool Connected { get; internal set; } = false;
     public event Action? OnConnected;
     public event Action? OnDisconnected;
+    public ulong Latency { get; internal set; } = 0;
+    public int TickRate { get; internal set; } = 0;
 
     public int? StageOverride { get; set; }
 
@@ -68,6 +70,7 @@ public class SlopCrewAPI : ISlopCrewAPI {
 
     public event Action<uint, string, byte[]>? OnCustomPacketReceived;
     public event Action<uint, string, byte[]>? OnCustomCharacterInfoReceived;
+    public event Action<ulong>? OnServerTickReceived;
 
     internal void ChangeConnected(bool value) {
         if (this.Connected == value) return;
@@ -79,6 +82,14 @@ public class SlopCrewAPI : ISlopCrewAPI {
             this.OnDisconnected?.Invoke();
         }
     }
+    
+    internal void ChangeLatency(ulong latency) {
+        this.Latency = latency;
+    }
+    
+    internal void ChangeTickRate(int tickRate) {
+        this.TickRate = tickRate;
+    }
 
     internal void ChangePlayerCount(int count) {
         this.PlayerCount = count;
@@ -87,5 +98,9 @@ public class SlopCrewAPI : ISlopCrewAPI {
 
     internal void DispatchCustomPacket(uint player, string id, byte[] data) {
         this.OnCustomPacketReceived?.Invoke(player, id, data);
+    }
+    
+    internal void DispatchServerTick(ulong tick) {
+        this.OnServerTickReceived?.Invoke(tick);
     }
 }

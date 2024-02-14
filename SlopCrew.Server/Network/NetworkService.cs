@@ -178,6 +178,8 @@ public class NetworkService : BackgroundService {
 
     public void Disconnect(uint connection) {
         this.server!.CloseConnection(connection);
+        this.clients.Remove(connection);
+        this.metricsService.UpdateConnections(this.clients.Count);
     }
 
     public void SendPacket(uint connection, ClientboundMessage packet, SendFlags flags = SendFlags.Reliable) {
