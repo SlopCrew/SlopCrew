@@ -171,6 +171,7 @@ public class ConnectionManager : IHostedService {
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.Hello: {
                 this.TickRate = 1f / packet.Hello.TickRate;
+                this.api.ChangePlayerId(packet.Hello.PlayerId);
                 this.api.ChangeTickRate(packet.Hello.TickRate);
                 break;
             }
