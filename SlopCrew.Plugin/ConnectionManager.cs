@@ -98,9 +98,11 @@ public class ConnectionManager : IHostedService {
         }
 
         this.pingTokenSource = new CancellationTokenSource();
+        // UnityEngine.Random errors when used off the main thread
+        var random = new System.Random();
         this.pingTask = Task.Run(async () => {
             while (!this.pingTokenSource!.IsCancellationRequested) {
-                this.pingId = (uint) UnityEngine.Random.Range(0, int.MaxValue);
+                this.pingId = (uint) random.Next();
                 this.lastPing = DateTime.Now;
                 var now = (ulong) (DateTime.UtcNow.ToFileTimeUtc() / 10_000);
                 this.SendMessage(new ServerboundMessage {
