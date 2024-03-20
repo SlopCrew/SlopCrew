@@ -79,3 +79,7 @@ This usually means you are either running an out of date version of the Slop Cre
 - If you are using a VPN, commercial antivirus/firewall, or corporate/educational network, please state the relevant product/service.
 
 Keep in mind that most Slop Crew connection issues are related to a specific issue with your network, so it's hard to solve a lot of these problems.
+
+## Will you ever add text chat?
+
+**No.** Chat moderation is incredibly difficult to pull off, requiring a team of moderators and a reporting system, which is unfeasible for a volunteer project. Automated systems are unreliable and can be bypassed. Because of the amount of effort required to implement a text chat while also keeping Slop Crew a safe place for all, this will never happen. If you wish to talk to someone from Slop Crew, consider looking for them here! A lot of active players are members of this server.
