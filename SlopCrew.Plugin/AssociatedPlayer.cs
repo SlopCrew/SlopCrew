@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
-using Microsoft.Extensions.DependencyInjection;
 using Reptile;
 using SlopCrew.Common.Proto;
 using SlopCrew.Plugin.UI;
@@ -10,7 +8,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-using Vector3 = System.Numerics.Vector3;
 
 namespace SlopCrew.Plugin;
 
@@ -28,6 +25,7 @@ public class AssociatedPlayer : IDisposable {
     private PositionUpdate? targetUpdate = null;
     private float? targetPosSpeed = null;
     private float? targetRotSpeed = null;
+    private bool doTheFunny;
 
     public bool PhoneOut = false;
 
@@ -75,6 +73,25 @@ public class AssociatedPlayer : IDisposable {
 
         if (this.config.General.ShowPlayerMapPins.Value) {
             this.SpawnMapPin();
+        }
+
+        // I know you're reading this don't spoil it :(
+        this.doTheFunny = DateTime.Now.Month == 4 && DateTime.Now.Day == 1;
+
+        if (this.doTheFunny) {
+            var assets = Core.Instance.Assets;
+            const string bundle = "city_assets";
+            if (!assets.availableBundles.ContainsKey(bundle)) assets.LoadAssetBundleByName(bundle);
+            var assetBundle = assets.availableBundles[bundle].AssetBundle;
+
+            var prefab = assetBundle.LoadAsset<GameObject>("Mascot_Polo_street");
+            var material = assetBundle.LoadAsset<Material>("MascotAtlas_MAT");
+
+            var polo = Object.Instantiate(prefab, this.ReptilePlayer.tf);
+            polo.GetComponent<MeshRenderer>().material = material;
+            polo.transform.localRotation = UnityEngine.Quaternion.Euler(-90, 180, 0);
+
+            this.ReptilePlayer.characterVisual.mainRenderer.enabled = false;
         }
 
         Object.Destroy(emptyGameObject);
@@ -273,6 +290,7 @@ public class AssociatedPlayer : IDisposable {
                     player.CharacterInfo.Outfit
                 );
                 this.ReptilePlayer.InitVisual();
+                if (this.doTheFunny) this.ReptilePlayer.characterVisual.mainRenderer.enabled = false;
             }
 
             if (differentMoveStyle) {

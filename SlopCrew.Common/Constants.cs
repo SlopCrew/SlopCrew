@@ -25,7 +25,7 @@ public class Constants {
     public static Dictionary<QuickChatCategory, List<string>> QuickChatMessages = new() {
         {
             QuickChatCategory.General,
-            ["Heya!", "Goodbye!", "Good game!", "OK.", "No thanks.", "Nice!", "I'm using tilt controls!"]
+            ["Heya!", "Goodbye!", "Good game!", "OK.", "No thanks.", "Nice!", "I'm using tilt controls!", "Wait a sec!", "Thank you!"]
         },
         // line break for formatting lol
         {

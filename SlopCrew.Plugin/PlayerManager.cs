@@ -23,7 +23,6 @@ public class PlayerManager(
     SlopCrewAPI api
 )
     : IHostedService {
-
     public Dictionary<uint, AssociatedPlayer> Players = new();
     public List<AssociatedPlayer> AssociatedPlayers => this.Players.Values.ToList();
     public readonly InterfaceUtility InterfaceUtility = interfaceUtility;
@@ -68,7 +67,7 @@ public class PlayerManager(
 
     private uint? GetPlayerIDForGameObjectPath(string gameObjectPath) {
         // GameObject.Find has performance implications.
-        foreach(var player in this.Players) {
+        foreach (var player in this.Players) {
             if (player.Value.ReptilePlayer.gameObject.GetPath() == gameObjectPath)
                 return player.Key;
         }
@@ -96,6 +95,9 @@ public class PlayerManager(
     }
 
     private void MessageReceived(ClientboundMessage packet) {
+        // HACK: Handle packets being received on the title screen causing issues.
+        if (WorldHandler.instance == null) return;
+
         switch (packet.MessageCase) {
             case ClientboundMessage.MessageOneofCase.PlayersUpdate: {
                 foreach (var player in packet.PlayersUpdate.Players) {

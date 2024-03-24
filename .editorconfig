@@ -129,6 +129,7 @@ resharper_csharp_naming_rule.private_constants = AaBb
 resharper_csharp_naming_rule.private_static_fields = AaBb
 resharper_csharp_naming_rule.private_static_readonly = AaBb
 resharper_csharp_new_line_before_while = true
+resharper_csharp_remove_spaces_on_blank_lines = true
 resharper_csharp_wrap_after_declaration_lpar = true
 resharper_csharp_wrap_before_declaration_rpar = true
 resharper_enforce_line_ending_style = true
