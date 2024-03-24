@@ -17,6 +17,7 @@ public interface ISlopCrewAPI {
 
     public int? StageOverride { get; set; }
 
+    public uint? PlayerId { get; }
     public string? PlayerName { get; }
     public ReadOnlyCollection<uint>? Players { get; }
 

@@ -19,10 +19,17 @@ public class AppSlopCrew : App {
     public static readonly int EncounterCount = Enum.GetValues(typeof(EncounterType)).Length;
     public static readonly int CategoryCount = Enum.GetValues(typeof(Category)).Length;
 
-    public static readonly AppSpriteSheet SpriteSheet = new AppSpriteSheet(EncounterCount, CategoryCount);
+    public static AppSpriteSheet SpriteSheet;
 
     private SlopCrewScrollView? scrollView;
 
+    public override void Awake() {
+        // Cannot happen in static initializer; debug builds of Unity flag this as an error and crash
+        if (AppSlopCrew.SpriteSheet == null) {
+            AppSlopCrew.SpriteSheet = new AppSpriteSheet(EncounterCount, CategoryCount);
+        }
+}
+    
     public override void OnAppInit() {
         this.m_Unlockables = Array.Empty<AUnlockable>();
 
