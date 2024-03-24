@@ -1,2 +1,4 @@
-- Changed how custom character data works internally
-- Updated the Slop Crew API
+- Fixed a crash when exiting to the title screen (hopefully)
+- Added new quick chat options
+  - "Wait a sec!"
+  - "Thank you!"
