@@ -48,8 +48,8 @@ builder.Services.AddSingleton<MetricsService>();
 builder.Services.AddSingleton<TickRateService>();
 builder.Services.AddSingleton<EncounterService>();
 
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<CrewService>();
+builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<CrewService>();
 
 builder.Services.AddDbContext<SlopDbContext>(
     options => options.UseSqlite($"DataSource={databaseOptions.DatabasePath}"));
