@@ -63,6 +63,8 @@ public class AssociatedPlayer : IDisposable {
             moveStyle
         );
 
+        this.ReptilePlayer.gameObject.name = $"SlopCrew Player {this.SlopPlayer.Id}";
+
         this.ReptilePlayer.motor.gravity = 0;
         this.ReptilePlayer.motor.SetKinematic(true);
         this.ReptilePlayer.motor.enabled = false;
