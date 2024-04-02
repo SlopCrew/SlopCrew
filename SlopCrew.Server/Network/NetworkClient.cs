@@ -23,6 +23,8 @@ public class NetworkClient : IDisposable {
     public Dictionary<EncounterType, List<NetworkClient>> EncounterRequests = new();
     public Encounter? CurrentEncounter;
 
+    private List<string> recentCustomPackets = new();
+
     private NetworkService networkService;
     private TickRateService tickRateService;
     private EncounterService encounterService;
@@ -158,6 +160,10 @@ public class NetworkClient : IDisposable {
                 var customPacket = packet.CustomPacket.Packet;
                 if (customPacket.Data.Length > Constants.MaxCustomPacketSize
                     || customPacket.Id.Length > Constants.MaxCustomPacketSize) return;
+
+                // You can blame Duchess for this
+                if (this.recentCustomPackets.Contains(customPacket.Id)) return;
+                this.recentCustomPackets.Add(customPacket.Id);
 
                 this.networkService.SendToStage(this.Stage.Value, new ClientboundMessage {
                     CustomPacket = new ClientboundCustomPacket {
@@ -310,5 +316,6 @@ public class NetworkClient : IDisposable {
     private void Tick() {
         if (this.QuickChatCooldown > 0) this.QuickChatCooldown--;
         if (this.CurrentEncounter is {Finished: true}) this.CurrentEncounter = null;
+        this.recentCustomPackets.Clear();
     }
 }
