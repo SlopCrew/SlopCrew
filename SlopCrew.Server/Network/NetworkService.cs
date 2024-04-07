@@ -125,22 +125,26 @@ public class NetworkService : BackgroundService {
     private void HandleMessages() {
         this.server!.RunCallbacks();
 
-        const int maxMessages = 256;
-        var messages = new NetworkingMessage[maxMessages];
-        var count = this.server.ReceiveMessagesOnPollGroup(this.pollGroup, messages, maxMessages);
+        while (true) {
+            const int maxMessages = 256;
+            var messages = new NetworkingMessage[maxMessages];
+            var count = this.server.ReceiveMessagesOnPollGroup(this.pollGroup, messages, maxMessages);
 
-        if (count > 0) {
-            for (var i = 0; i < count; i++) {
-                ref var netMessage = ref messages[i];
-                var data = new byte[netMessage.length];
-                Marshal.Copy(netMessage.data, data, 0, netMessage.length);
+            if (count > 0) {
+                for (var i = 0; i < count; i++) {
+                    ref var netMessage = ref messages[i];
+                    var data = new byte[netMessage.length];
+                    Marshal.Copy(netMessage.data, data, 0, netMessage.length);
 
-                var packet = ServerboundMessage.Parser.ParseFrom(data);
-                if (packet is not null && this.clients.TryGetValue(netMessage.connection, out var client)) {
-                    client.HandlePacket(packet);
+                    var packet = ServerboundMessage.Parser.ParseFrom(data);
+                    if (packet is not null && this.clients.TryGetValue(netMessage.connection, out var client)) {
+                        client.HandlePacket(packet);
+                    }
+
+                    netMessage.Destroy();
                 }
-
-                netMessage.Destroy();
+            } else {
+                break;
             }
         }
     }
