@@ -22,6 +22,10 @@ public class NetworkService : BackgroundService {
     private Dictionary<int, List<PositionUpdate>> queuedPositionUpdates = new();
     private Dictionary<int, List<VisualUpdate>> queuedVisualUpdates = new();
     private Dictionary<int, List<AnimationUpdate>> queuedAnimationUpdates = new();
+    private Queue<(uint, ServerboundMessage)> packetQueue = new();
+
+    private CancellationTokenSource packetCts = new();
+    private Task? packetTask;
 
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
@@ -58,11 +62,20 @@ public class NetworkService : BackgroundService {
         this.logger.LogInformation("Now listening on port {Port}", this.serverOptions.Port);
 
         this.tickRateService.Tick += this.Tick;
+        this.packetTask = Task.Run(async () => {
+            while (!this.packetCts.IsCancellationRequested) {
+                this.HandleMessages();
+                await Task.Delay(1 / this.serverOptions.TickRate);
+            }
+        }, this.packetCts.Token);
         return Task.CompletedTask;
     }
 
     public override Task StopAsync(CancellationToken cancellationToken) {
         this.tickRateService.Tick -= this.Tick;
+
+        this.packetCts.Cancel();
+        this.packetTask?.Wait(cancellationToken);
 
         foreach (var id in this.clients.Keys) this.server?.CloseConnection(id);
         this.clients.Clear();
@@ -101,7 +114,10 @@ public class NetworkService : BackgroundService {
         this.QueueUpdate(stage, update, this.queuedAnimationUpdates);
 
     private void Tick() {
-        this.HandleMessages();
+        while (this.packetQueue.TryDequeue(out var packet)) {
+            var (connection, message) = packet;
+            if (this.clients.TryGetValue(connection, out var client)) client.HandlePacket(message);
+        }
 
         this.DispatchUpdate(updates => new ClientboundMessage {
             PositionUpdate = new ClientboundPositionUpdate {
@@ -137,9 +153,7 @@ public class NetworkService : BackgroundService {
                     Marshal.Copy(netMessage.data, data, 0, netMessage.length);
 
                     var packet = ServerboundMessage.Parser.ParseFrom(data);
-                    if (packet is not null && this.clients.TryGetValue(netMessage.connection, out var client)) {
-                        client.HandlePacket(packet);
-                    }
+                    if (packet is not null) this.packetQueue.Enqueue((netMessage.connection, packet));
 
                     netMessage.Destroy();
                 }

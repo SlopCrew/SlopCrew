@@ -9,11 +9,13 @@ namespace SlopCrew.Server;
 public class TickRateService : IDisposable {
     private ILogger<TickRateService> logger;
     private ServerOptions serverOptions;
-    
+
     private Task task;
     private CancellationTokenSource cts;
 
     public ulong CurrentTick;
+    public int TickRate;
+
     public event Action? Tick;
 
     public TickRateService(ILogger<TickRateService> logger, IOptions<ServerOptions> serverOptions) {
@@ -31,11 +33,12 @@ public class TickRateService : IDisposable {
             timer.Elapsed += OnTimerElapsed;
             timer.AutoReset = true;
             timer.Enabled = true;
+
             void OnTimerElapsed(Object? source, ElapsedEventArgs e) {
                 // called on any thread, but channels are thread-safe
                 channel.Writer.TryWrite(null);
             }
-            
+
             while (!this.cts.IsCancellationRequested) {
                 await channel.Reader.ReadAsync();
                 try {
@@ -47,6 +50,8 @@ public class TickRateService : IDisposable {
             }
             timer.Dispose();
         }, this.cts.Token);
+
+        this.TickRate = this.serverOptions.TickRate;
     }
 
     public void Dispose() {
