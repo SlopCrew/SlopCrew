@@ -26,6 +26,8 @@ public class NetworkService : BackgroundService {
 
     private CancellationTokenSource packetCts = new();
     private Task? packetTask;
+    private const int MaxMessages = 256;
+    private NetworkingMessage[] messages = new NetworkingMessage[MaxMessages];
 
     public List<NetworkClient> Clients => this.clients.Values.ToList();
 
@@ -139,12 +141,9 @@ public class NetworkService : BackgroundService {
     }
 
     private void HandleMessages() {
-        this.server!.RunCallbacks();
-
         while (true) {
-            const int maxMessages = 256;
-            var messages = new NetworkingMessage[maxMessages];
-            var count = this.server.ReceiveMessagesOnPollGroup(this.pollGroup, messages, maxMessages);
+            this.server!.RunCallbacks();
+            var count = this.server.ReceiveMessagesOnPollGroup(this.pollGroup, this.messages, MaxMessages);
 
             if (count > 0) {
                 for (var i = 0; i < count; i++) {
