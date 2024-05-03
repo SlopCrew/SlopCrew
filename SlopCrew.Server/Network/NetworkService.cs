@@ -67,7 +67,7 @@ public class NetworkService : BackgroundService {
         this.packetTask = Task.Run(async () => {
             while (!this.packetCts.IsCancellationRequested) {
                 this.HandleMessages();
-                await Task.Delay(1 / this.serverOptions.TickRate);
+                await Task.Delay(1000 / this.serverOptions.TickRate);
             }
         }, this.packetCts.Token);
         return Task.CompletedTask;
@@ -141,6 +141,7 @@ public class NetworkService : BackgroundService {
     }
 
     private void HandleMessages() {
+        // Loop here so we can fetch as many messages as possible (if there's over MaxMessages messages)
         while (true) {
             this.server!.RunCallbacks();
             var count = this.server.ReceiveMessagesOnPollGroup(this.pollGroup, this.messages, MaxMessages);
