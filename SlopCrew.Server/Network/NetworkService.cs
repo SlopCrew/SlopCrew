@@ -66,8 +66,12 @@ public class NetworkService : BackgroundService {
         this.tickRateService.Tick += this.Tick;
         this.packetTask = Task.Run(async () => {
             while (!this.packetCts.IsCancellationRequested) {
-                this.HandleMessages();
-                await Task.Delay(1000 / this.serverOptions.TickRate);
+                try {
+                    this.HandleMessages();
+                    await Task.Delay(1000 / this.serverOptions.TickRate);
+                } catch (Exception e) {
+                    this.logger.LogError(e, "Error while handling messages");
+                }
             }
         }, this.packetCts.Token);
         return Task.CompletedTask;
