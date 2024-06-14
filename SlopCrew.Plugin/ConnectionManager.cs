@@ -243,6 +243,7 @@ public class ConnectionManager : IHostedService {
 
     private void SendCustomPacket(string id, byte[] data) {
         if (data.Length > Constants.MaxCustomPacketSize) return;
+        if (id.Length > Constants.MaxCustomPacketSize) return;
         
         this.SendMessage(new ServerboundMessage {
             CustomPacket = new ServerboundCustomPacket {
