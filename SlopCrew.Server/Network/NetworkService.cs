@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Google.Protobuf;
 using Microsoft.Extensions.Options;
@@ -65,14 +66,19 @@ public class NetworkService : BackgroundService {
 
         this.tickRateService.Tick += this.Tick;
         this.packetTask = Task.Run(async () => {
+            var stopwatch = new Stopwatch();
             while (!this.packetCts.IsCancellationRequested) {
                 try {
+                    stopwatch.Restart();
                     this.HandleMessages();
-                    await Task.Delay(1000 / this.serverOptions.TickRate);
+                    var elapsed = stopwatch.ElapsedMilliseconds;
+                    var delay = (1000 / this.serverOptions.TickRate) - elapsed;
+                    if (delay > 0) await Task.Delay((int) delay);
                 } catch (Exception e) {
                     this.logger.LogError(e, "Error while handling messages");
                 }
             }
+            stopwatch.Stop();
         }, this.packetCts.Token);
         return Task.CompletedTask;
     }
