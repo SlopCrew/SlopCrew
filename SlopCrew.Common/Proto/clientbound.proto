@@ -28,6 +28,7 @@ message ClientboundHello {
   repeated string banned_plugins = 2;
   uint32 score_battle_length = 3;
   uint32 combo_battle_length = 4;
+  uint32 player_id = 5;
 }
 
 message ClientboundPlayersUpdate {

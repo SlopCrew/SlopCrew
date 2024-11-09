@@ -72,7 +72,8 @@ public class NetworkClient : IDisposable {
                         TickRate = this.serverOptions.TickRate,
                         BannedPlugins = {this.encounterOptions.BannedPlugins},
                         ScoreBattleLength = this.encounterOptions.ScoreBattleLength,
-                        ComboBattleLength = this.encounterOptions.ComboBattleLength
+                        ComboBattleLength = this.encounterOptions.ComboBattleLength,
+                        PlayerId = this.Player!.Id
                     }
                 });
 

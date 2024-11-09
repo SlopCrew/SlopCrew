@@ -16,7 +16,9 @@ public class SlopCrewAPI : ISlopCrewAPI {
     public int TickRate { get; internal set; } = 0;
 
     public int? StageOverride { get; set; }
-
+    
+    // Returns the id for the local player.
+    public uint? PlayerId { get; private set; }
     // Returns the name for the local player.
     public string? PlayerName {
         get { return this.OnGetLocalPlayerName?.Invoke(); }
@@ -83,6 +85,9 @@ public class SlopCrewAPI : ISlopCrewAPI {
         }
     }
     
+    internal void ChangePlayerId(uint playerId) {
+        this.PlayerId = playerId;
+    }
     internal void ChangeLatency(ulong latency) {
         this.Latency = latency;
     }
